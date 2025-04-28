@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dynamic_icon_plus/flutter_dynamic_icon_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,6 +10,22 @@ enum AppThemeMode {
   system, // システム設定に従う
 }
 
+// アプリアイコンタイプの列挙型
+enum AppIconType {
+  default_icon, // デフォルトアイコン
+  annobu,
+  kazkiller,
+  miyamoto,
+}
+
+// アイコン名のマッピング (iOS/Androidプラットフォーム用)
+Map<AppIconType, String> appIconNameMap = {
+  AppIconType.default_icon: 'default',
+  AppIconType.annobu: 'annobu',
+  AppIconType.kazkiller: 'kazkiller',
+  AppIconType.miyamoto: 'miyamoto',
+};
+
 // 設定データモデル
 class AppSettings {
   final AppThemeMode themeMode;
@@ -16,6 +33,7 @@ class AppSettings {
   final bool notifyNewFriendRequests;
   final bool notifyFriendOnline;
   final int maxFriendCache;
+  final AppIconType appIcon;
 
   const AppSettings({
     this.themeMode = AppThemeMode.system,
@@ -23,6 +41,7 @@ class AppSettings {
     this.notifyNewFriendRequests = true,
     this.notifyFriendOnline = true,
     this.maxFriendCache = 500,
+    this.appIcon = AppIconType.default_icon,
   });
 
   // コピーと一部更新のためのメソッド
@@ -32,6 +51,7 @@ class AppSettings {
     bool? notifyNewFriendRequests,
     bool? notifyFriendOnline,
     int? maxFriendCache,
+    AppIconType? appIcon,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -40,6 +60,7 @@ class AppSettings {
           notifyNewFriendRequests ?? this.notifyNewFriendRequests,
       notifyFriendOnline: notifyFriendOnline ?? this.notifyFriendOnline,
       maxFriendCache: maxFriendCache ?? this.maxFriendCache,
+      appIcon: appIcon ?? this.appIcon,
     );
   }
 
@@ -51,6 +72,7 @@ class AppSettings {
       'notifyNewFriendRequests': notifyNewFriendRequests,
       'notifyFriendOnline': notifyFriendOnline,
       'maxFriendCache': maxFriendCache,
+      'appIcon': appIcon.index,
     };
   }
 
@@ -62,6 +84,10 @@ class AppSettings {
       notifyNewFriendRequests: json['notifyNewFriendRequests'] ?? true,
       notifyFriendOnline: json['notifyFriendOnline'] ?? true,
       maxFriendCache: json['maxFriendCache'] ?? 500,
+      appIcon:
+          json['appIcon'] != null
+              ? AppIconType.values[json['appIcon']]
+              : AppIconType.default_icon,
     );
   }
 }
@@ -84,12 +110,20 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       final notifyFriendOnline = prefs.getBool('notifyFriendOnline') ?? true;
       final maxFriendCache = prefs.getInt('maxFriendCache') ?? 500;
 
+      // 現在のアプリアイコン名を取得
+      final appIconIndex = prefs.getInt('appIcon') ?? 0;
+      final appIcon =
+          appIconIndex < AppIconType.values.length
+              ? AppIconType.values[appIconIndex]
+              : AppIconType.default_icon;
+
       state = AppSettings(
         themeMode: AppThemeMode.values[themeMode],
         loadImageOnWifi: loadImageOnWifi,
         notifyNewFriendRequests: notifyNewFriendRequests,
         notifyFriendOnline: notifyFriendOnline,
         maxFriendCache: maxFriendCache,
+        appIcon: appIcon,
       );
     } catch (e) {
       // エラー時はデフォルト設定を使用
@@ -125,6 +159,60 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> setMaxFriendCache(int value) async {
     await prefs.setInt('maxFriendCache', value);
     state = state.copyWith(maxFriendCache: value);
+  }
+
+  // アプリアイコン変更
+  Future<bool> setAppIcon(AppIconType iconType) async {
+    try {
+      // アイコン変更がサポートされているか確認
+      final isSupported = await FlutterDynamicIconPlus.supportsAlternateIcons;
+      if (!isSupported) {
+        return false;
+      }
+
+      // デフォルトアイコンの場合は元に戻す
+      if (iconType == AppIconType.default_icon) {
+        await FlutterDynamicIconPlus.setAlternateIconName(
+          iconName: null,
+          // Android用
+          blacklistBrands: ['Redmi'],
+          blacklistManufactures: ['Xiaomi'],
+          blacklistModels: ['Redmi 200A'],
+        );
+      } else {
+        // 指定されたアイコンに変更
+        final iconName = appIconNameMap[iconType];
+        if (iconName != null) {
+          await FlutterDynamicIconPlus.setAlternateIconName(
+            iconName: iconName,
+            // Android用
+            blacklistBrands: ['Redmi'],
+            blacklistManufactures: ['Xiaomi'],
+            blacklistModels: ['Redmi 200A'],
+          );
+        }
+      }
+
+      // 状態を更新
+      await prefs.setInt('appIcon', iconType.index);
+      state = state.copyWith(appIcon: iconType);
+      return true;
+    } catch (e) {
+      // エラー発生時
+      return false;
+    }
+  }
+
+  // アイコン変更がサポートされているか確認
+  Future<bool> isAppIconChangeSupported() async {
+    try {
+      final isSupported = await FlutterDynamicIconPlus.supportsAlternateIcons;
+      debugPrint('アイコン変更サポート状態: $isSupported'); // デバッグ用
+      return isSupported;
+    } catch (e) {
+      debugPrint('アイコン変更サポート確認中にエラー: $e'); // デバッグ用
+      return false;
+    }
   }
 }
 

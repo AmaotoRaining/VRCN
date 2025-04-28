@@ -32,7 +32,6 @@ class FriendsPage extends ConsumerWidget {
     );
   }
 
-
   Widget _buildFriendsList(BuildContext context, List<LimitedUser> friends) {
     if (friends.isEmpty) {
       return Center(

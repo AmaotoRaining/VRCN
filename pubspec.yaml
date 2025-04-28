@@ -13,13 +13,12 @@ dependencies:
   vrchat_dart: ^3.5.4
 
   path_provider: ^2.0.11
+
+  # アプリ情報
   package_info_plus: ^8.0.0
   shared_preferences: ^2.5.3
-
   flutter_riverpod: ^2.6.1
-
   cached_network_image: ^3.4.1
-
   flutter_dotenv: ^5.2.1
 
   # フォント
@@ -36,12 +35,13 @@ dependencies:
   # スプラッシュ
   flutter_native_splash: ^2.4.6
 
-  
   url_launcher: ^6.3.1
 
   # ローカル通知
   flutter_local_notifications: ^19.1.0
-  # otp: ^3.1.3
+
+  # 二段階認証
+  otp: ^3.1.3
 
   # 画面遷移
   go_router: ^15.1.1
@@ -51,7 +51,6 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
   rexios_lints: ^11.0.4
-  flutter_flavorizr: ^2.4.0
 
 flutter:
   uses-material-design: true
@@ -59,18 +58,22 @@ flutter:
   assets:
     - .env
     - assets/images/splash.png
+    - assets/images/default.png
+    - assets/images/annobu@3x.png
+    - assets/images/kazkiller@3x.png
+    - assets/images/miyamoto@3x.png
 
 dependency_overrides:
   vrchat_dart_generated:
 
 flutter_icons:
   image_path_android: assets/launcher_icon/android_icon.png
-  adaptive_icon_background: "#000000" #iconの背景色
+  adaptive_icon_background: "#000000"
   adaptive_icon_foreground: assets/launcher_icon/android_icon.png
   image_path_ios: assets/launcher_icon/ios_icon.png
   android: true
   adaptive_icon_padding: true
-  min_sdk_android: 30 #Androidの最小SDKバージョン
+  min_sdk_android: 30
   ios: true
 
 flutter_native_splash:

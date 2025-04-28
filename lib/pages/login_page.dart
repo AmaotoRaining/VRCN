@@ -92,7 +92,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
       if (result.failure != null) {
         setState(() {
-          _errorMessage = 'ログインに失敗しました。ユーザー名とパスワードを確認してください。';
+          _errorMessage = 'ログインに失敗しました。メールアドレスとパスワードを確認してください。';
         });
       } else if (result.success?.data.requiresTwoFactorAuth == true) {
         // 二段階認証が必要な場合
@@ -204,7 +204,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     TextFormField(
                       controller: _usernameController,
                       decoration: InputDecoration(
-                        labelText: 'ユーザー名',
+                        labelText: 'メールアドレス',
                         prefixIcon: const Icon(Icons.person),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -212,7 +212,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'ユーザー名を入力してください';
+                          return 'メールアドレスを入力してください';
                         }
                         return null;
                       },

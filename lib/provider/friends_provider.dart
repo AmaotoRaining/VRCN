@@ -147,3 +147,4 @@ final currentUserProvider = FutureProvider<CurrentUser>((ref) async {
   }
   return currentUser;
 });
+

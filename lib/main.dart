@@ -1,8 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
@@ -27,10 +27,9 @@ Future<void> main() async {
   // SharedPreferencesの初期化
   final prefs = await SharedPreferences.getInstance();
 
-  // .envファイルの読み込み（デバッグモードのみ）
-  if (kDebugMode) {
-    await dotenv.load();
-  }
+  // .envファイルの読み込み
+
+  await dotenv.load();
 
   runApp(
     ProviderScope(
@@ -52,49 +51,55 @@ class MainApp extends ConsumerWidget {
     // APIの初期化を開始
     ref.watch(vrchatProvider);
 
-    // 初期化中またはAPI準備中はローディング画面、完了後は通常のルーターを使用
+    // 初期化中はローディング画面、完了後は通常のルーターを使用
     if (isInitializing) {
-      return _buildLoadingApp(themeMode);
+      return _buildApp(themeMode: themeMode, home: const CustomLoading());
     }
 
     // 自動ログイン試行
     ref.watch(autoLoginProvider);
 
     // ルーターベースのアプリを構築
-    return _buildRouterApp(ref, themeMode);
-  }
-
-  /// ローディング中に表示するアプリ
-  MaterialApp _buildLoadingApp(ThemeMode themeMode) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false, // デバッグバナーを非表示
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: themeMode,
-      home: const Scaffold(body: SafeArea(child: CustomLoading())),
-    );
-  }
-
-  /// ルーターベースのメインアプリ
-  MaterialApp _buildRouterApp(WidgetRef ref, ThemeMode themeMode) {
     final router = ref.watch(routerProvider);
+    return _buildApp(themeMode: themeMode, useRouter: true, router: router);
+  }
 
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false, // デバッグバナーを非表示
-      title: 'VRChat',
+  /// アプリの共通設定を構築
+  MaterialApp _buildApp({
+    required ThemeMode themeMode,
+    Widget? home,
+    bool useRouter = false,
+    GoRouter? router,
+  }) {
+    // 共通の設定
+    appBuilder(BuildContext context, Widget? child) {
+      return MediaQuery(
+        data: MediaQuery.of(
+          context,
+        ).copyWith(textScaler: const TextScaler.linear(1.0)),
+        child: child!,
+      );
+    }
+
+    // ルーター使用かホーム画面使用かで分岐
+    if (useRouter && router != null) {
+      return MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: themeMode,
+        routerConfig: router,
+        builder: appBuilder,
+      );
+    }
+
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
-      routerConfig: router,
-      builder: (context, child) {
-        // 全体のフォントサイズを適用
-        return MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: TextScaler.linear(1.0)),
-          child: child!,
-        );
-      },
+      home: SafeArea(child: home ?? const SizedBox.shrink()),
+      builder: appBuilder,
     );
   }
 }
