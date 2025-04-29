@@ -111,22 +111,16 @@ class FriendsPage extends ConsumerWidget {
       );
     }
 
-    // RefreshIndicatorでListViewをラップして、スワイプで更新機能を追加
     return RefreshIndicator(
-      // 更新時の処理
       onRefresh: () async {
-        // friendsProviderを再読み込み
         await Future.delayed(const Duration(milliseconds: 300));
         ProviderScope.containerOf(context).refresh(friendsProvider);
       },
-      // 色をテーマに合わせる
       color: Theme.of(context).colorScheme.primary,
       backgroundColor: Theme.of(context).colorScheme.surface,
-      // スワイプ時のストロークの幅
       strokeWidth: 2.5,
-      // 子要素のListView
       child: ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(), // スクロール可能にする
+        physics: const AlwaysScrollableScrollPhysics(),
         itemCount: friends.length,
         itemBuilder: (context, index) {
           final friend = friends[index];
