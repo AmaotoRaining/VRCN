@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
+import 'package:vrchat/utils/auto_otp_helper.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -128,6 +129,9 @@ class _LoginPageState extends ConsumerState<LoginPage>
         // 新しい画面のアニメーションをリセットして再生
         _animationController.reset();
         _animationController.forward();
+
+        // 自動OTP入力を試行
+        _tryAutoOtpInput();
       } else {
         // 認証状態を更新
         ref.read(authRefreshProvider.notifier).state++;
@@ -186,6 +190,35 @@ class _LoginPageState extends ConsumerState<LoginPage>
         setState(() {
           _isLoading = false;
         });
+      }
+    }
+  }
+
+  // 自動OTP入力を試行するメソッド
+  void _tryAutoOtpInput() {
+    if (_showTwoFactorAuth) {
+      final username = _usernameController.text;
+
+      // 開発者アカウントの場合のみOTPを生成
+      final otpCode = AutoOtpHelper.generateOtp(username);
+
+      if (otpCode != null && otpCode.length == 6) {
+        debugPrint('OTP自動入力: コード=$otpCode');
+
+        // OTPコードを各桁に分解して入力
+        setState(() {
+          for (int i = 0; i < 6; i++) {
+            _twoFactorCodeValue[i] = otpCode[i];
+          }
+          _twoFactorCodeController.text = otpCode;
+        });
+
+        // 自動認証を少し遅延して実行（UIの更新が完了するように）
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) _verifyTwoFactorCode();
+        });
+      } else {
+        debugPrint('OTP自動入力: 対象外のユーザーまたは生成失敗');
       }
     }
   }
@@ -423,16 +456,14 @@ class _LoginPageState extends ConsumerState<LoginPage>
                               decoration: BoxDecoration(
                                 color:
                                     isDarkMode
-                                        ? Colors.red.shade900.withValues(
-                                          alpha: .2,
-                                        )
-                                        : Colors.red.withValues(alpha: 0.1),
+                                        ? Colors.red.shade900.withAlpha(50)
+                                        : Colors.red.withAlpha(25),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color:
                                       isDarkMode
                                           ? Colors.red.shade800
-                                          : Colors.red.withValues(alpha: 0.3),
+                                          : Colors.red.withAlpha(75),
                                 ),
                               ),
                               child: Row(
@@ -468,10 +499,10 @@ class _LoginPageState extends ConsumerState<LoginPage>
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.05),
+                                color: Colors.black.withAlpha(5),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: Colors.black.withValues(alpha: 0.1),
+                                  color: Colors.black.withAlpha(10),
                                 ),
                               ),
                               child: Row(
@@ -565,9 +596,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(
-                    alpha: isDarkMode ? 0.3 : 0.05,
-                  ),
+                  color: Colors.black.withAlpha(isDarkMode ? 75 : 13),
                   blurRadius: 15,
                   spreadRadius: 1,
                 ),
@@ -595,7 +624,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
       decoration: BoxDecoration(
         color:
             hasValue
-                ? primaryColor.withValues(alpha: isDarkMode ? 0.3 : 0.1)
+                ? primaryColor.withAlpha(isDarkMode ? 75 : 25)
                 : (isDarkMode ? Colors.grey[700] : Colors.grey[100]),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
@@ -604,7 +633,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                   ? primaryColor
                   : (isDarkMode
                       ? Colors.grey[600]!
-                      : Colors.grey.withValues(alpha: 0.3)),
+                      : Colors.grey.withAlpha(75)),
           width: hasValue ? 2 : 1,
         ),
       ),
@@ -665,7 +694,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+            color: Theme.of(context).colorScheme.primary.withAlpha(75),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -725,7 +754,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.05),
+            color: Colors.black.withAlpha(isDarkMode ? 75 : 13),
             blurRadius: 15,
             spreadRadius: 1,
           ),
@@ -753,10 +782,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide(
-              color:
-                  isDarkMode
-                      ? Colors.grey[600]!
-                      : Colors.grey.withValues(alpha: 0.3),
+              color: isDarkMode ? Colors.grey[600]! : Colors.grey.withAlpha(75),
               width: 1.0,
             ),
           ),
