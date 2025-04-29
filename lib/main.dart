@@ -13,6 +13,10 @@ import 'package:vrchat/widgets/custom_loading.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // スプラッシュ画面
+  // WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  // FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
   // システムUIの設定
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
@@ -33,17 +37,16 @@ Future<void> main() async {
   runApp(
     ProviderScope(
       overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-      child: const MainApp(),
+      child: const VRChatApp(),
     ),
   );
 }
 
-class MainApp extends ConsumerWidget {
-  const MainApp({super.key});
+class VRChatApp extends ConsumerWidget {
+  const VRChatApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final isInitializing = ref.watch(apiInitializingProvider);
     final themeMode = ref.watch(themeModeProvider);
 
