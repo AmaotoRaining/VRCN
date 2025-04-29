@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "456787667895",
+    "project_id": "null-vrchat",
+    "storage_bucket": "null-vrchat.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:456787667895:android:6d2b9bd7a1b711b0ebd632",
+        "android_client_info": {
+          "package_name": "com.nullbase.vrchat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPXuSa3ftm_5PXuZLhl5BAoMuXPdqfnaw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
