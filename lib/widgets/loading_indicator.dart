@@ -47,7 +47,6 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).colorScheme.primary;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Center(
       child: Column(
@@ -57,32 +56,10 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
           Stack(
             alignment: Alignment.center,
             children: [
-              // 影のエフェクト
-              Positioned(
-                bottom: 10,
-                child: Container(
-                  width: 60,
-                  height: 15,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-              ),
-
-              Container(
+              SizedBox(
                 width: 250,
                 height: 250,
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  boxShadow: [
-                    BoxShadow(
-                      color: primaryColor.withValues(alpha: .1),
-                      blurRadius: 15,
-                      spreadRadius: 1,
-                    ),
-                  ],
-                ),
+
                 child: Image.asset(
                   _showFirstImage
                       ? "assets/images/anomea_walk.png"
@@ -105,18 +82,6 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
               letterSpacing: 0.5,
             ),
             textAlign: TextAlign.center,
-          ),
-
-          const SizedBox(height: 20),
-
-          // プログレスインジケーター
-          SizedBox(
-            width: 180,
-            child: LinearProgressIndicator(
-              backgroundColor: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-              valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-              minHeight: 4,
-            ),
           ),
         ],
       ),

@@ -112,18 +112,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/loading',
         builder:
-            (context, state) => const Scaffold(
-              body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('ログイン状態を確認中...'),
-                  ],
-                ),
-              ),
-            ),
+            (context, state) =>
+                const Scaffold(body: Center(child: Text(('ログイン状態を確認中...')))),
       ),
       // 設定画面のルートを追加
       GoRoute(
