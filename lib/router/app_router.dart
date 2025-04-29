@@ -7,8 +7,9 @@ import 'package:vrchat/pages/friend_detail_page.dart';
 import 'package:vrchat/pages/friends_page.dart';
 import 'package:vrchat/pages/login_page.dart';
 import 'package:vrchat/pages/profile_page.dart';
-import 'package:vrchat/pages/settings_page.dart'; // 追加
+import 'package:vrchat/pages/settings_page.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
+import 'package:vrchat/widgets/custom_loading.dart';
 
 // 認証状態の変更を監視するためのStateProviderを追加
 final authRefreshProvider = StateProvider<int>((ref) => 0);
@@ -108,22 +109,11 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/', builder: (context, state) => const FriendsPage()),
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
-      // ロード画面のルートを追加
+      // ロード画面のルートを改善
       GoRoute(
         path: '/loading',
         builder:
-            (context, state) => const Scaffold(
-              body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('ログイン状態を確認中...'),
-                  ],
-                ),
-              ),
-            ),
+            (context, state) => const CustomLoading(message: 'ログイン状態を確認中...'),
       ),
       // 設定画面のルートを追加
       GoRoute(

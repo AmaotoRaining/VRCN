@@ -62,8 +62,8 @@ flutter:
     - assets/images/annobu@3x.png
     - assets/images/kazkiller@3x.png
     - assets/images/miyamoto@3x.png
-    - assets/anomea_walk.png
-    - assets/anomea_walk2.png
+    - assets/images/anomea_walk.png
+    - assets/images/anomea_walk2.png
 
 dependency_overrides:
   vrchat_dart_generated:

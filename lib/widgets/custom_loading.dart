@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/theme/app_theme.dart';
 
 class CustomLoading extends StatefulWidget {
@@ -13,20 +14,30 @@ class CustomLoading extends StatefulWidget {
 class _CustomLoadingState extends State<CustomLoading>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _opacityAnimation;
+  bool _showFirstImage = true;
 
   @override
   void initState() {
     super.initState();
+    // アニメーションコントローラーを設定
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
+      duration: const Duration(milliseconds: 200), // 0.2秒ごとに切り替え
+    );
 
-    _opacityAnimation = Tween<double>(
-      begin: 0.5,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    // リスナーを追加して画像を交互に切り替え
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        setState(() {
+          _showFirstImage = !_showFirstImage;
+        });
+        _controller.reset();
+        _controller.forward();
+      }
+    });
+
+    // アニメーションを開始
+    _controller.forward();
   }
 
   @override
@@ -37,48 +48,78 @@ class _CustomLoadingState extends State<CustomLoading>
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // ロゴアニメーション
-          FadeTransition(
-            opacity: _opacityAnimation,
-            child: Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                    blurRadius: 20,
-                    spreadRadius: 5,
+          // キャラクターアニメーション
+          Container(
+            width: 200,
+            height: 180,
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // 影のエフェクト
+                Positioned(
+                  bottom: 10,
+                  child: Container(
+                    width: 80,
+                    height: 25,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(50),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 15,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-              child: const Icon(
-                Icons.people_alt_rounded,
-                color: Colors.white,
-                size: 50,
-              ),
+                ),
+                // キャラクター画像
+                Image.asset(
+                  _showFirstImage
+                      ? "assets/images/anomea_walk.png"
+                      : "assets/images/anomea_walk2.png",
+                  width: 150,
+                  height: 150,
+                  fit: BoxFit.contain,
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 24),
+
+          const SizedBox(height: 30),
+
           // ローディングインジケーター
-          SizedBox(
-            width: 200,
+          Container(
+            width: 240,
+            height: 8,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
             child: LinearProgressIndicator(
-              backgroundColor: Colors.grey[300],
+              backgroundColor: isDarkMode ? Colors.grey[800] : Colors.grey[200],
               valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
             ),
           ),
-          const SizedBox(height: 16),
+
+          const SizedBox(height: 25),
+
           // メッセージ
           Text(
             widget.message,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+            style: GoogleFonts.notoSans(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: isDarkMode ? Colors.white : Colors.black87,
+            ),
             textAlign: TextAlign.center,
           ),
         ],

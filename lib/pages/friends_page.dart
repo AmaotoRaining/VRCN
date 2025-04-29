@@ -38,8 +38,10 @@ class FriendsPage extends ConsumerWidget {
         title: CircleAvatar(
           backgroundImage: AssetImage("assets/images/default.png"),
         ),
+        iconTheme: IconThemeData(
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
         actions: [
-          // 並び替えボタン
           IconButton(
             icon: const Icon(Icons.sort),
             tooltip: '並び替え',

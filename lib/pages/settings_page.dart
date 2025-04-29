@@ -69,7 +69,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
         backgroundColor:
             isDarkMode
                 ? const Color(0xFF1E1E1E)
-                : AppTheme.primaryColor.withValues(alpha: 0.05),
+                : AppTheme.primaryColor.withAlpha(13),
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
@@ -254,7 +254,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withAlpha(13),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -267,7 +267,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+              color: AppTheme.primaryColor.withAlpha(25),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(16),
               ),
@@ -384,7 +384,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
         decoration: BoxDecoration(
           color:
               isSelected
-                  ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                  ? AppTheme.primaryColor.withAlpha(25)
                   : isDarkMode
                   ? Colors.grey[800]
                   : Colors.grey[200],
@@ -467,7 +467,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             value: value,
             onChanged: onChanged,
             activeColor: AppTheme.primaryColor,
-            activeTrackColor: AppTheme.primaryColor.withValues(alpha: 0.3),
+            activeTrackColor: AppTheme.primaryColor.withAlpha(77),
           ),
         ],
       ),
@@ -528,7 +528,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                  color: AppTheme.primaryColor.withAlpha(25),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -546,9 +546,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
           SliderTheme(
             data: SliderThemeData(
               activeTrackColor: AppTheme.primaryColor,
-              inactiveTrackColor: AppTheme.primaryColor.withValues(alpha: 0.3),
+              inactiveTrackColor: AppTheme.primaryColor.withAlpha(77),
               thumbColor: AppTheme.primaryColor,
-              overlayColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+              overlayColor: AppTheme.primaryColor.withAlpha(51),
               trackHeight: 4,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
@@ -803,7 +803,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             ),
           ),
 
-          // 余白を減らす
           const SizedBox(height: 6),
           Row(
             mainAxisSize: MainAxisSize.min,
