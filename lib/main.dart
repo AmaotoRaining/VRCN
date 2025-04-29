@@ -28,7 +28,6 @@ Future<void> main() async {
   final prefs = await SharedPreferences.getInstance();
 
   // .envファイルの読み込み
-
   await dotenv.load();
 
   runApp(
@@ -44,7 +43,7 @@ class MainApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 必要なプロバイダーを監視
+
     final isInitializing = ref.watch(apiInitializingProvider);
     final themeMode = ref.watch(themeModeProvider);
 

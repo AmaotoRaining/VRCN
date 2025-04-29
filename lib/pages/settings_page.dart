@@ -720,10 +720,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 _buildAppIconOption(
                   context: context,
                   ref: ref,
-                  iconType: AppIconType.default_icon,
+                  iconType: AppIconType.nullbase,
                   label: 'デフォルト',
                   assetPath: 'assets/images/default.png',
-                  isSelected: settings.appIcon == AppIconType.default_icon,
+                  isSelected: settings.appIcon == AppIconType.nullbase,
                   isDarkMode: isDarkMode,
                 ),
                 _buildAppIconOption(
@@ -875,25 +875,23 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     );
 
     if (shouldLogout == true) {
-      if (shouldLogout == true) {
-        try {
-          // ログアウト処理を実行
-          final auth = await ref.read(vrchatAuthProvider.future);
-          await auth.logout();
-          ref.read(authRefreshProvider.notifier).state++;
-          if (context.mounted) {
-            context.go('/login');
-          }
-        } catch (e) {
-          // エラーハンドリング
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('ログアウト中にエラーが発生しました: ${e.toString()}'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
+      try {
+        final auth = await ref.read(vrchatAuthProvider.future);
+        await auth.logout();
+        ref.read(authRefreshProvider.notifier).state++;
+
+        if (mounted) {
+          context.go('/login');
+        }
+      } catch (e) {
+        // エラーハンドリング（mountedチェックを追加）
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('ログアウト中にエラーが発生しました: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
       }
     }

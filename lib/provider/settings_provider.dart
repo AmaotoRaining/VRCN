@@ -12,7 +12,7 @@ enum AppThemeMode {
 
 // アプリアイコンタイプの列挙型
 enum AppIconType {
-  default_icon, // デフォルトアイコン
+  nullbase,
   annobu,
   kazkiller,
   miyamoto,
@@ -20,7 +20,7 @@ enum AppIconType {
 
 // アイコン名のマッピング (iOS/Androidプラットフォーム用)
 Map<AppIconType, String> appIconNameMap = {
-  AppIconType.default_icon: 'default',
+  AppIconType.nullbase: 'default',
   AppIconType.annobu: 'annobu',
   AppIconType.kazkiller: 'kazkiller',
   AppIconType.miyamoto: 'miyamoto',
@@ -41,7 +41,7 @@ class AppSettings {
     this.notifyNewFriendRequests = true,
     this.notifyFriendOnline = true,
     this.maxFriendCache = 500,
-    this.appIcon = AppIconType.default_icon,
+    this.appIcon = AppIconType.nullbase,
   });
 
   // コピーと一部更新のためのメソッド
@@ -87,7 +87,7 @@ class AppSettings {
       appIcon:
           json['appIcon'] != null
               ? AppIconType.values[json['appIcon']]
-              : AppIconType.default_icon,
+              : AppIconType.nullbase,
     );
   }
 }
@@ -115,7 +115,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       final appIcon =
           appIconIndex < AppIconType.values.length
               ? AppIconType.values[appIconIndex]
-              : AppIconType.default_icon;
+              : AppIconType.nullbase;
 
       state = AppSettings(
         themeMode: AppThemeMode.values[themeMode],
@@ -171,7 +171,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       }
 
       // デフォルトアイコンの場合は元に戻す
-      if (iconType == AppIconType.default_icon) {
+      if (iconType == AppIconType.nullbase) {
         await FlutterDynamicIconPlus.setAlternateIconName(
           iconName: null,
           // Android用

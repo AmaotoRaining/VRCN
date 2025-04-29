@@ -121,7 +121,7 @@ class ProfilePage extends ConsumerWidget {
                 left: 20,
                 right: 20,
                 child: Container(
-                  height: 125, // 修正: 120 -> 125 (高さを増加)
+                  height: 125, 
                   decoration: BoxDecoration(
                     color: isDarkMode ? const Color(0xFF262626) : Colors.white,
                     borderRadius: BorderRadius.circular(20),

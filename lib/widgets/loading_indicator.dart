@@ -81,8 +81,8 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
                         shape: BoxShape.circle,
                         gradient: SweepGradient(
                           colors: [
-                            primaryColor.withValues(alpha:0.0),
-                            primaryColor.withValues(alpha:0.8),
+                            primaryColor.withValues(alpha: 0.0),
+                            primaryColor.withValues(alpha: 0.8),
                           ],
                           stops: const [0.7, 1.0],
                         ),
@@ -100,20 +100,19 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: primaryColor.withValues(alpha:0.3),
+                            color: primaryColor.withValues(alpha: 0.3),
                             blurRadius: 12,
                             spreadRadius: 2,
                           ),
                         ],
                       ),
-                      child: Icon(
-                        Icons.people_alt_rounded,
-                        color: primaryColor,
-                        size: 30,
+                      child: CircleAvatar(
+                        backgroundImage: AssetImage(
+                          "assets/images/default.png",
+                        ),
                       ),
                     ),
                   ),
-                  // ドットのアニメーション
                   ...List.generate(8, (index) {
                     final angle = (index / 8) * 2 * math.pi;
                     final delay = index / 8;
@@ -147,7 +146,6 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
 
           const SizedBox(height: 32),
 
-          // 脈打つメッセージ
           AnimatedBuilder(
             animation: _opacityAnimation,
             builder: (context, child) {
@@ -188,8 +186,8 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
                       width: 8,
                       height: 8 + (bounceValue * 4),
                       decoration: BoxDecoration(
-                        color: primaryColor.withValues(alpha:
-                          0.6 + bounceValue * 0.4,
+                        color: primaryColor.withValues(
+                          alpha: 0.6 + bounceValue * 0.4,
                         ),
                         borderRadius: BorderRadius.circular(4),
                       ),

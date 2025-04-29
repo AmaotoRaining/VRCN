@@ -7,7 +7,7 @@ class UserTypeHelper {
 
   /// ユーザータグからユーザータイプを判定
   static String getUserTypeText(List<String>? tags) {
-    if (tags == null) return 'Standard User';
+    if (tags == null) return 'Visitor';
 
     if (tags.contains('admin')) return 'Admin';
     if (tags.contains('system_trust_veteran')) return 'Trusted User';
@@ -23,10 +23,12 @@ class UserTypeHelper {
     if (tags == null) return Colors.grey;
 
     if (tags.contains('admin')) return Colors.red;
-    if (tags.contains('system_trust_veteran')) return Colors.deepPurpleAccent;
-    if (tags.contains('system_trust_trusted')) return Colors.orange;
-    if (tags.contains('system_trust_known')) return Colors.blue;
-    if (tags.contains('system_trust_basic')) return Colors.green;
+    if (tags.contains('system_trust_veteran')) {
+      return Colors.deepPurpleAccent; // Trusted
+    }
+    if (tags.contains('system_trust_trusted')) return Colors.orange; // Known
+    if (tags.contains('system_trust_known')) return Colors.green; // User
+    if (tags.contains('system_trust_basic')) return Colors.blue; // New User
 
     return Colors.grey; // Visitor
   }
