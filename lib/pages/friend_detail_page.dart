@@ -1195,6 +1195,7 @@ class FriendDetailPage extends ConsumerWidget {
     switch (type?.toLowerCase()) {
       case 'public':
         return Colors.green;
+      case "friends":
       case 'hidden':
         return Colors.orange;
       case 'private':
