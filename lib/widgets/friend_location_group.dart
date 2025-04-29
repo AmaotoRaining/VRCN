@@ -17,7 +17,7 @@ class FriendLocationGroup extends ConsumerWidget {
   final bool compact; // コンパクトモード設定を追加
 
   const FriendLocationGroup({
-    Key? key,
+    super.key,
     required this.locationName,
     required this.locationIcon,
     required this.friends,
@@ -27,7 +27,7 @@ class FriendLocationGroup extends ConsumerWidget {
     this.isOffline = false,
     this.isPrivate = false,
     this.compact = false, // デフォルトはコンパクトモードオフ
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

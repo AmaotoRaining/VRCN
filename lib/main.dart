@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vrchat/provider/settings_provider.dart';
+import 'package:vrchat/provider/streaming_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -52,6 +53,18 @@ class VRChatApp extends ConsumerWidget {
 
     // APIの初期化を開始
     ref.watch(vrchatProvider);
+
+    // 認証状態を監視してストリーミング接続を開始
+    final authState = ref.watch(authStateProvider);
+    authState.whenData((isLoggedIn) {
+      if (isLoggedIn) {
+        // ログイン済みならストリーミングコントローラーを使用して接続を開始
+        // Future.microtaskを使用して初期化後に接続開始
+        Future.microtask(
+          () => ref.read(streamingControllerProvider).startConnection(),
+        );
+      }
+    });
 
     // 初期化中はローディング画面、完了後は通常のルーターを使用
     if (isInitializing) {

@@ -9,7 +9,6 @@ import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/widgets/app_drawer.dart';
 import 'package:vrchat/widgets/error_container.dart';
-import 'package:vrchat/widgets/friend_list_item.dart';
 import 'package:vrchat/widgets/friend_location_group.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
@@ -26,7 +25,7 @@ class FriendsPage extends ConsumerWidget {
     final sortDirection = ref.watch(friendSortDirectionProvider);
 
     // グループ表示の設定を取得（デフォルトはtrue）
-    final groupByLocation = ref.watch(groupByLocationProvider);
+    final groupByLocation = true;
 
     final currentUserAsync = ref.watch(currentUserProvider);
 
@@ -47,18 +46,6 @@ class FriendsPage extends ConsumerWidget {
           color: Theme.of(context).colorScheme.onSurface,
         ),
         actions: [
-          // グループ表示切り替えボタン
-          IconButton(
-            icon: Icon(
-              groupByLocation ? Icons.grid_view : Icons.view_list,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-            tooltip: groupByLocation ? 'グループ表示' : 'リスト表示',
-            onPressed: () {
-              ref.read(groupByLocationProvider.notifier).state =
-                  !groupByLocation;
-            },
-          ),
           // 並び替えボタン
           IconButton(
             icon: const Icon(Icons.sort),
@@ -124,12 +111,7 @@ class FriendsPage extends ConsumerWidget {
         data: (friends) {
           // 並び替えたフレンドリストを使用
           final sortedFriends = _sortFriends(friends, sortType, sortDirection);
-          return _buildFriendsList(
-            context,
-            sortedFriends,
-            groupByLocation,
-            ref,
-          );
+          return _buildFriendsList(context, sortedFriends, ref);
         },
         loading: () => const LoadingIndicator(message: 'フレンド情報を読み込み中...'),
         error:
@@ -337,7 +319,6 @@ class FriendsPage extends ConsumerWidget {
   Widget _buildFriendsList(
     BuildContext context,
     List<LimitedUser> friends,
-    bool groupByLocation,
     WidgetRef ref,
   ) {
     if (friends.isEmpty) {
@@ -351,34 +332,17 @@ class FriendsPage extends ConsumerWidget {
 
     return RefreshIndicator(
       onRefresh: () async {
+        // 短い遅延後にデータを更新
         await Future.delayed(const Duration(milliseconds: 300));
-        ProviderScope.containerOf(context).refresh(friendsProvider);
+
+        // refreshの戻り値を適切に利用
+        return await ref.refresh(friendsProvider.future);
       },
       color: Theme.of(context).colorScheme.primary,
       backgroundColor: Theme.of(context).colorScheme.surface,
       strokeWidth: 2.5,
-      child:
-          groupByLocation
-              ? _buildGroupedFriendsList(context, friends, ref)
-              : _buildSimpleFriendsList(context, friends),
-    );
-  }
-
-  // シンプルなリスト表示（従来の表示方法）
-  Widget _buildSimpleFriendsList(
-    BuildContext context,
-    List<LimitedUser> friends,
-  ) {
-    return ListView.builder(
-      physics: const AlwaysScrollableScrollPhysics(),
-      itemCount: friends.length,
-      itemBuilder: (context, index) {
-        final friend = friends[index];
-        return FriendListItem(
-          friend: friend,
-          onTap: () => context.push('/friends/${friend.id}'),
-        );
-      },
+      // 常にグループ表示のみを使用
+      child: _buildGroupedFriendsList(context, friends, ref),
     );
   }
 
@@ -488,6 +452,3 @@ class FriendsPage extends ConsumerWidget {
     );
   }
 }
-
-// グループ表示を切り替えるためのプロバイダー
-final groupByLocationProvider = StateProvider<bool>((ref) => true);

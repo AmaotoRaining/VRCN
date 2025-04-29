@@ -19,10 +19,9 @@ class _CustomLoadingState extends State<CustomLoading>
   @override
   void initState() {
     super.initState();
-    // アニメーションコントローラーを設定
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200), // 0.2秒ごとに切り替え
+      duration: const Duration(milliseconds: 200),
     );
 
     // リスナーを追加して画像を交互に切り替え
