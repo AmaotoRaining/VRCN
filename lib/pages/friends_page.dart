@@ -24,9 +24,6 @@ class FriendsPage extends ConsumerWidget {
     final sortType = ref.watch(friendSortTypeProvider);
     final sortDirection = ref.watch(friendSortDirectionProvider);
 
-    // グループ表示の設定を取得（デフォルトはtrue）
-    final groupByLocation = true;
-
     final currentUserAsync = ref.watch(currentUserProvider);
 
     final vrchatApi = ref.watch(vrchatProvider).value;
