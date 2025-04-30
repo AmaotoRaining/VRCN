@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vrchat/provider/friends_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
-import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
 // ストリーミング接続の状態を管理するプロバイダー
@@ -85,7 +84,7 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
     case VrcStreamingEventType.friendOnline:
       final friendOnlineEvent = event as FriendOnlineEvent;
       debugPrint('フレンドオンライン: ${friendOnlineEvent.user.displayName}');
-      debugPrint('詳細: ${_formatEventDetails(friendOnlineEvent)}');
+      debugPrint('詳細: ${jsonEncode(event)}');
 
       ref.read(friendStateUpdaterProvider)(
         friendOnlineEvent.userId,
@@ -105,7 +104,7 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
       final friendLocationEvent = event as FriendLocationEvent;
       debugPrint('フレンド位置変更: ${friendLocationEvent.user.displayName}');
       debugPrint('ロケーション: ${friendLocationEvent.location}');
-      debugPrint('詳細: ${_formatEventDetails(friendLocationEvent)}');
+      debugPrint('詳細: ${jsonEncode(event)}');
 
       ref.read(friendLocationUpdaterProvider)(
         friendLocationEvent.userId,
@@ -113,18 +112,12 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
         null,
       );
 
-      if (friendLocationEvent.location != null &&
-          friendLocationEvent.location!.startsWith('wrld_')) {
-        final worldId = friendLocationEvent.location!.split(':')[0];
-        _fetchWorldNameIfNeeded(ref, worldId);
-      }
-
     case VrcStreamingEventType.friendUpdate:
       final friendUpdateEvent = event as FriendUpdateEvent;
       debugPrint('フレンド情報更新: ${friendUpdateEvent.user.displayName}');
       debugPrint('ステータス: ${friendUpdateEvent.user.status}');
       debugPrint('ステータス説明: ${friendUpdateEvent.user.statusDescription}');
-      debugPrint('詳細: ${_formatEventDetails(friendUpdateEvent)}');
+      debugPrint('詳細: ${jsonEncode(event)}');
 
       ref.read(friendInfoUpdaterProvider)(
         friendUpdateEvent.userId,
@@ -135,14 +128,14 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
     case VrcStreamingEventType.friendAdd:
       final friendAddEvent = event as FriendAddEvent;
       debugPrint('フレンド追加: ${friendAddEvent.user.displayName}');
-      debugPrint('詳細: ${_formatEventDetails(friendAddEvent)}');
+      debugPrint('詳細: ${jsonEncode(event)}');
 
       ref.read(friendAddHandlerProvider)(friendAddEvent.userId);
 
     case VrcStreamingEventType.friendDelete:
       final friendDeleteEvent = event as FriendDeleteEvent;
       debugPrint('フレンド削除: ${friendDeleteEvent.userId}');
-      debugPrint('詳細: ${_formatEventDetails(friendDeleteEvent)}');
+      debugPrint('詳細: ${jsonEncode(event)}');
 
       ref.read(friendDeleteHandlerProvider)(friendDeleteEvent.userId);
 
@@ -150,31 +143,20 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
       final notificationEvent = event as NotificationReceivedEvent;
       debugPrint('通知受信: タイプ=${notificationEvent.notification.type}');
       debugPrint('送信者: ${notificationEvent.notification.senderUserId}');
-      debugPrint('詳細: ${_formatEventDetails(notificationEvent)}');
+      debugPrint('詳細: ${jsonEncode(event)}');
 
       ref.read(notificationHandlerProvider)(notificationEvent.notification);
 
     case VrcStreamingEventType.userUpdate:
       debugPrint('ユーザー更新イベント');
-      debugPrint('詳細: ${_formatEventDetails(event)}');
+      debugPrint('詳細: ${jsonEncode(event)}');
 
     case VrcStreamingEventType.userLocation:
       try {
         final userLocationEvent = event as UserLocationEvent;
 
-        // worldIdを安全に抽出する
-        String? worldId;
-        if (userLocationEvent.location.startsWith('wrld_')) {
-          worldId = userLocationEvent.location.split(':').first;
-        }
-
         debugPrint('ユーザー位置変更イベント: ${userLocationEvent.userId}');
         debugPrint('新しい位置: ${userLocationEvent.location}');
-
-        // ワールド情報の取得
-        if (worldId != null) {
-          _fetchWorldNameIfNeeded(ref, worldId);
-        }
       } catch (e) {
         // パースエラーの場合は詳細をログに記録
         debugPrint('UserLocationEventの処理中にエラーが発生: $e');
@@ -184,7 +166,7 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
     case VrcStreamingEventType.error:
       final errorEvent = event as ErrorEvent;
       debugPrint('エラーイベント: ${errorEvent.message}');
-      debugPrint('詳細: ${_formatEventDetails(errorEvent)}');
+      debugPrint('詳細: ${jsonEncode(event)}');
 
     case VrcStreamingEventType.unknown:
       final unknownEvent = event as UnknownEvent;
@@ -196,7 +178,7 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
       try {
         debugPrint('その他イベント: ${event.type}');
         if (event is! UnknownEvent) {
-          debugPrint('詳細: ${_formatEventDetails(event)}');
+          debugPrint('詳細: ${jsonEncode(event)}');
         } else {
           debugPrint('未知のイベント形式: ${event.rawString}');
         }
@@ -206,97 +188,4 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
   }
 
   debugPrint('=========================================');
-}
-
-// イベント詳細をフォーマットして文字列にする
-String _formatEventDetails(dynamic event) {
-  try {
-    // eventをJSONに変換しようとする
-    final eventMap = _eventToMap(event);
-    // 整形してJSON文字列に戻す
-    return const JsonEncoder.withIndent('  ').convert(eventMap);
-  } catch (e) {
-    // 変換に失敗した場合は基本的な文字列表現を返す
-    return event.toString();
-  }
-}
-
-// イベントをMap形式に変換する補助メソッド
-Map<String, dynamic> _eventToMap(dynamic event) {
-  final map = <String, dynamic>{'type': event.type.toString()};
-
-  // イベントタイプごとに必要な情報を追加
-  switch (event.type) {
-    case VrcStreamingEventType.friendOnline:
-      final e = event as FriendOnlineEvent;
-      map['userId'] = e.userId;
-
-    case VrcStreamingEventType.friendOffline:
-      final e = event as FriendOfflineEvent;
-      map['userId'] = e.userId;
-
-    case VrcStreamingEventType.friendLocation:
-      final e = event as FriendLocationEvent;
-      map['userId'] = e.userId;
-      map['location'] = e.location;
-
-    case VrcStreamingEventType.friendUpdate:
-      final e = event as FriendUpdateEvent;
-      map['userId'] = e.userId;
-      map['user'] = {
-        'status': e.user.status.toString(),
-        'statusDescription': e.user.statusDescription,
-        'displayName': e.user.displayName,
-        'currentAvatarImageUrl': e.user.currentAvatarImageUrl,
-      };
-
-    case VrcStreamingEventType.notificationReceived:
-      final e = event as NotificationReceivedEvent;
-      map['notification'] = {
-        'id': e.notification.id,
-        'type': e.notification.type.toString(),
-        'senderUserId': e.notification.senderUserId,
-        'receiverUserId': e.notification.receiverUserId,
-        'message': e.notification.message,
-        'created_at': e.notification.createdAt.toIso8601String(),
-      };
-
-    // その他のイベントタイプも必要に応じて追加
-  }
-
-  return map;
-}
-
-// ワールド名を必要に応じて取得する補助メソッド
-Future<void> _fetchWorldNameIfNeeded(ref, String worldId) async {
-  try {
-    // 既にキャッシュされているか確認
-    final cachedNames = ref.read(worldNamesProvider);
-    if (cachedNames.containsKey(worldId)) return;
-
-    // キャッシュにない場合は、ワールド情報を取得
-    final vrchatAsync = ref.read(vrchatWorldProvider);
-    final api = vrchatAsync.value;
-    if (api == null) return;
-
-    // ワールド情報をAPIから取得
-    final worldResponse = await api.getWorld(worldId: worldId);
-    if (worldResponse.data != null) {
-      final world = worldResponse.data!;
-
-      // 取得したワールド情報もログに出力
-      debugPrint('ワールド情報取得成功: $worldId');
-      debugPrint('ワールド名: ${world.name ?? "名称なし"}');
-
-      // ワールド名をキャッシュに追加（型安全に修正）
-      ref.read(worldNamesProvider.notifier).update((state) {
-        // 新しいMapを作成して返す
-        final newState = Map<String, String>.from(state);
-        newState[worldId] = world.name ?? 'Unknown World';
-        return newState;
-      });
-    }
-  } catch (e) {
-    debugPrint('ワールド情報の取得に失敗: $e');
-  }
 }

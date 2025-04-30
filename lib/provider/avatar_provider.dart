@@ -12,10 +12,10 @@ final ownAvatarProvider = FutureProvider.family<Avatar, String>((
   ref,
   userId,
 ) async {
-  final worldsApi = ref.watch(vrchatAvatarProvider).value;
-  if (worldsApi == null) {
+  final avatarApi = ref.watch(vrchatAvatarProvider).value;
+  if (avatarApi == null) {
     throw Exception('アバター情報を取得できませんでした');
   }
-  final response = await worldsApi.getOwnAvatar(userId: userId);
+  final response = await avatarApi.getOwnAvatar(userId: userId);
   return response.data!;
 });
