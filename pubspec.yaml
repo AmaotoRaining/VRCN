@@ -16,7 +16,7 @@ dependencies:
 
   # アプリ情報
   package_info_plus: ^8.0.0
-  
+
   shared_preferences: ^2.5.3
   flutter_riverpod: ^2.6.1
   cached_network_image: ^3.4.1
@@ -58,14 +58,10 @@ flutter:
   uses-material-design: true
 
   assets:
-    - .env
-    - assets/images/splash.png
-    - assets/images/default.png
-    - assets/images/annobu@3x.png
-    - assets/images/kazkiller@3x.png
-    - assets/images/miyamoto@3x.png
-    - assets/images/anomea_walk.png
-    - assets/images/anomea_walk2.png
+    - path: .env
+      flavor:
+      - debug
+    - assets/images/
 
 dependency_overrides:
   vrchat_dart_generated:
