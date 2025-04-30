@@ -103,9 +103,7 @@ class FriendLocationGroup extends ConsumerWidget {
                     height: 48,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.grey.withValues(alpha: .3),
-                      ),
+                      border: Border.all(color: Colors.grey.withValues(alpha: .3)),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(7),

@@ -159,8 +159,27 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
       debugPrint('詳細: ${_formatEventDetails(event)}');
 
     case VrcStreamingEventType.userLocation:
-      debugPrint('ユーザー位置変更イベント');
-      debugPrint('詳細: ${_formatEventDetails(event)}');
+      try {
+        final userLocationEvent = event as UserLocationEvent;
+
+        // worldIdを安全に抽出する
+        String? worldId;
+        if (userLocationEvent.location.startsWith('wrld_')) {
+          worldId = userLocationEvent.location.split(':').first;
+        }
+
+        debugPrint('ユーザー位置変更イベント: ${userLocationEvent.userId}');
+        debugPrint('新しい位置: ${userLocationEvent.location}');
+
+        // ワールド情報の取得
+        if (worldId != null) {
+          _fetchWorldNameIfNeeded(ref, worldId);
+        }
+      } catch (e) {
+        // パースエラーの場合は詳細をログに記録
+        debugPrint('UserLocationEventの処理中にエラーが発生: $e');
+        debugPrint('生データ: ${event is UnknownEvent ? event.rawString : "不明"}');
+      }
 
     case VrcStreamingEventType.error:
       final errorEvent = event as ErrorEvent;
@@ -173,12 +192,16 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
       debugPrint('生データ: ${unknownEvent.rawString}');
 
     default:
-      // その他のイベントは詳細をログに記録
+      // その他のイベントタイプが安全に処理できるよう保護
       try {
         debugPrint('その他イベント: ${event.type}');
-        debugPrint('詳細: ${_formatEventDetails(event)}');
+        if (event is! UnknownEvent) {
+          debugPrint('詳細: ${_formatEventDetails(event)}');
+        } else {
+          debugPrint('未知のイベント形式: ${event.rawString}');
+        }
       } catch (e) {
-        debugPrint('イベント情報の取得に失敗: $e');
+        debugPrint('イベント処理中にエラーが発生: $e');
       }
   }
 
