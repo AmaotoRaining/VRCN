@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
 import 'package:vrchat/utils/auto_otp_helper.dart';
@@ -361,17 +362,14 @@ class _LoginPageState extends ConsumerState<LoginPage>
 
                             const SizedBox(height: 16),
 
-                            // 「パスワードを忘れた」リンク
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
                                 onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('この機能は現在実装中です'),
-                                      duration: Duration(seconds: 2),
-                                    ),
+                                  final url = Uri.parse(
+                                    'https://vrchat.com/home/password',
                                   );
+                                  launchUrl(url);
                                 },
                                 style: TextButton.styleFrom(
                                   foregroundColor: primaryColor,
@@ -542,11 +540,12 @@ class _LoginPageState extends ConsumerState<LoginPage>
   // OTP入力フィールドを構築
   Widget _buildOtpInputField() {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 非表示のマスターフィールド（ペースト用）
+        // 非表示のマスターフィールド（これまでと同じ）
         Offstage(
           child: TextField(
             controller: _hiddenController,
@@ -601,6 +600,25 @@ class _LoginPageState extends ConsumerState<LoginPage>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: List.generate(6, _buildDigitBox),
+            ),
+          ),
+        ),
+
+        // ペーストボタンを追加
+        Padding(
+          padding: const EdgeInsets.only(top: 20.0),
+          child: Center(
+            child: TextButton.icon(
+              onPressed: _pasteFromClipboard,
+              icon: const Icon(Icons.content_paste_rounded),
+              label: Text('コードをペースト', style: GoogleFonts.notoSans()),
+              style: TextButton.styleFrom(
+                foregroundColor: primaryColor,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+              ),
             ),
           ),
         ),
@@ -818,5 +836,41 @@ class _LoginPageState extends ConsumerState<LoginPage>
         validator: validator,
       ),
     );
+  }
+
+  // クリップボードからのペースト機能を追加
+  Future<void> _pasteFromClipboard() async {
+    // クリップボードからテキストを取得
+    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+    final text = clipboardData?.text;
+
+    if (text != null && text.isNotEmpty) {
+      // 数字のみを抽出
+      final digitsOnly = text.replaceAll(RegExp(r'[^0-9]'), '');
+
+      if (digitsOnly.isNotEmpty) {
+        // 各桁に値を設定
+        setState(() {
+          for (var i = 0; i < 6; i++) {
+            if (i < digitsOnly.length) {
+              _twoFactorCodeValue[i] = digitsOnly[i];
+            } else {
+              _twoFactorCodeValue[i] = '';
+            }
+          }
+        });
+
+        // 6桁のコードを変数に設定
+        if (digitsOnly.length >= 6) {
+          final otpCode = digitsOnly.substring(0, 6);
+          _twoFactorCodeController.text = otpCode;
+
+          // 少し遅延してから認証処理を実行
+          Future.delayed(const Duration(milliseconds: 300), () {
+            if (mounted) _verifyTwoFactorCode();
+          });
+        }
+      }
+    }
   }
 }

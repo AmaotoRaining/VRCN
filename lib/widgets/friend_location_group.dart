@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/widgets/friend_list_item.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
@@ -14,7 +16,9 @@ class FriendLocationGroup extends ConsumerWidget {
   final String? worldId;
   final bool isOffline;
   final bool isPrivate;
-  final bool compact; // コンパクトモード設定を追加
+  final bool isTraveling;
+  final String? travelingToWorldId;
+  final bool compact;
 
   const FriendLocationGroup({
     super.key,
@@ -26,7 +30,9 @@ class FriendLocationGroup extends ConsumerWidget {
     this.worldId,
     this.isOffline = false,
     this.isPrivate = false,
-    this.compact = false, // デフォルトはコンパクトモードオフ
+    this.isTraveling = false,
+    this.travelingToWorldId,
+    this.compact = false,
   });
 
   @override
@@ -34,41 +40,50 @@ class FriendLocationGroup extends ConsumerWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = isDarkMode ? Colors.grey[850] : Colors.grey[100];
 
-    // ワールド名を取得（worldIdがあり、プライベートでもオフラインでもない場合）
+    // VRChat APIのインスタンスからヘッダー情報を取得
+    final vrchatApi = ref.watch(vrchatProvider).value;
+    final headers = <String, String>{
+      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
+    };
+
+    // 使用するワールドIDを決定
+    final effectiveWorldId = isTraveling ? travelingToWorldId : worldId;
+
+    // ワールド情報を取得
     final worldNameAsync =
-        (!isPrivate && !isOffline && worldId != null)
-            ? ref.watch(worldDetailProvider(worldId!))
+        (!isPrivate && !isOffline && effectiveWorldId != null)
+            ? ref.watch(worldDetailProvider(effectiveWorldId))
             : null;
 
-    // ロケーション名（ワールド名があれば表示）
-    final displayName =
-        worldNameAsync?.maybeWhen(
-          data: (world) => world.name,
-          orElse: () => locationName,
-        ) ??
-        locationName;
+    // ワールド情報の展開
+    var displayName = locationName;
+    String? thumbnailUrl;
 
-    // ステータステキスト（プライベート・オフライン・オンラインで表示を変える）
+    worldNameAsync?.whenData((world) {
+      displayName = world.name;
+      thumbnailUrl = world.thumbnailImageUrl;
+    });
+
+    // ステータステキスト
     String statusText;
     if (isPrivate) {
       statusText = '${friends.length}人がプライベート中';
     } else if (isOffline) {
       statusText = '${friends.length}人がオフライン';
+    } else if (isTraveling) {
+      statusText = '${friends.length}人が移動中';
     } else {
       statusText = '${friends.length}人が滞在中';
     }
 
     return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 8,
-      ), // 標準のマージン
-      elevation: 2, // 少し控えめな影に
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ロケーションのヘッダー
+          // ヘッダー部分（ワールド情報とサムネイル）
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -80,8 +95,62 @@ class FriendLocationGroup extends ConsumerWidget {
             ),
             child: Row(
               children: [
-                Icon(locationIcon, color: iconColor, size: 20),
-                const SizedBox(width: 8),
+                // ワールドアイコンまたはサムネイル
+                if (thumbnailUrl != null && !isPrivate && !isOffline) ...[
+                  // ワールドサムネイル表示
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.grey.withValues(alpha: .3),
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(7),
+                      child: CachedNetworkImage(
+                        imageUrl: thumbnailUrl!,
+                        httpHeaders: headers,
+                        fit: BoxFit.cover,
+                        placeholder:
+                            (context, url) => Container(
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[700]
+                                      : Colors.grey[300],
+                              child: const Icon(
+                                Icons.image,
+                                color: Colors.white54,
+                              ),
+                            ),
+                        errorWidget:
+                            (context, url, error) => Container(
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[700]
+                                      : Colors.grey[300],
+                              child: Icon(locationIcon, color: iconColor),
+                            ),
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  // 通常のアイコン表示
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: iconColor.withValues(alpha: 0.1),
+                    ),
+                    child: Icon(locationIcon, color: iconColor, size: 20),
+                  ),
+                ],
+
+                const SizedBox(width: 12),
+
+                // ワールド名と人数
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,7 +179,7 @@ class FriendLocationGroup extends ConsumerWidget {
             ),
           ),
 
-          // このロケーションにいるフレンドのリスト
+          // フレンドリスト部分
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -120,7 +189,7 @@ class FriendLocationGroup extends ConsumerWidget {
               return FriendListItem(
                 friend: friend,
                 onTap: () => onTapFriend(friend),
-                compact: compact, // 親から受け取ったcompact設定を渡す
+                compact: compact,
               );
             },
           ),

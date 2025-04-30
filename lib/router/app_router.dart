@@ -1,19 +1,24 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vrchat/pages/friend_detail_page.dart';
 import 'package:vrchat/pages/friends_page.dart';
 import 'package:vrchat/pages/login_page.dart';
 import 'package:vrchat/pages/profile_page.dart';
-import 'package:vrchat/pages/settings_page.dart'; // 追加
+import 'package:vrchat/pages/settings_page.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
+import 'package:vrchat/widgets/custom_loading.dart';
 
-// 認証状態の変更を監視するためのStateProviderを追加
+// スプラッシュ画面が表示されているかを追跡
+final splashActiveProvider = StateProvider<bool>((ref) => true);
+
+// 認証状態の変更を監視するためのStateProvider
 final authRefreshProvider = StateProvider<int>((ref) => 0);
 
-// 自動ログイン状態を追跡するプロバイダー（初期値: 処理中）
+// 自動ログイン状態を追跡するプロバイダー
 final autoLoginStateProvider = StateProvider<AutoLoginState>(
   (ref) => AutoLoginState.inProgress,
 );
@@ -25,8 +30,25 @@ enum AutoLoginState {
   failed, // 自動ログイン失敗
 }
 
+// スプラッシュ画面を削除するプロバイダー（一定時間後に強制削除）
+final removeSplashProvider = Provider<void>((ref) {
+  // スプラッシュ画面を削除するタイマーを設定（最大5秒後）
+  if (ref.read(splashActiveProvider)) {
+    Future.delayed(const Duration(seconds: 5), () {
+      // スプラッシュ画面をまだ削除していなければ削除
+      if (ref.read(splashActiveProvider)) {
+        FlutterNativeSplash.remove();
+        ref.read(splashActiveProvider.notifier).state = false;
+      }
+    });
+  }
+});
+
 // 認証状態を明示的に提供するプロバイダー
 final authStateProvider = FutureProvider<bool>((ref) async {
+  // スプラッシュ削除プロバイダーを監視
+  ref.watch(removeSplashProvider);
+
   // 認証状態更新用トリガーを監視（ログイン/ログアウト時に変更）
   ref.watch(authRefreshProvider);
 
@@ -53,10 +75,23 @@ final performAutoLoginProvider = FutureProvider<void>((ref) async {
     } else {
       ref.read(autoLoginStateProvider.notifier).state = AutoLoginState.failed;
     }
+
+    // 自動ログイン処理が完了したら、スプラッシュ画面を確実に削除
+    _removeSplashScreen(ref);
   } catch (e) {
     ref.read(autoLoginStateProvider.notifier).state = AutoLoginState.failed;
+    // エラー時もスプラッシュ画面を削除
+    _removeSplashScreen(ref);
   }
 });
+
+// スプラッシュ画面を削除するヘルパー関数
+void _removeSplashScreen(Ref ref) {
+  if (ref.read(splashActiveProvider)) {
+    FlutterNativeSplash.remove();
+    ref.read(splashActiveProvider.notifier).state = false;
+  }
+}
 
 final routerProvider = Provider<GoRouter>((ref) {
   final isInitializing = ref.watch(apiInitializingProvider);
@@ -90,11 +125,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         data: (isLoggedIn) {
           // ログインしていない場合はログイン画面へ
           if (!isLoggedIn && !isLoginRoute) {
+            FlutterNativeSplash.remove();
             return '/login';
           }
 
           // ログイン済みでログイン画面にいる場合のみホーム画面へ
           if (isLoggedIn && isLoginRoute) {
+            FlutterNativeSplash.remove();
             return '/';
           }
 
@@ -111,9 +148,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // ロード画面のルートを追加
       GoRoute(
         path: '/loading',
-        builder:
-            (context, state) =>
-                const Scaffold(body: Center(child: Text('ログイン状態を確認中...'))),
+        builder: (context, state) => const CustomLoading(),
       ),
       // 設定画面のルートを追加
       GoRoute(

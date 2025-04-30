@@ -17,8 +17,7 @@
     <meta-data android:name="flutterEmbedding" android:value="2" />
 
     <!-- flutter_dynamic_icon_plus -->
-
-    <!-- <activity-alias android:label="VRCN" android:icon="@mipmap/ic_launcher_1" android:roundIcon="@mipmap/ic_launcher_1" android:name=".annobu" android:exported="true" android:enabled="false" android:targetActivity=".MainActivity">
+-alias android:label="VRCN" android:icon="@mipmap/ic_launcher_1" android:roundIcon="@mipmap/ic_launcher_1" android:name=".annobu" android:exported="true" android:enabled="false" android:targetActivity=".MainActivity">
 
       <meta-data android:name="io.flutter.embedding.android.NormalTheme" android:resource="@style/NormalTheme" />
 
