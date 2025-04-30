@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/provider/Instance_provider.dart';
 import 'package:vrchat/provider/friends_provider.dart';
 import 'package:vrchat/provider/group_provider.dart';
+import 'package:vrchat/provider/invite_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -676,13 +677,18 @@ class FriendDetailPage extends ConsumerWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('準備中: この機能は開発中です')),
+                    final inviteMyselfTo = ref.watch(
+                      inviteMyselfProvider(
+                        InviteParams(
+                          worldId: user.worldId!,
+                          instanceId: user.instanceId!,
+                        ),
+                      ),
                     );
                   },
                   icon: const Icon(Icons.login),
                   label: Text(
-                    '招待を送信',
+                    '自分に招待を送信',
                     style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(

@@ -3,6 +3,11 @@ import 'package:meta/meta.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
+final vrchatInstanceProvider = FutureProvider((ref) async {
+  final rawApi = await ref.watch(vrchatRawApiProvider);
+  return rawApi.getInstancesApi();
+});
+
 // インスタンス情報のリクエストパラメータ用クラス
 @immutable
 class InstanceParams {
@@ -22,11 +27,6 @@ class InstanceParams {
   @override
   int get hashCode => worldId.hashCode ^ instanceId.hashCode;
 }
-
-final vrchatInstanceProvider = FutureProvider((ref) async {
-  final rawApi = await ref.watch(vrchatRawApiProvider);
-  return rawApi.getInstancesApi();
-});
 
 // インスタンス情報 - パラメータクラスを使用
 final instanceDetailProvider = FutureProvider.family<Instance, InstanceParams>((

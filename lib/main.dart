@@ -45,8 +45,10 @@ Future<void> main() async {
   // SharedPreferencesの初期化
   final prefs = await SharedPreferences.getInstance();
 
-  // .envファイルの読み込み
-  await dotenv.load();
+  // デバッグ用.envファイルの読み込み
+  if (kDebugMode) {
+    await dotenv.load();
+  }
 
   runApp(
     ProviderScope(

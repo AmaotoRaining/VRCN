@@ -132,7 +132,9 @@ class _LoginPageState extends ConsumerState<LoginPage>
         await _animationController.forward();
 
         // 自動OTP入力を試行
-        _tryAutoOtpInput();
+        if (kDebugMode) {
+          _tryAutoOtpInput();
+        }
       } else {
         // 認証状態を更新
         ref.read(authRefreshProvider.notifier).state++;
