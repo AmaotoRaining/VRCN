@@ -27,7 +27,7 @@ class FriendListItem extends ConsumerWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     // User-Agent ヘッダーの定義
-    final Map<String, String> headers = {
+    final headers = <String, String>{
       'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
     };
 

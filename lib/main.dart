@@ -27,7 +27,7 @@ Future<void> main() async {
 
   if (!kDebugMode) {
     // Firebase Analysis
-    FirebaseAnalytics.instance.logAppOpen();
+    await FirebaseAnalytics.instance.logAppOpen();
   }
 
   // システムUIの設定
@@ -99,7 +99,7 @@ class VRChatApp extends ConsumerWidget {
     GoRouter? router,
   }) {
     // 共通の設定
-    appBuilder(BuildContext context, Widget? child) {
+    MediaQuery appBuilder(BuildContext context, Widget? child) {
       return MediaQuery(
         data: MediaQuery.of(
           context,

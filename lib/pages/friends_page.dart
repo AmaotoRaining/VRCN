@@ -36,8 +36,8 @@ class FriendsPage extends ConsumerWidget {
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         centerTitle: true,
-        title: CircleAvatar(
-          backgroundImage: AssetImage("assets/images/default.png"),
+        title: const CircleAvatar(
+          backgroundImage: AssetImage('assets/images/default.png'),
         ),
         iconTheme: IconThemeData(
           color: Theme.of(context).colorScheme.onSurface,
@@ -66,7 +66,7 @@ class FriendsPage extends ConsumerWidget {
                                   currentUser.currentAvatarThumbnailImageUrl,
                                   headers: headers,
                                 )
-                                : const AssetImage("assets/images/default.png")
+                                : const AssetImage('assets/images/default.png')
                                     as ImageProvider,
                       ),
                       onPressed: () => Scaffold.of(context).openDrawer(),
@@ -90,12 +90,12 @@ class FriendsPage extends ConsumerWidget {
                       onPressed: () => Scaffold.of(context).openDrawer(),
                     ),
                 error:
-                    (_, __) => IconButton(
+                    (_, _) => IconButton(
                       icon: const CircleAvatar(
                         radius: 16,
                         backgroundColor: Colors.grey,
                         backgroundImage: AssetImage(
-                          "assets/images/default.png",
+                          'assets/images/default.png',
                         ),
                       ),
                       onPressed: () => Scaffold.of(context).openDrawer(),
@@ -252,7 +252,7 @@ class FriendsPage extends ConsumerWidget {
     FriendSortType sortType,
     SortDirection direction,
   ) {
-    List<LimitedUser> sortedList = List.from(friends);
+    final sortedList = List<LimitedUser>.from(friends);
 
     switch (sortType) {
       case FriendSortType.status:
@@ -265,7 +265,6 @@ class FriendsPage extends ConsumerWidget {
               ? comparison
               : -comparison;
         });
-        break;
 
       case FriendSortType.name:
         // 名前でソート
@@ -275,7 +274,6 @@ class FriendsPage extends ConsumerWidget {
               ? comparison
               : -comparison;
         });
-        break;
 
       case FriendSortType.lastLogin:
         // 最終ログイン順でソート
@@ -289,7 +287,6 @@ class FriendsPage extends ConsumerWidget {
               ? comparison
               : -comparison;
         });
-        break;
     }
 
     return sortedList;
@@ -350,12 +347,12 @@ class FriendsPage extends ConsumerWidget {
     WidgetRef ref,
   ) {
     // フレンドをロケーションごとにグループ化
-    final Map<String, List<LimitedUser>> friendGroups = {};
+    final friendGroups = <String, List<LimitedUser>>{};
 
     // オンライン/オフラインでまず大きく分ける
-    final List<LimitedUser> offlineFriends = [];
-    final List<LimitedUser> privateFriends = [];
-    final List<LimitedUser> onlineFriends = [];
+    final offlineFriends = <LimitedUser>[];
+    final privateFriends = <LimitedUser>[];
+    final onlineFriends = <LimitedUser>[];
 
     for (final friend in friends) {
       if (friend.location == null || friend.location == 'offline') {
@@ -391,7 +388,7 @@ class FriendsPage extends ConsumerWidget {
         );
 
     // グループ化したフレンドリストを構築
-    final List<Widget> groupWidgets = [];
+    final groupWidgets = <Widget>[];
 
     // オンラインワールドグループを人数順に表示（パブリックグループ）
     for (final location in sortedLocations) {

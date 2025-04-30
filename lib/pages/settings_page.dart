@@ -73,7 +73,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
@@ -213,9 +213,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  onPressed: () {
-                    _showLogoutConfirmation();
-                  },
+                  onPressed: _showLogoutConfirmation,
                 ),
               ),
 
@@ -248,7 +246,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
   }) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: isDarkMode ? const Color(0xFF262626) : Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -809,7 +807,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isSelected)
-                Icon(
+                const Icon(
                   Icons.check_circle,
                   size: 16,
                   color: AppTheme.primaryColor,

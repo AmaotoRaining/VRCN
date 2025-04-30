@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meta/meta.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
 // インスタンス情報のリクエストパラメータ用クラス
+@immutable
 class InstanceParams {
   final String worldId;
   final String instanceId;

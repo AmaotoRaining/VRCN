@@ -13,7 +13,7 @@ class LoadingIndicator extends StatefulWidget {
 class _LoadingIndicatorState extends State<LoadingIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  bool _showFirstImage = true;
+  var _showFirstImage = true;
 
   @override
   void initState() {
@@ -62,8 +62,8 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
 
                 child: Image.asset(
                   _showFirstImage
-                      ? "assets/images/anomea_walk.png"
-                      : "assets/images/anomea_walk2.png",
+                      ? 'assets/images/anomea_walk.png'
+                      : 'assets/images/anomea_walk2.png',
                   fit: BoxFit.contain,
                 ),
               ),

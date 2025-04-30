@@ -98,7 +98,7 @@ class FriendDetailPage extends ConsumerWidget {
                     }
                   },
                   loading: () => _buildGradientBackground(statusColor),
-                  error: (_, __) => _buildGradientBackground(statusColor),
+                  error: (_, _) => _buildGradientBackground(statusColor),
                 ),
 
                 Column(
@@ -112,11 +112,11 @@ class FriendDetailPage extends ConsumerWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(color: statusColor, width: 4),
-                          boxShadow: [
+                          boxShadow: const [
                             BoxShadow(
                               color: Colors.black26,
                               blurRadius: 15,
-                              offset: const Offset(0, 5),
+                              offset: Offset(0, 5),
                             ),
                           ],
                         ),
@@ -175,10 +175,10 @@ class FriendDetailPage extends ConsumerWidget {
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         shadows: [
-                          Shadow(
+                          const Shadow(
                             color: Colors.black26,
                             blurRadius: 5,
-                            offset: const Offset(0, 2),
+                            offset: Offset(0, 2),
                           ),
                         ],
                       ),
@@ -451,7 +451,7 @@ class FriendDetailPage extends ConsumerWidget {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       ),
-                  error: (_, __) => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
                 ),
                 const SizedBox(height: 32),
               ],
@@ -847,7 +847,7 @@ class FriendDetailPage extends ConsumerWidget {
             children: [_buildLoadingView(isDarkMode)],
           ),
       error:
-          (_, __) => Container(
+          (_, _) => Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color:
@@ -1087,7 +1087,7 @@ class FriendDetailPage extends ConsumerWidget {
 
   Widget _buildErrorView(String errorMessage, bool isDarkMode) {
     // プライベートロケーションのエラーを検出
-    final bool isPrivateLocation =
+    final isPrivateLocation =
         errorMessage.toLowerCase().contains('private') ||
         errorMessage.toLowerCase().contains('permission') ||
         errorMessage.toLowerCase().contains('401') ||
@@ -1195,7 +1195,7 @@ class FriendDetailPage extends ConsumerWidget {
     switch (type?.toLowerCase()) {
       case 'public':
         return Colors.green;
-      case "friends":
+      case 'friends':
       case 'hidden':
         return Colors.orange;
       case 'private':

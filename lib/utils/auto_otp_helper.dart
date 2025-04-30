@@ -37,7 +37,7 @@ class AutoOtpHelper {
       // OTPコードを生成（TOTPアルゴリズム使用）
       final otpCode = OTP.generateTOTPCodeString(
         secretKey,
-        DateTime.now().millisecondsSinceEpoch,
+        DateTime.timestamp().millisecondsSinceEpoch,
         algorithm: Algorithm.SHA1,
         isGoogle: true,
       );

@@ -21,7 +21,7 @@ class ProfilePage extends ConsumerWidget {
     final vrchatApi = ref.watch(vrchatProvider).value;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    final Map<String, String> headers = {
+    final headers = <String, String>{
       'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
     };
 
@@ -121,7 +121,7 @@ class ProfilePage extends ConsumerWidget {
                 left: 20,
                 right: 20,
                 child: Container(
-                  height: 125, 
+                  height: 125,
                   decoration: BoxDecoration(
                     color: isDarkMode ? const Color(0xFF262626) : Colors.white,
                     borderRadius: BorderRadius.circular(20),
@@ -157,7 +157,6 @@ class ProfilePage extends ConsumerWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                // ignore: deprecated_member_use
                                 '@${user.username}',
                                 style: GoogleFonts.notoSans(
                                   fontSize: 14,
@@ -225,7 +224,7 @@ class ProfilePage extends ConsumerWidget {
               Positioned(
                 bottom: 0,
                 left: 40,
-                child: Container(
+                child: DecoratedBox(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
@@ -554,7 +553,7 @@ class ProfilePage extends ConsumerWidget {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       ),
-                  error: (_, __) => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
                 ),
 
                 const SizedBox(height: 30),

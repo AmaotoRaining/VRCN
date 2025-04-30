@@ -26,10 +26,10 @@ class _LoginPageState extends ConsumerState<LoginPage>
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   final _hiddenController = TextEditingController();
   final _hiddenFocusNode = FocusNode();
-  bool _isLoading = false;
+  var _isLoading = false;
   String? _errorMessage;
-  bool _obscurePassword = true;
-  bool _showTwoFactorAuth = false;
+  var _obscurePassword = true;
+  var _showTwoFactorAuth = false;
 
   // アニメーション用コントローラー
   late AnimationController _animationController;
@@ -92,7 +92,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
     _passwordController.dispose();
     _twoFactorCodeController.dispose();
     _hiddenController.dispose();
-    for (var node in _focusNodes) {
+    for (final node in _focusNodes) {
       node.dispose();
     }
     _hiddenFocusNode.dispose();
@@ -128,7 +128,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
         });
         // 新しい画面のアニメーションをリセットして再生
         _animationController.reset();
-        _animationController.forward();
+        await _animationController.forward();
 
         // 自動OTP入力を試行
         _tryAutoOtpInput();
@@ -207,7 +207,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
 
         // OTPコードを各桁に分解して入力
         setState(() {
-          for (int i = 0; i < 6; i++) {
+          for (var i = 0; i < 6; i++) {
             _twoFactorCodeValue[i] = otpCode[i];
           }
           _twoFactorCodeController.text = otpCode;
@@ -233,7 +233,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
     final subtitleColor = isDarkMode ? Colors.grey[300] : Colors.grey[600];
 
     return Scaffold(
-      body: Container(
+      body: DecoratedBox(
         // グラデーション背景
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -272,7 +272,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                   width: 120,
                                   height: 120,
                                   child: Image.asset(
-                                    "assets/images/splash.png",
+                                    'assets/images/splash.png',
                                     fit: BoxFit.contain,
                                   ),
                                 ),
@@ -560,7 +560,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
             onChanged: (value) {
               if (value.isNotEmpty) {
                 setState(() {
-                  for (int i = 0; i < 6; i++) {
+                  for (var i = 0; i < 6; i++) {
                     if (i < value.length) {
                       _twoFactorCodeValue[i] = value[i];
                     } else {
@@ -576,9 +576,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                   _focusNodes[value.length - 1].requestFocus();
                 }
 
-                Future.delayed(Duration.zero, () {
-                  _hiddenController.clear();
-                });
+                Future.delayed(Duration.zero, _hiddenController.clear);
               }
             },
           ),
@@ -586,9 +584,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
 
         // OTP入力フィールド
         GestureDetector(
-          onTap: () {
-            _hiddenFocusNode.requestFocus();
-          },
+          onTap: _hiddenFocusNode.requestFocus,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
             decoration: BoxDecoration(
@@ -604,7 +600,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(6, (index) => _buildDigitBox(index)),
+              children: List.generate(6, _buildDigitBox),
             ),
           ),
         ),
@@ -614,7 +610,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
 
   // OTP入力の各桁用ボックス
   Widget _buildDigitBox(int index) {
-    final bool hasValue = _twoFactorCodeValue[index].isNotEmpty;
+    final hasValue = _twoFactorCodeValue[index].isNotEmpty;
     final primaryColor = Theme.of(context).colorScheme.primary;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
@@ -748,7 +744,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
   }) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),

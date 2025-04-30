@@ -19,7 +19,7 @@ class AppDrawer extends ConsumerWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     // User-Agentヘッダーの定義
-    final Map<String, String> headers = {
+    final headers = <String, String>{
       'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
     };
 
@@ -32,7 +32,7 @@ class AppDrawer extends ConsumerWidget {
                 (user) =>
                     _buildStylishHeader(context, user, headers, isDarkMode),
             loading: () => _buildLoadingHeader(context),
-            error: (_, __) => _buildErrorHeader(context),
+            error: (_, _) => _buildErrorHeader(context),
           ),
 
           Expanded(
@@ -41,7 +41,7 @@ class AppDrawer extends ConsumerWidget {
                 topLeft: Radius.circular(30),
                 topRight: Radius.circular(30),
               ),
-              child: Container(
+              child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: isDarkMode ? const Color(0xFF212121) : Colors.grey[50],
                   borderRadius: const BorderRadius.only(
@@ -126,7 +126,7 @@ class AppDrawer extends ConsumerWidget {
                           children: [
                             Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.filter_list_rounded,
                                   size: 20,
                                   color: AppTheme.primaryColor,
@@ -421,7 +421,7 @@ class AppDrawer extends ConsumerWidget {
                 Container(
                   width: 8,
                   height: 8,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppTheme.primaryColor,
                     shape: BoxShape.circle,
                   ),
@@ -561,7 +561,7 @@ class AppDrawer extends ConsumerWidget {
                         child: Container(
                           width: 10,
                           height: 10,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppTheme.primaryColor,
                             shape: BoxShape.circle,
                           ),

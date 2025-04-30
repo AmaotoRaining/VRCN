@@ -40,7 +40,7 @@ final sortedFriendsProvider = Provider<List<LimitedUser>>((ref) {
   return friendsAsync.when(
     data: (friends) => _sortFriends(friends, sortType, sortDirection),
     loading: () => [],
-    error: (_, __) => [],
+    error: (_, _) => [],
   );
 });
 
@@ -110,7 +110,7 @@ List<LimitedUser> _sortFriends(
   FriendSortType sortType,
   SortDirection direction,
 ) {
-  List<LimitedUser> sortedList = List.from(friends);
+  final sortedList = List<LimitedUser>.from(friends);
 
   switch (sortType) {
     case FriendSortType.status:
@@ -121,7 +121,6 @@ List<LimitedUser> _sortFriends(
         final comparison = weightB.compareTo(weightA);
         return direction == SortDirection.ascending ? comparison : -comparison;
       });
-      break;
 
     case FriendSortType.name:
       // 名前でソート
@@ -129,7 +128,6 @@ List<LimitedUser> _sortFriends(
         final comparison = a.displayName.compareTo(b.displayName);
         return direction == SortDirection.ascending ? comparison : -comparison;
       });
-      break;
 
     case FriendSortType.lastLogin:
       // 最終ログイン順でソート
@@ -141,7 +139,6 @@ List<LimitedUser> _sortFriends(
         final comparison = lastLoginB.compareTo(lastLoginA);
         return direction == SortDirection.ascending ? comparison : -comparison;
       });
-      break;
   }
 
   return sortedList;

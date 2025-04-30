@@ -14,7 +14,7 @@ class CustomLoading extends StatefulWidget {
 class _CustomLoadingState extends State<CustomLoading>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  bool _showFirstImage = true;
+  var _showFirstImage = true;
 
   @override
   void initState() {
@@ -86,8 +86,8 @@ class _CustomLoadingState extends State<CustomLoading>
                 // キャラクター画像
                 Image.asset(
                   _showFirstImage
-                      ? "assets/images/anomea_walk.png"
-                      : "assets/images/anomea_walk2.png",
+                      ? 'assets/images/anomea_walk.png'
+                      : 'assets/images/anomea_walk2.png',
                   width: 150,
                   height: 150,
                   fit: BoxFit.contain,
@@ -105,7 +105,7 @@ class _CustomLoadingState extends State<CustomLoading>
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
             child: LinearProgressIndicator(
               backgroundColor: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+              valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
             ),
           ),
 

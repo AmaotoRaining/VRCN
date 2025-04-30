@@ -102,7 +102,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return null;
         },
         loading: () => null, // ロード中はリダイレクトしない
-        error: (_, __) => isLoginRoute ? null : '/login', // エラー時はログイン画面へ
+        error: (_, _) => isLoginRoute ? null : '/login', // エラー時はログイン画面へ
       );
     },
     routes: [
@@ -113,7 +113,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/loading',
         builder:
             (context, state) =>
-                const Scaffold(body: Center(child: Text(('ログイン状態を確認中...')))),
+                const Scaffold(body: Center(child: Text('ログイン状態を確認中...'))),
       ),
       // 設定画面のルートを追加
       GoRoute(

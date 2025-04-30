@@ -19,7 +19,7 @@ final friendFilterProvider = StateProvider<FriendFilter>(
 // フレンドリストをAsyncNotifierProviderとして再定義
 final friendsProvider =
     AsyncNotifierProvider<FriendsNotifier, List<LimitedUser>>(
-      () => FriendsNotifier(),
+      FriendsNotifier.new,
     );
 
 // フレンドリストを管理するNotifier
@@ -50,14 +50,14 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
       }
 
       final filter = ref.watch(friendFilterProvider);
-      List<LimitedUser> allFriends = [];
+      final allFriends = <LimitedUser>[];
 
       // オンラインフレンド取得（filter.all または filter.online の場合）
       if (filter == FriendFilter.all || filter == FriendFilter.online) {
         try {
-          List<LimitedUser> onlineFriends = [];
-          int offset = 0;
-          bool hasMore = true;
+          final onlineFriends = <LimitedUser>[];
+          var offset = 0;
+          var hasMore = true;
 
           // offsetを使ってすべてのオンラインフレンドを取得
           while (hasMore) {
@@ -93,9 +93,9 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
       // オフラインフレンド取得（filter.all または filter.offline の場合）
       if (filter == FriendFilter.all || filter == FriendFilter.offline) {
         try {
-          List<LimitedUser> offlineFriends = [];
-          int offset = 0;
-          bool hasMore = true;
+          final offlineFriends = <LimitedUser>[];
+          var offset = 0;
+          var hasMore = true;
 
           // offsetを使ってすべてのオフラインフレンドを取得
           while (hasMore) {
@@ -261,7 +261,7 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
   // フレンドリストを再取得
   Future<void> refreshFriends() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _loadFriends());
+    state = await AsyncValue.guard(_loadFriends);
   }
 }
 

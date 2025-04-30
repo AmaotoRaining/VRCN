@@ -11,12 +11,7 @@ enum AppThemeMode {
 }
 
 // アプリアイコンタイプの列挙型
-enum AppIconType {
-  nullbase,
-  annobu,
-  kazkiller,
-  miyamoto,
-}
+enum AppIconType { nullbase, annobu, kazkiller, miyamoto }
 
 // アイコン名のマッピング (iOS/Androidプラットフォーム用)
 Map<AppIconType, String> appIconNameMap = {
@@ -27,6 +22,7 @@ Map<AppIconType, String> appIconNameMap = {
 };
 
 // 設定データモデル
+@immutable
 class AppSettings {
   final AppThemeMode themeMode;
   final bool loadImageOnWifi;

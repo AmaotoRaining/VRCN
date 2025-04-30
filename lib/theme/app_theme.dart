@@ -7,15 +7,15 @@ class AppTheme {
   AppTheme._();
 
   // VRChatブランドカラー
-  static const Color primaryColor = Color(0xFF597BFF); // VRChatのメインカラー
-  static const Color secondaryColor = Color(0xFF353535);
-  static const Color accentColor = Color(0xFF6C38FF);
+  static const primaryColor = Color(0xFF597BFF); // VRChatのメインカラー
+  static const secondaryColor = Color(0xFF353535);
+  static const accentColor = Color(0xFF6C38FF);
 
   /// ベーステキストテーマ
   static final _baseTextTheme = GoogleFonts.notoSansTextTheme();
 
   /// ライトテーマ
-  static final ThemeData light = ThemeData(
+  static final light = ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
       seedColor: primaryColor,
@@ -51,7 +51,7 @@ class AppTheme {
   );
 
   /// ダークテーマ
-  static final ThemeData dark = ThemeData(
+  static final dark = ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
       seedColor: primaryColor,
@@ -93,6 +93,6 @@ class AppTheme {
   );
 
   /// アプリ全体で使用するアニメーション設定
-  static const Duration animationDuration = Duration(milliseconds: 300);
+  static const animationDuration = Duration(milliseconds: 300);
   static const Curve animationCurve = Curves.easeInOut;
 }
