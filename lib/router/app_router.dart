@@ -9,6 +9,7 @@ import 'package:vrchat/pages/friends_page.dart';
 import 'package:vrchat/pages/login_page.dart';
 import 'package:vrchat/pages/profile_page.dart';
 import 'package:vrchat/pages/settings_page.dart';
+import 'package:vrchat/pages/world_detail_page.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/widgets/custom_loading.dart';
 
@@ -164,6 +165,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final userId = state.pathParameters['id']!;
           return FriendDetailPage(userId: userId);
+        },
+      ),
+      GoRoute(
+        path: '/worlds/:worldId',
+        builder: (context, state) {
+          final worldId = state.pathParameters['worldId']!;
+          return WorldDetailPage(worldId: worldId);
         },
       ),
     ],

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
@@ -9,11 +10,11 @@ import 'package:vrchat_dart/vrchat_dart.dart';
 
 class FriendLocationGroup extends ConsumerWidget {
   final String locationName;
-  final IconData locationIcon;
+  final String? worldId;
   final List<LimitedUser> friends;
   final Function(LimitedUser) onTapFriend;
+  final IconData locationIcon;
   final Color iconColor;
-  final String? worldId;
   final bool isOffline;
   final bool isPrivate;
   final bool isTraveling;
@@ -23,11 +24,11 @@ class FriendLocationGroup extends ConsumerWidget {
   const FriendLocationGroup({
     super.key,
     required this.locationName,
-    required this.locationIcon,
+    this.worldId,
     required this.friends,
     required this.onTapFriend,
-    this.iconColor = Colors.blue,
-    this.worldId,
+    required this.locationIcon,
+    required this.iconColor,
     this.isOffline = false,
     this.isPrivate = false,
     this.isTraveling = false,
@@ -103,7 +104,9 @@ class FriendLocationGroup extends ConsumerWidget {
                     height: 48,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey.withValues(alpha: .3)),
+                      border: Border.all(
+                        color: Colors.grey.withValues(alpha: .3),
+                      ),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(7),
@@ -153,14 +156,47 @@ class FriendLocationGroup extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        displayName,
-                        style: GoogleFonts.notoSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                      // ワールド名をタップ可能にする
+                      InkWell(
+                        onTap: () {
+                          // ワールドIDが有効かつプライベートではない場合のみ詳細画面に飛ぶ
+                          if (effectiveWorldId != null &&
+                              !isPrivate &&
+                              !isOffline) {
+                            context.push('/worlds/$effectiveWorldId');
+                          }
+                        },
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                displayName,
+                                style: GoogleFonts.notoSans(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  decorationColor: Colors.green.withValues(
+                                    alpha: 0.7,
+                                  ),
+                                  decorationThickness: 1.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            // ナビゲート可能な場合は矢印アイコンも表示
+                            if (effectiveWorldId != null &&
+                                !isPrivate &&
+                                !isOffline)
+                              Icon(
+                                Icons.arrow_forward_ios,
+                                size: 14,
+                                color:
+                                    isDarkMode
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                              ),
+                          ],
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         statusText,

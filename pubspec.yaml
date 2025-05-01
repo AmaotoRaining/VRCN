@@ -47,6 +47,7 @@ dependencies:
   # 画面遷移
   go_router: ^15.1.1
   meta: ^1.16.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -58,10 +59,10 @@ flutter:
   uses-material-design: true
 
   assets:
+    - path: assets/images/
     - path: .env
-      flavor:
+      flavors:
       - debug
-    - assets/images/
 
 dependency_overrides:
   vrchat_dart_generated:

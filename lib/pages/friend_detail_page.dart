@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/provider/Instance_provider.dart';
 import 'package:vrchat/provider/friends_provider.dart';
@@ -705,9 +706,7 @@ class FriendDetailPage extends ConsumerWidget {
               const SizedBox(width: 10),
               IconButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('準備中: ワールド詳細機能は開発中です')),
-                  );
+                  context.push('/worlds/${user.worldId}');
                 },
                 icon: const Icon(Icons.info_outline),
                 style: IconButton.styleFrom(
@@ -982,24 +981,28 @@ class FriendDetailPage extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      instanceInfo != null
-                          ? '${worldInfo.name}#${instanceInfo.name}'
-                          : worldInfo.name,
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withValues(alpha: 0.8),
-                            blurRadius: 5,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
+                    GestureDetector(
+                      onTap: () => context.push('/worlds/${worldInfo.id}'),
+                      child: Text(
+                        instanceInfo != null
+                            ? '${worldInfo.name}#${instanceInfo.name}'
+                            : worldInfo.name,
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          decoration: TextDecoration.underline,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.8),
+                              blurRadius: 5,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
 
                     // プレイヤー数表示（インスタンス情報がある場合のみ）

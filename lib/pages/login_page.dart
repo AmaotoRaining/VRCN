@@ -613,7 +613,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
             child: TextButton.icon(
               onPressed: _pasteFromClipboard,
               icon: const Icon(Icons.content_paste_rounded),
-              label: Text('コードをペースト', style: GoogleFonts.notoSans()),
+              label: Text('ペースト', style: GoogleFonts.notoSans()),
               style: TextButton.styleFrom(
                 foregroundColor: primaryColor,
                 padding: const EdgeInsets.symmetric(
