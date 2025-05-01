@@ -85,7 +85,6 @@ class Navigation extends ConsumerWidget {
     }
   }
 
-
   // Twitterスタイルのナビゲーションバー構築
   Widget _buildTwitterStyleNavBar(BuildContext context, bool isDarkMode) {
     final backgroundColor = isDarkMode ? Colors.black : Colors.white;
@@ -163,19 +162,8 @@ class Navigation extends ConsumerWidget {
             destination = '/';
         }
 
-        // アニメーションなしでページ遷移
-        router.routerDelegate.navigatorKey.currentState?.pushReplacement(
-          PageRouteBuilder(
-            settings: RouteSettings(name: destination),
-            pageBuilder: (context, animation, secondaryAnimation) {
-              // GoRouterの内部状態を更新
-              router.go(destination);
-              // この部分は実際には表示されない（GoRouterが処理するため）
-              return const SizedBox.shrink();
-            },
-            transitionDuration: Duration.zero,
-          ),
-        );
+        // GoRouterを使った単純な遷移
+        router.go(destination);
       },
       child: SizedBox(
         width: 70,
