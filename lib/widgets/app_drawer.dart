@@ -1,3 +1,5 @@
+// ignore_for_file: document_ignores
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -53,19 +55,7 @@ class AppDrawer extends ConsumerWidget {
                   physics: const BouncingScrollPhysics(),
                   child: Column(
                     children: [
-                      const SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'メニュー',
-                          style: GoogleFonts.notoSans(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: isDarkMode ? Colors.white60 : Colors.black54,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 6),
 
                       _buildMenuItem(
                         context: context,
@@ -103,50 +93,6 @@ class AppDrawer extends ConsumerWidget {
                           Navigator.pop(context);
                         },
                       ),
-
-                      const SizedBox(height: 30),
-
-                      // フィルターセクション
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20),
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: isDarkMode ? Colors.grey[850] : Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.filter_list_rounded,
-                                  size: 20,
-                                  color: AppTheme.primaryColor,
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  'フィルター設定',
-                                  style: GoogleFonts.notoSans(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.primaryColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            _buildStylishFilterRadio(context, ref, isDarkMode),
-                          ],
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -168,36 +114,28 @@ class AppDrawer extends ConsumerWidget {
     final statusColor = StatusHelper.getStatusColor(user.status);
 
     return Container(
-      padding: const EdgeInsets.only(top: 16, bottom: 30),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppTheme.primaryColor, statusColor],
-        ),
+        color: isDarkMode ? const Color(0xFF15202B) : Colors.white,
       ),
       child: SafeArea(
-        child: Column(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // アバターとステータスアイコン
+            // プロフィール画像（アバター）
             Stack(
               children: [
-                // プロフィール画像
                 Container(
-                  padding: const EdgeInsets.all(4),
+                  padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 12,
-                        spreadRadius: 2,
-                      ),
-                    ],
+                    border: Border.all(
+                      color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
+                      width: 1,
+                    ),
                   ),
                   child: CircleAvatar(
-                    radius: 50,
+                    radius: 30,
                     backgroundColor: Colors.grey[300],
                     backgroundImage:
                         user.currentAvatarThumbnailImageUrl.isNotEmpty
@@ -210,33 +148,27 @@ class AppDrawer extends ConsumerWidget {
                         user.currentAvatarThumbnailImageUrl.isEmpty
                             ? const Icon(
                               Icons.person,
-                              size: 40,
+                              size: 30,
                               color: Colors.white70,
                             )
                             : null,
                   ),
                 ),
 
-                // ステータスインジケーター
+                // ステータス表示
                 Positioned(
                   bottom: 0,
                   right: 0,
                   child: Container(
-                    padding: const EdgeInsets.all(3),
+                    padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color:
+                          isDarkMode ? const Color(0xFF15202B) : Colors.white,
                       shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 5,
-                          spreadRadius: 1,
-                        ),
-                      ],
                     ),
                     child: Container(
-                      width: 18,
-                      height: 18,
+                      width: 12,
+                      height: 12,
                       decoration: BoxDecoration(
                         color: statusColor,
                         shape: BoxShape.circle,
@@ -247,41 +179,53 @@ class AppDrawer extends ConsumerWidget {
               ],
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(width: 12),
 
-            // ユーザー名とステータス
-            Text(
-              user.displayName,
-              style: GoogleFonts.poppins(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                shadows: [
-                  Shadow(
-                    blurRadius: 8,
-                    color: Colors.black.withValues(alpha: 0.3),
-                    offset: const Offset(0, 2),
+            // ユーザー情報
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 表示名
+                  Text(
+                    user.displayName,
+                    style: GoogleFonts.notoSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
+
+                  // ユーザーID
+                  Text(
+                    '@${user.username}',
+                    style: GoogleFonts.notoSans(
+                      fontSize: 14,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  // ステータスメッセージ（あれば）
+                  if (user.statusDescription.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      user.statusDescription,
+                      style: GoogleFonts.notoSans(
+                        fontSize: 13,
+                        color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ],
               ),
             ),
-
-            const SizedBox(height: 5),
-
-            if (user.statusDescription.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                user.statusDescription,
-                style: GoogleFonts.notoSans(
-                  fontSize: 13,
-                  color: Colors.white.withValues(alpha: 0.9),
-                  fontStyle: FontStyle.italic,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
           ],
         ),
       ),
@@ -296,10 +240,7 @@ class AppDrawer extends ConsumerWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppTheme.primaryColor.withValues(alpha: 0.8),
-            AppTheme.primaryColor,
-          ],
+          colors: [AppTheme.primaryColor.withAlpha(204), AppTheme.primaryColor],
         ),
       ),
       child: const Center(
@@ -361,9 +302,7 @@ class AppDrawer extends ConsumerWidget {
       decoration: BoxDecoration(
         color:
             isSelected
-                ? AppTheme.primaryColor.withValues(
-                  alpha: isDarkMode ? 0.15 : 0.1,
-                )
+                ? AppTheme.primaryColor.withAlpha(isDarkMode ? 38 : 25)
                 : Colors.transparent,
         borderRadius: BorderRadius.circular(15),
       ),
@@ -428,148 +367,6 @@ class AppDrawer extends ConsumerWidget {
                 ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  // スタイリッシュなフィルターラジオボタン
-  Widget _buildStylishFilterRadio(
-    BuildContext context,
-    WidgetRef ref,
-    bool isDarkMode,
-  ) {
-    final currentFilter = ref.watch(friendFilterProvider);
-
-    return Column(
-      children: [
-        _buildFilterOption(
-          context: context,
-          icon: Icons.people_alt_rounded,
-          title: 'すべて表示',
-          isSelected: currentFilter == FriendFilter.all,
-          isDarkMode: isDarkMode,
-          onTap: () {
-            ref.read(friendFilterProvider.notifier).state = FriendFilter.all;
-            Navigator.pop(context);
-          },
-        ),
-        const SizedBox(height: 10),
-        _buildFilterOption(
-          context: context,
-          icon: Icons.wifi_rounded,
-          title: 'オンラインのみ',
-          isSelected: currentFilter == FriendFilter.online,
-          isDarkMode: isDarkMode,
-          onTap: () {
-            ref.read(friendFilterProvider.notifier).state = FriendFilter.online;
-            Navigator.pop(context);
-          },
-        ),
-        const SizedBox(height: 10),
-        _buildFilterOption(
-          context: context,
-          icon: Icons.wifi_off_rounded,
-          title: 'オフラインのみ',
-          isSelected: currentFilter == FriendFilter.offline,
-          isDarkMode: isDarkMode,
-          onTap: () {
-            ref.read(friendFilterProvider.notifier).state =
-                FriendFilter.offline;
-            Navigator.pop(context);
-          },
-        ),
-      ],
-    );
-  }
-
-  // フィルターオプション
-  Widget _buildFilterOption({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required bool isSelected,
-    required bool isDarkMode,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-        decoration: BoxDecoration(
-          color:
-              isSelected
-                  ? AppTheme.primaryColor.withValues(alpha: 0.1)
-                  : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color:
-                isSelected
-                    ? AppTheme.primaryColor
-                    : isDarkMode
-                    ? Colors.grey[700]!
-                    : Colors.grey[300]!,
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color:
-                  isSelected
-                      ? AppTheme.primaryColor
-                      : isDarkMode
-                      ? Colors.grey[400]
-                      : Colors.grey[600],
-              size: 18,
-            ),
-            const SizedBox(width: 12),
-            Text(
-              title,
-              style: GoogleFonts.notoSans(
-                fontSize: 14,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color:
-                    isSelected
-                        ? AppTheme.primaryColor
-                        : isDarkMode
-                        ? Colors.white
-                        : Colors.black87,
-              ),
-            ),
-            const Spacer(),
-            Container(
-              width: 18,
-              height: 18,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color:
-                      isSelected
-                          ? AppTheme.primaryColor
-                          : isDarkMode
-                          ? Colors.grey[600]!
-                          : Colors.grey[400]!,
-                  width: 1.5,
-                ),
-              ),
-              child:
-                  isSelected
-                      ? Center(
-                        child: Container(
-                          width: 10,
-                          height: 10,
-                          decoration: const BoxDecoration(
-                            color: AppTheme.primaryColor,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      )
-                      : null,
-            ),
-          ],
         ),
       ),
     );
