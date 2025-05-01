@@ -8,11 +8,14 @@ import 'package:vrchat/pages/credits_page.dart';
 import 'package:vrchat/pages/friend_detail_page.dart';
 import 'package:vrchat/pages/friends_page.dart';
 import 'package:vrchat/pages/login_page.dart';
+import 'package:vrchat/pages/notifications_page.dart';
 import 'package:vrchat/pages/profile_page.dart';
+import 'package:vrchat/pages/search_page.dart';
 import 'package:vrchat/pages/settings_page.dart';
 import 'package:vrchat/pages/world_detail_page.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/widgets/custom_loading.dart';
+import 'package:vrchat/widgets/navigation_bar.dart';
 
 // スプラッシュ画面が表示されているかを追跡
 final splashActiveProvider = StateProvider<bool>((ref) => true);
@@ -137,22 +140,46 @@ final routerProvider = Provider<GoRouter>((ref) {
             return '/';
           }
 
-          // それ以外の場合はリダイレクト不要
           return null;
         },
-        loading: () => null, // ロード中はリダイレクトしない
-        error: (_, _) => isLoginRoute ? null : '/login', // エラー時はログイン画面へ
+        loading: () => null,
+        error: (_, _) => isLoginRoute ? null : '/login',
       );
     },
     routes: [
-      GoRoute(path: '/', builder: (context, state) => const FriendsPage()),
+      // ナビゲーションバーを持つシェルルート
+      ShellRoute(
+        builder: (context, state, child) {
+          // 現在のパスに基づいて適切なタブインデックスを設定
+          final location = state.uri.toString();
+          var currentIndex = 0;
+
+          if (location == '/search') {
+            currentIndex = 1;
+          } else if (location == '/notifications') {
+            currentIndex = 2;
+          }
+
+          return Navigation(currentIndex: currentIndex, child: child);
+        },
+        routes: [
+          GoRoute(path: '/', builder: (context, state) => const FriendsPage()),
+          GoRoute(
+            path: '/search',
+            builder: (context, state) => const SearchPage(),
+          ),
+          GoRoute(
+            path: '/notifications',
+            builder: (context, state) => const NotificationsPage(),
+          ),
+        ],
+      ),
+
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
-      // ロード画面のルートを追加
       GoRoute(
         path: '/loading',
         builder: (context, state) => const CustomLoading(),
       ),
-      // 設定画面のルートを追加
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsPage(),
@@ -183,6 +210,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
+// GoRouterのリフレッシュを行うためのヘルパークラス
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     _subscription = stream.listen((_) => notifyListeners());

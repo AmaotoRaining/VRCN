@@ -678,7 +678,7 @@ class FriendDetailPage extends ConsumerWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    final inviteMyselfTo = ref.watch(
+                    ref.watch(
                       inviteMyselfProvider(
                         InviteParams(
                           worldId: user.worldId!,
@@ -700,24 +700,6 @@ class FriendDetailPage extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     elevation: 2,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              IconButton(
-                onPressed: () {
-                  context.push('/worlds/${user.worldId}');
-                },
-                icon: const Icon(Icons.info_outline),
-                style: IconButton.styleFrom(
-                  backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
-                  foregroundColor: Colors.green,
-                  padding: const EdgeInsets.all(12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: BorderSide(
-                      color: Colors.green.withValues(alpha: 0.5),
-                    ),
                   ),
                 ),
               ),
