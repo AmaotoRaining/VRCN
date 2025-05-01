@@ -201,7 +201,9 @@ class WorldDetailPage extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color:
-            isDarkMode ? Colors.grey[850]!.withOpacity(0.5) : Colors.grey[100],
+            isDarkMode
+                ? Colors.grey[850]!.withValues(alpha: .5)
+                : Colors.grey[100],
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
@@ -283,7 +285,7 @@ class WorldDetailPage extends ConsumerWidget {
           decoration: BoxDecoration(
             color:
                 isDarkMode
-                    ? Colors.grey[850]!.withOpacity(0.5)
+                    ? Colors.grey[850]!.withValues(alpha: 0.5)
                     : Colors.grey[100],
             borderRadius: BorderRadius.circular(8),
             border: Border.all(

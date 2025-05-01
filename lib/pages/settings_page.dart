@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
@@ -195,6 +196,42 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                       icon: Icons.code,
                       title: 'パッケージ名',
                       value: _packageInfo!.packageName,
+                      isDarkMode: isDarkMode,
+                    ),
+                    const Divider(height: 1),
+                    _buildLinkInfoItem(
+                      icon: Icons.person,
+                      title: 'クレジット',
+                      subtitle: '開発者・貢献者情報',
+                      onTap: () => context.push('/credits'),
+                      isDarkMode: isDarkMode,
+                    ),
+                    _buildLinkInfoItem(
+                      icon: Icons.email_outlined,
+                      title: 'お問い合わせ',
+                      subtitle: '不具合報告・ご意見はこちら',
+                      onTap: () => _launchURL('https://null-base.com/'),
+                      isDarkMode: isDarkMode,
+                    ),
+                    _buildLinkInfoItem(
+                      icon: Icons.security_outlined,
+                      title: 'プライバシーポリシー',
+                      subtitle: '個人情報の取り扱いについて',
+                      onTap: () => _launchURL('https://null-base.com/'),
+                      isDarkMode: isDarkMode,
+                    ),
+                    _buildLinkInfoItem(
+                      icon: Icons.description_outlined,
+                      title: '利用規約',
+                      subtitle: 'サービスのご利用条件',
+                      onTap: () => _launchURL('https://null-base.com/'),
+                      isDarkMode: isDarkMode,
+                    ),
+                    _buildLinkInfoItem(
+                      icon: Icons.code_outlined,
+                      title: 'オープンソース情報',
+                      subtitle: '使用しているライブラリ等のライセンス',
+                      onTap: _showLicenses,
                       isDarkMode: isDarkMode,
                     ),
                   ],
@@ -628,6 +665,60 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     );
   }
 
+  // リンク付き情報アイテム
+  Widget _buildLinkInfoItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    required bool isDarkMode,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 22,
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.notoSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.notoSans(
+                      fontSize: 14,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // アプリアイコンセクション
   Widget _buildAppIconSection(
     BuildContext context,
@@ -892,5 +983,32 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
         }
       }
     }
+  }
+
+  Future<void> _launchURL(String urlString) async {
+    final url = Uri.parse(urlString);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('URLを開けませんでした')));
+      }
+    }
+  }
+
+  // ライセンス表示メソッド
+  void _showLicenses() {
+    showLicensePage(
+      context: context,
+      applicationName: 'VRCN',
+      applicationVersion: _packageInfo?.version ?? '',
+      applicationIcon: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Image.asset('assets/images/default.png', width: 64, height: 64),
+      ),
+      applicationLegalese: '© 2025 null_base',
+    );
   }
 }

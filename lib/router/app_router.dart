@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vrchat/pages/credits_page.dart';
 import 'package:vrchat/pages/friend_detail_page.dart';
 import 'package:vrchat/pages/friends_page.dart';
 import 'package:vrchat/pages/login_page.dart';
@@ -174,11 +175,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           return WorldDetailPage(worldId: worldId);
         },
       ),
+      GoRoute(
+        path: '/credits',
+        builder: (context, state) => const CreditsPage(),
+      ),
     ],
   );
 });
 
-// GoRouterのリフレッシュを行うためのヘルパークラス
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     _subscription = stream.listen((_) => notifyListeners());
