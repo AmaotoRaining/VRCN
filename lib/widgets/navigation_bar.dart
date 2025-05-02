@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vrchat/provider/navigation_provider.dart';
 import 'package:vrchat/widgets/app_bar.dart';
 import 'package:vrchat/widgets/app_drawer.dart';
 import 'package:vrchat/widgets/friend_sort_dialog.dart';
@@ -18,14 +19,14 @@ class Navigation extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldKey = GlobalKey<ScaffoldState>();
+    final scaffoldKey = ref.watch(scaffoldKeyProvider);
 
     return Scaffold(
       key: scaffoldKey,
       appBar: _buildAppBarForPage(context, scaffoldKey, ref),
       drawer: const AppDrawer(),
       body: SafeArea(top: true, bottom: false, child: child),
-      bottomNavigationBar: _buildTwitterStyleNavBar(context, isDarkMode),
+      bottomNavigationBar: _buildTwitterStyleNavBar(context, isDarkMode, ref),
     );
   }
 
@@ -43,7 +44,6 @@ class Navigation extends ConsumerWidget {
               icon: const Icon(Icons.sort),
               tooltip: '並び替え',
               onPressed: () {
-                // フレンド一覧の並び替えダイアログを表示
                 showFriendSortOptions(context, ref);
               },
             ),
@@ -85,8 +85,11 @@ class Navigation extends ConsumerWidget {
     }
   }
 
-  // Twitterスタイルのナビゲーションバー構築
-  Widget _buildTwitterStyleNavBar(BuildContext context, bool isDarkMode) {
+  Widget _buildTwitterStyleNavBar(
+    BuildContext context,
+    bool isDarkMode,
+    WidgetRef ref,
+  ) {
     final backgroundColor = isDarkMode ? Colors.black : Colors.white;
     final borderColor = isDarkMode ? Colors.grey[900] : Colors.grey[200];
 
@@ -108,6 +111,7 @@ class Navigation extends ConsumerWidget {
                 Icons.people_outline,
                 Icons.people,
                 isDarkMode,
+                ref,
               ),
               _buildTwitterNavItem(
                 context,
@@ -115,6 +119,7 @@ class Navigation extends ConsumerWidget {
                 Icons.search_outlined,
                 Icons.search,
                 isDarkMode,
+                ref,
               ),
               _buildTwitterNavItem(
                 context,
@@ -122,6 +127,7 @@ class Navigation extends ConsumerWidget {
                 Icons.notifications_none_outlined,
                 Icons.notifications,
                 isDarkMode,
+                ref,
               ),
             ],
           ),
@@ -130,13 +136,13 @@ class Navigation extends ConsumerWidget {
     );
   }
 
-  // ナビゲーションアイテム構築
   Widget _buildTwitterNavItem(
     BuildContext context,
     int index,
     IconData icon,
     IconData activeIcon,
     bool isDarkMode,
+    WidgetRef ref,
   ) {
     final isActive = currentIndex == index;
 
@@ -146,23 +152,31 @@ class Navigation extends ConsumerWidget {
 
     return InkWell(
       onTap: () {
-        if (currentIndex == index) return; // 現在のタブをタップした場合は何もしない
+        if (currentIndex == index) return;
+
+        // インデックスを更新
+        ref.read(navigationIndexProvider.notifier).state = index;
 
         final router = GoRouter.of(context);
         final String destination;
 
+        // 遷移先の設定
         switch (index) {
           case 0:
             destination = '/';
+            break; // breakを追加
           case 1:
             destination = '/search';
+            break; // breakを追加
           case 2:
             destination = '/notifications';
+            break; // breakを追加
           default:
             destination = '/';
+            break; // breakを追加
         }
 
-        // GoRouterを使った単純な遷移
+        // extraパラメータを使わずに単純に遷移
         router.go(destination);
       },
       child: SizedBox(

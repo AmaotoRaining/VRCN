@@ -13,6 +13,7 @@ import 'package:vrchat/pages/profile_page.dart';
 import 'package:vrchat/pages/search_page.dart';
 import 'package:vrchat/pages/settings_page.dart';
 import 'package:vrchat/pages/world_detail_page.dart';
+import 'package:vrchat/provider/navigation_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/widgets/custom_loading.dart';
 import 'package:vrchat/widgets/navigation_bar.dart';
@@ -111,6 +112,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ref.read(authRefreshProvider.notifier).stream,
     ),
     initialLocation: '/',
+    routerNeglect: true, // 同じパスへの遷移をスキップ
     redirect: (context, state) {
       final isLoginRoute = state.uri.toString() == '/login';
 
@@ -160,21 +162,48 @@ final routerProvider = Provider<GoRouter>((ref) {
             currentIndex = 2;
           }
 
+          // プロバイダーの状態も更新
+          ref.read(navigationIndexProvider.notifier).state = currentIndex;
+
           return Navigation(currentIndex: currentIndex, child: child);
         },
         routes: [
-          GoRoute(path: '/', builder: (context, state) => const FriendsPage()),
+          GoRoute(
+            path: '/',
+            pageBuilder: (context, state) {
+              // 即時遷移フラグがある場合はNoTransitionPageを使用
+              final immediate =
+                  (state.extra as Map<String, dynamic>?)?['immediate'] == true;
+              if (immediate) {
+                return const NoTransitionPage(child: FriendsPage());
+              }
+              return const MaterialPage(child: FriendsPage());
+            },
+          ),
           GoRoute(
             path: '/search',
-            builder: (context, state) => const SearchPage(),
+            pageBuilder: (context, state) {
+              final immediate =
+                  (state.extra as Map<String, dynamic>?)?['immediate'] == true;
+              if (immediate) {
+                return const NoTransitionPage(child: SearchPage());
+              }
+              return const MaterialPage(child: SearchPage());
+            },
           ),
           GoRoute(
             path: '/notifications',
-            builder: (context, state) => const NotificationsPage(),
+            pageBuilder: (context, state) {
+              final immediate =
+                  (state.extra as Map<String, dynamic>?)?['immediate'] == true;
+              if (immediate) {
+                return const NoTransitionPage(child: NotificationsPage());
+              }
+              return const MaterialPage(child: NotificationsPage());
+            },
           ),
         ],
       ),
-
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
       GoRoute(
         path: '/loading',
@@ -209,6 +238,23 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
+// NoTransitionPageクラス - アニメーションなしの遷移ページ
+class NoTransitionPage<T> extends Page<T> {
+  final Widget child;
+
+  const NoTransitionPage({required this.child, super.key});
+
+  @override
+  Route<T> createRoute(BuildContext context) {
+    return PageRouteBuilder(
+      settings: this,
+      pageBuilder: (_, _, _) => child,
+      transitionDuration: Duration.zero,
+      reverseTransitionDuration: Duration.zero,
+    );
+  }
+}
 
 // GoRouterのリフレッシュを行うためのヘルパークラス
 class GoRouterRefreshStream extends ChangeNotifier {
