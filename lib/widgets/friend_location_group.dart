@@ -20,6 +20,7 @@ class FriendLocationGroup extends ConsumerWidget {
   final bool isTraveling;
   final String? travelingToWorldId;
   final bool compact;
+  final bool isActive; // 追加: オフラインでもアクティブなユーザー用フラグ
 
   const FriendLocationGroup({
     super.key,
@@ -34,6 +35,7 @@ class FriendLocationGroup extends ConsumerWidget {
     this.isTraveling = false,
     this.travelingToWorldId,
     this.compact = false,
+    this.isActive = false, // 追加: デフォルトはfalse
   });
 
   @override
@@ -69,6 +71,8 @@ class FriendLocationGroup extends ConsumerWidget {
     String statusText;
     if (isPrivate) {
       statusText = '${friends.length}人がプライベート中';
+    } else if (isOffline && isActive) {
+      statusText = '${friends.length}人がアクティブ'; // アクティブなオフラインユーザー
     } else if (isOffline) {
       statusText = '${friends.length}人がオフライン';
     } else if (isTraveling) {
@@ -104,9 +108,7 @@ class FriendLocationGroup extends ConsumerWidget {
                     height: 48,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.grey.withValues(alpha: .3),
-                      ),
+                      border: Border.all(color: Colors.grey.withOpacity(0.3)),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(7),
@@ -143,9 +145,20 @@ class FriendLocationGroup extends ConsumerWidget {
                     height: 40,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: iconColor.withValues(alpha: 0.1),
+                      color:
+                          (isActive && isOffline)
+                              ? Colors.green.withOpacity(
+                                0.1,
+                              ) // アクティブなオフラインユーザー用の色
+                              : iconColor.withOpacity(0.1),
                     ),
-                    child: Icon(locationIcon, color: iconColor, size: 20),
+                    child: Icon(
+                      (isActive && isOffline)
+                          ? Icons.circle
+                          : locationIcon, // アクティブなオフラインユーザー用のアイコン
+                      color: (isActive && isOffline) ? Colors.green : iconColor,
+                      size: 20,
+                    ),
                   ),
                 ],
 
@@ -174,8 +187,14 @@ class FriendLocationGroup extends ConsumerWidget {
                                 style: GoogleFonts.notoSans(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  decorationColor: Colors.green.withValues(
-                                    alpha: 0.7,
+                                  color:
+                                      (isActive && isOffline)
+                                          ? Colors
+                                              .green
+                                              .shade700 // アクティブなオフラインユーザー用の色
+                                          : null,
+                                  decorationColor: Colors.green.withOpacity(
+                                    0.7,
                                   ),
                                   decorationThickness: 1.2,
                                 ),
@@ -203,7 +222,13 @@ class FriendLocationGroup extends ConsumerWidget {
                         style: GoogleFonts.notoSans(
                           fontSize: 12,
                           color:
-                              isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                              (isActive && isOffline)
+                                  ? Colors.green.withOpacity(
+                                    0.8,
+                                  ) // アクティブなオフラインユーザー用の色
+                                  : (isDarkMode
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600]),
                         ),
                       ),
                     ],

@@ -134,7 +134,7 @@ class FriendsPage extends ConsumerWidget {
     );
   }
 
-  // ロケーションでグループ化したリスト表示（新機能）
+  // ロケーションでグループ化したリスト表示
   Widget _buildGroupedFriendsList(
     BuildContext context,
     List<LimitedUser> friends,
@@ -143,13 +143,19 @@ class FriendsPage extends ConsumerWidget {
     // フレンドをロケーションごとにグループ化
     final friendGroups = <String, List<LimitedUser>>{};
 
-    // オンライン/オフラインでまず大きく分ける
+    // オンライン/オフライン/アクティブオフラインでまず大きく分ける
     final offlineFriends = <LimitedUser>[];
+    final activeOfflineFriends = <LimitedUser>[]; // アクティブオフライン用のリスト追加
     final privateFriends = <LimitedUser>[];
     final onlineFriends = <LimitedUser>[];
 
     for (final friend in friends) {
-      if (friend.location == null || friend.location == 'offline') {
+      // locationがofflineでもstatusが設定されている場合はアクティブグループに
+      if (friend.location == 'offline' &&
+          friend.status != UserStatus.offline &&
+          friend.status.toString().isNotEmpty) {
+        activeOfflineFriends.add(friend);
+      } else if (friend.location == null || friend.location == 'offline') {
         offlineFriends.add(friend);
       } else if (friend.location == 'private') {
         privateFriends.add(friend);
@@ -214,6 +220,22 @@ class FriendsPage extends ConsumerWidget {
           onTapFriend: (friend) => context.push('/friends/${friend.id}'),
           iconColor: Colors.redAccent,
           isPrivate: true,
+          compact: false, // コンパクトモードをオフに
+        ),
+      );
+    }
+
+    // アクティブなオフラインフレンドが存在する場合はプライベートの後に表示（新規追加）
+    if (activeOfflineFriends.isNotEmpty) {
+      groupWidgets.add(
+        FriendLocationGroup(
+          locationName: 'アクティブ',
+          locationIcon: Icons.circle,
+          friends: activeOfflineFriends,
+          onTapFriend: (friend) => context.push('/friends/${friend.id}'),
+          iconColor: Colors.green,
+          isOffline: true,
+          isActive: true, // アクティブフラグをオンに
           compact: false, // コンパクトモードをオフに
         ),
       );
