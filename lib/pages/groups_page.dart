@@ -30,7 +30,7 @@ class GroupsPage extends ConsumerWidget {
             Icon(
               Icons.group_rounded,
               size: 80,
-              color: Colors.blue.withOpacity(0.6),
+              color: Colors.blue.withValues(alpha:0.6),
             ),
             const SizedBox(height: 24),
             Text(
@@ -82,7 +82,7 @@ class GroupsPage extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.1),
+            color: Colors.black.withValues(alpha:isDarkMode ? 0.3 : 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -94,8 +94,8 @@ class GroupsPage extends ConsumerWidget {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: isDarkMode
-                  ? Colors.blue.withOpacity(0.2)
-                  : Colors.blue.withOpacity(0.1),
+                  ? Colors.blue.withValues(alpha:0.2)
+                  : Colors.blue.withValues(alpha:0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(

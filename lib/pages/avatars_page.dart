@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AvatarsPage extends ConsumerWidget {
   const AvatarsPage({super.key});
@@ -8,18 +8,15 @@ class AvatarsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDarkMode
-        ? const Color(0xFF151515)
-        : const Color(0xFFF5F5F5);
+    final backgroundColor =
+        isDarkMode ? const Color(0xFF151515) : const Color(0xFFF5F5F5);
 
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
         title: Text(
           'アバター',
-          style: GoogleFonts.notoSans(
-            fontWeight: FontWeight.bold,
-          ),
+          style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -30,7 +27,7 @@ class AvatarsPage extends ConsumerWidget {
             Icon(
               Icons.face_rounded,
               size: 80,
-              color: Colors.purple.withOpacity(0.6),
+              color: Colors.purple.withValues(alpha: 0.6),
             ),
             const SizedBox(height: 24),
             Text(
@@ -82,7 +79,7 @@ class AvatarsPage extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.1),
+            color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -93,9 +90,10 @@ class AvatarsPage extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: isDarkMode
-                  ? Colors.purple.withOpacity(0.2)
-                  : Colors.purple.withOpacity(0.1),
+              color:
+                  isDarkMode
+                      ? Colors.purple.withValues(alpha: 0.2)
+                      : Colors.purple.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(

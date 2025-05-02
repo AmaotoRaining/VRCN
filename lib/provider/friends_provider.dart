@@ -215,7 +215,7 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
   // フレンド情報（ステータスなど）を更新
   void updateFriendInfo(
     String userId, {
-    String? status,
+    UserStatus? status,
     String? statusDescription,
   }) {
     state.whenData((friends) {
@@ -234,7 +234,7 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
               isFriend: friend.isFriend,
               lastPlatform: friend.lastPlatform,
               profilePicOverride: friend.profilePicOverride,
-              status: (status as UserStatus?) ?? friend.status,
+              status: status ?? friend.status,
               statusDescription: statusDescription ?? friend.statusDescription,
               tags: friend.tags,
               userIcon: friend.userIcon,
@@ -307,9 +307,9 @@ final friendLocationUpdaterProvider =
 
 // フレンド情報を更新するハンドラー
 final friendInfoUpdaterProvider = Provider<
-  void Function(String, {String? status, String? statusDescription})
+  void Function(String, {UserStatus? status, String? statusDescription})
 >((ref) {
-  return (String userId, {String? status, String? statusDescription}) {
+  return (String userId, {UserStatus? status, String? statusDescription}) {
     ref
         .read(friendsProvider.notifier)
         .updateFriendInfo(

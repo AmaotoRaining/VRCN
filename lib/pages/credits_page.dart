@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CreditsPage extends StatelessWidget {
   const CreditsPage({super.key});
@@ -148,6 +149,20 @@ class CreditsPage extends StatelessWidget {
                           'https://avatars.githubusercontent.com/u/36933130',
                         ),
                       ),
+                    ),
+                    CreditItem(
+                      name: 'あのめあ ﾁｬﾝSDイラスト',
+                      role: 'ローディングアニメーション',
+                      icon: const CircleAvatar(
+                        backgroundImage: NetworkImage(
+                          'https://booth.pximg.net/bab5ce08-f39a-40f4-a708-ba7b04332682/i/6567379/c4b6914c-225d-4926-8550-ff81b6717037.png',
+                        ),
+                      ),
+                      onTap: () {
+                        launchUrl(
+                          Uri.parse('https://triples.booth.pm/items/6567379'),
+                        );
+                      },
                     ),
                   ],
                   isDarkMode: isDarkMode,

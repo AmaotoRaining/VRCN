@@ -246,17 +246,23 @@ class ProfilePage extends ConsumerWidget {
                     radius: 50,
                     backgroundColor: Colors.grey[300],
                     backgroundImage:
-                        user.currentAvatarThumbnailImageUrl.isNotEmpty
+                        user.userIcon.isNotEmpty
+                            ? CachedNetworkImageProvider(
+                              user.userIcon,
+                              headers: headers,
+                            )
+                            : user.currentAvatarThumbnailImageUrl.isNotEmpty
                             ? CachedNetworkImageProvider(
                               user.currentAvatarThumbnailImageUrl,
                               headers: headers,
                             )
-                            : null,
+                            : const AssetImage('assets/images/default.png')
+                                as ImageProvider,
                     child:
                         user.currentAvatarThumbnailImageUrl.isEmpty
                             ? const Icon(
                               Icons.person,
-                              size: 50,
+                              size: 30,
                               color: Colors.white70,
                             )
                             : null,

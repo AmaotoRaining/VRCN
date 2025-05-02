@@ -121,7 +121,7 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
 
       ref.read(friendInfoUpdaterProvider)(
         friendUpdateEvent.userId,
-        status: friendUpdateEvent.user.status.toString(),
+        status: friendUpdateEvent.user.status,
         statusDescription: friendUpdateEvent.user.statusDescription,
       );
 

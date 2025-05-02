@@ -30,7 +30,7 @@ class FavoritesPage extends ConsumerWidget {
             Icon(
               Icons.favorite_rounded,
               size: 80,
-              color: Colors.red.withOpacity(0.6),
+              color: Colors.red.withValues(alpha:0.6),
             ),
             const SizedBox(height: 24),
             Text(
@@ -82,7 +82,7 @@ class FavoritesPage extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.1),
+            color: Colors.black.withValues(alpha:isDarkMode ? 0.3 : 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -94,8 +94,8 @@ class FavoritesPage extends ConsumerWidget {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: isDarkMode
-                  ? Colors.blueGrey.withOpacity(0.2)
-                  : Colors.blueGrey.withOpacity(0.1),
+                  ? Colors.blueGrey.withValues(alpha:0.2)
+                  : Colors.blueGrey.withValues(alpha:0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
