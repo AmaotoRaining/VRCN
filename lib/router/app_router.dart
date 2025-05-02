@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vrchat/pages/avatars_page.dart';
 import 'package:vrchat/pages/credits_page.dart';
+import 'package:vrchat/pages/favorites_page.dart';
 import 'package:vrchat/pages/friend_detail_page.dart';
 import 'package:vrchat/pages/friends_page.dart';
+import 'package:vrchat/pages/groups_page.dart';
 import 'package:vrchat/pages/login_page.dart';
 import 'package:vrchat/pages/notifications_page.dart';
 import 'package:vrchat/pages/profile_page.dart';
@@ -230,6 +233,15 @@ final routerProvider = Provider<GoRouter>((ref) {
           final worldId = state.pathParameters['worldId']!;
           return WorldDetailPage(worldId: worldId);
         },
+      ),
+      GoRoute(
+        path: '/favorites',
+        builder: (context, state) => const FavoritesPage(),
+      ),
+      GoRoute(path: '/groups', builder: (context, state) => const GroupsPage()),
+      GoRoute(
+        path: '/avatars',
+        builder: (context, state) => const AvatarsPage(),
       ),
       GoRoute(
         path: '/credits',

@@ -71,7 +71,12 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                           radius: 16,
                           backgroundColor: Colors.grey[300],
                           backgroundImage:
-                              currentUser
+                              currentUser.userIcon.isNotEmpty
+                                  ? CachedNetworkImageProvider(
+                                    currentUser.userIcon,
+                                    headers: headers,
+                                  )
+                                  : currentUser
                                       .currentAvatarThumbnailImageUrl
                                       .isNotEmpty
                                   ? CachedNetworkImageProvider(

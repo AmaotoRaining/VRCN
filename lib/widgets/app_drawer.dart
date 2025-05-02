@@ -1,4 +1,4 @@
-// ignore_for_file: document_ignores
+// ignore_for_file: document_ignores, deprecated_member_use
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -80,7 +80,46 @@ class AppDrawer extends ConsumerWidget {
                           Navigator.pop(context);
                         },
                       ),
-
+                      // お気に入りメニュー追加
+                      _buildMenuItem(
+                        context: context,
+                        icon: Icons.favorite_rounded,
+                        title: 'お気に入り',
+                        isSelected: GoRouterState.of(
+                          context,
+                        ).uri.path.startsWith('/favorites'),
+                        onTap: () {
+                          context.push('/favorites');
+                          Navigator.pop(context);
+                        },
+                      ),
+                      // アバターメニュー追加
+                      _buildMenuItem(
+                        context: context,
+                        icon: Icons.face_rounded,
+                        title: 'アバター',
+                        isSelected: GoRouterState.of(
+                          context,
+                        ).uri.path.startsWith('/avatars'),
+                        onTap: () {
+                          context.push('/avatars');
+                          Navigator.pop(context);
+                        },
+                      ),
+                      // グループメニュー追加
+                      _buildMenuItem(
+                        context: context,
+                        icon: Icons.group_rounded,
+                        title: 'グループ',
+                        isSelected: GoRouterState.of(
+                          context,
+                        ).uri.path.startsWith('/groups'),
+                        onTap: () {
+                          context.push('/groups');
+                          Navigator.pop(context);
+                        },
+                      ),
+                      const Divider(height: 1),
                       // 設定メニュー
                       _buildMenuItem(
                         context: context,
@@ -138,12 +177,18 @@ class AppDrawer extends ConsumerWidget {
                     radius: 30,
                     backgroundColor: Colors.grey[300],
                     backgroundImage:
-                        user.currentAvatarThumbnailImageUrl.isNotEmpty
+                        user.userIcon.isNotEmpty
+                            ? CachedNetworkImageProvider(
+                              user.userIcon,
+                              headers: headers,
+                            )
+                            : user.currentAvatarThumbnailImageUrl.isNotEmpty
                             ? CachedNetworkImageProvider(
                               user.currentAvatarThumbnailImageUrl,
                               headers: headers,
                             )
-                            : null,
+                            : const AssetImage('assets/images/default.png')
+                                as ImageProvider,
                     child:
                         user.currentAvatarThumbnailImageUrl.isEmpty
                             ? const Icon(

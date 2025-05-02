@@ -45,8 +45,15 @@ class FriendDetailPage extends ConsumerWidget {
     WidgetRef ref,
     bool isDarkMode,
   ) {
-    final statusColor = StatusHelper.getStatusColor(user.status);
-    StatusHelper.getStatusText(user.status);
+    // locationがオフラインの場合はグレー系のカラーを使用
+    final Color statusColor;
+    if (user.location == 'offline') {
+      statusColor = isDarkMode ? Colors.grey.shade600 : Colors.grey.shade400;
+    } else {
+      statusColor = StatusHelper.getStatusColor(user.status);
+    }
+
+    final statusText = StatusHelper.getStatusText(user.status);
 
     final vrchatApi = ref.watch(vrchatProvider).value;
     final headers = {
@@ -61,406 +68,441 @@ class FriendDetailPage extends ConsumerWidget {
       ref.watch(worldDetailProvider(user.worldId!));
     }
 
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          expandedHeight: 300,
-          pinned: true,
-          stretch: true,
-          backgroundColor:
-              isDarkMode
-                  ? AppTheme.primaryColor.withValues(alpha: 0.8)
-                  : AppTheme.primaryColor,
-          flexibleSpace: FlexibleSpaceBar(
-            background: Stack(
-              fit: StackFit.expand,
-              children: [
-                userRepresentedGroupAsync.when(
-                  data: (group) {
-                    if (group != null && group.bannerUrl != null) {
-                      return Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          CachedNetworkImage(
-                            imageUrl: group.bannerUrl!,
-                            fit: BoxFit.cover,
-                            httpHeaders: headers,
-                            placeholder:
-                                (context, url) =>
-                                    Container(color: AppTheme.primaryColor),
-                            errorWidget:
-                                (context, url, error) =>
-                                    Container(color: AppTheme.primaryColor),
-                          ),
-                          Container(color: Colors.black.withValues(alpha: 0.2)),
-                        ],
-                      );
-                    } else {
-                      return _buildGradientBackground(statusColor);
-                    }
-                  },
-                  loading: () => _buildGradientBackground(statusColor),
-                  error: (_, _) => _buildGradientBackground(statusColor),
-                ),
-
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Hero(
-                      tag: 'avatar-${user.id}',
-                      child: Container(
-                        width: 130,
-                        height: 130,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: statusColor, width: 4),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 15,
-                              offset: Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child:
-                              user.userIcon.isNotEmpty
-                                  ? CachedNetworkImage(
-                                    imageUrl: user.userIcon,
-                                    fit: BoxFit.cover,
-                                    httpHeaders: headers,
-                                    placeholder:
-                                        (context, url) =>
-                                            Container(color: Colors.grey[300]),
-                                    errorWidget:
-                                        (context, url, error) => const Icon(
-                                          Icons.person,
-                                          size: 80,
-                                          color: Colors.white70,
-                                        ),
-                                  )
-                                  : (user
-                                          .currentAvatarThumbnailImageUrl
-                                          .isNotEmpty
-                                      ? CachedNetworkImage(
-                                        imageUrl:
-                                            user.currentAvatarThumbnailImageUrl,
-                                        fit: BoxFit.cover,
-                                        httpHeaders: headers,
-                                        placeholder:
-                                            (context, url) => Container(
-                                              color: Colors.grey[300],
-                                            ),
-                                        errorWidget:
-                                            (context, url, error) => const Icon(
-                                              Icons.person,
-                                              size: 80,
-                                              color: Colors.white70,
-                                            ),
-                                      )
-                                      : Container(
-                                        color: Colors.grey[800],
-                                        child: const Icon(
-                                          Icons.person,
-                                          size: 80,
-                                          color: Colors.white70,
-                                        ),
-                                      )),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      user.displayName,
-                      style: GoogleFonts.poppins(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        shadows: [
-                          const Shadow(
-                            color: Colors.black26,
-                            blurRadius: 5,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    if (user.statusDescription.isNotEmpty) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black26,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: statusColor, width: 1.5),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              user.statusDescription,
-                              style: GoogleFonts.notoSans(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.refresh(friendDetailProvider(userId));
+        if (user.worldId != null) {
+          ref.refresh(worldDetailProvider(user.worldId!));
+        }
+        if (user.worldId != null && user.instanceId != null) {
+          ref.refresh(
+            instanceDetailProvider(
+              InstanceParams(
+                worldId: user.worldId!,
+                instanceId: user.instanceId!,
+              ),
             ),
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 24),
-                if (user.location != 'offline' && user.location != null)
-                  _buildInfoCard(
-                    context: context,
-                    title: '現在の場所',
-                    icon: Icons.location_on_outlined,
-                    isDarkMode: isDarkMode,
-                    customColor: Colors.green,
-                    children: [
-                      _buildLocationInfo(context, user, isDarkMode, ref),
-                    ],
+          );
+        }
+        ref.refresh(userRepresentedGroupProvider(user.id));
+      },
+      // リフレッシュインジケーターのカスタマイズ
+      color: statusColor,
+      backgroundColor: isDarkMode ? Colors.grey[850] : Colors.white,
+      strokeWidth: 2.5,
+      displacement: 40,
+      child: CustomScrollView(
+        // 物理スクロール設定
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 300,
+            pinned: true,
+            stretch: true,
+            backgroundColor:
+                isDarkMode
+                    ? AppTheme.primaryColor.withValues(alpha: 0.8)
+                    : AppTheme.primaryColor,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  userRepresentedGroupAsync.when(
+                    data: (group) {
+                      if (group != null && group.bannerUrl != null) {
+                        return Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            CachedNetworkImage(
+                              imageUrl: group.bannerUrl!,
+                              fit: BoxFit.cover,
+                              httpHeaders: headers,
+                              placeholder:
+                                  (context, url) =>
+                                      Container(color: AppTheme.primaryColor),
+                              errorWidget:
+                                  (context, url, error) =>
+                                      Container(color: AppTheme.primaryColor),
+                            ),
+                            Container(
+                              color: Colors.black.withValues(alpha: 0.2),
+                            ),
+                          ],
+                        );
+                      } else {
+                        return _buildGradientBackground(statusColor);
+                      }
+                    },
+                    loading: () => _buildGradientBackground(statusColor),
+                    error: (_, _) => _buildGradientBackground(statusColor),
                   ),
-                const SizedBox(height: 24),
-                _buildInfoCard(
-                  context: context,
-                  title: '基本情報',
-                  icon: Icons.person_outline,
-                  isDarkMode: isDarkMode,
-                  children: [
-                    _buildInfoRow(
-                      icon: Icons.badge,
-                      label: 'ユーザーID',
-                      value: user.id,
-                      isDarkMode: isDarkMode,
-                    ),
-                    _buildInfoRow(
-                      icon: Icons.calendar_today,
-                      label: '登録日',
-                      value:
-                          user.dateJoined !=
-                                  DateTime.fromMillisecondsSinceEpoch(0)
-                              ? _formatDate(user.dateJoined)
-                              : 'Unknown',
-                      isDarkMode: isDarkMode,
-                    ),
-                    _buildInfoRow(
-                      icon: Icons.timer,
-                      label: '最終ログイン',
-                      value: _formatDate(user.lastLogin),
-                      isDarkMode: isDarkMode,
-                    ),
-                    _buildInfoRow(
-                      icon: Icons.verified_user,
-                      label: 'ユーザータイプ',
-                      value: UserTypeHelper.getUserTypeText(user.tags),
-                      isDarkMode: isDarkMode,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                if (user.bio.isNotEmpty)
-                  _buildInfoCard(
-                    context: context,
-                    title: '自己紹介',
-                    icon: Icons.info_outline,
-                    isDarkMode: isDarkMode,
+
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color:
-                              isDarkMode ? Colors.grey[850] : Colors.grey[100],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color:
-                                isDarkMode
-                                    ? Colors.grey[700]!
-                                    : Colors.grey[300]!,
+                      Hero(
+                        tag: 'avatar-${user.id}',
+                        child: Container(
+                          width: 130,
+                          height: 130,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: statusColor, width: 4),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 15,
+                                offset: Offset(0, 5),
+                              ),
+                            ],
                           ),
-                        ),
-                        child: Text(
-                          user.bio,
-                          style: GoogleFonts.notoSans(
-                            fontSize: 16,
-                            color:
-                                isDarkMode
-                                    ? Colors.grey[300]
-                                    : Colors.grey[800],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                const SizedBox(height: 16),
-                userRepresentedGroupAsync.when(
-                  data: (group) {
-                    if (group?.groupId != null) {
-                      return _buildInfoCard(
-                        context: context,
-                        title: '所属グループ',
-                        icon: Icons.group_outlined,
-                        isDarkMode: isDarkMode,
-                        customColor: Colors.indigo,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (group?.iconUrl != null)
-                                Container(
-                                  width: 60,
-                                  height: 60,
-                                  margin: const EdgeInsets.only(right: 16),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color:
-                                          isDarkMode
-                                              ? Colors.grey[700]!
-                                              : Colors.grey[300]!,
-                                    ),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: CachedNetworkImage(
-                                      imageUrl: group!.iconUrl!,
-                                      httpHeaders: headers,
+                          child: ClipOval(
+                            child:
+                                user.userIcon.isNotEmpty
+                                    ? CachedNetworkImage(
+                                      imageUrl: user.userIcon,
                                       fit: BoxFit.cover,
+                                      httpHeaders: headers,
                                       placeholder:
                                           (context, url) => Container(
-                                            color:
-                                                isDarkMode
-                                                    ? Colors.grey[800]
-                                                    : Colors.grey[200],
-                                            child: Icon(
-                                              Icons.group,
-                                              color:
-                                                  isDarkMode
-                                                      ? Colors.grey[600]
-                                                      : Colors.grey[400],
-                                              size: 30,
-                                            ),
+                                            color: Colors.grey[300],
                                           ),
                                       errorWidget:
-                                          (context, url, error) => Container(
-                                            color:
-                                                isDarkMode
-                                                    ? Colors.grey[800]
-                                                    : Colors.grey[200],
-                                            child: Icon(
-                                              Icons.group,
-                                              color:
-                                                  isDarkMode
-                                                      ? Colors.grey[600]
-                                                      : Colors.grey[400],
-                                              size: 30,
-                                            ),
+                                          (context, url, error) => const Icon(
+                                            Icons.person,
+                                            size: 80,
+                                            color: Colors.white70,
                                           ),
-                                    ),
-                                  ),
-                                ),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      group?.name ?? 'Unknown Group',
-                                      style: GoogleFonts.notoSans(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color:
-                                            isDarkMode
-                                                ? Colors.white
-                                                : Colors.black87,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    if (group?.shortCode != null) ...[
-                                      Text(
-                                        'グループコード: ${group?.shortCode}',
-                                        style: GoogleFonts.notoSans(
-                                          fontSize: 14,
-                                          color:
-                                              isDarkMode
-                                                  ? Colors.grey[300]
-                                                  : Colors.grey[700],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                    ],
-                                    if (group?.memberCount != null)
-                                      Text(
-                                        'メンバー数: ${group?.memberCount}人',
-                                        style: GoogleFonts.notoSans(
-                                          fontSize: 14,
-                                          color:
-                                              isDarkMode
-                                                  ? Colors.grey[300]
-                                                  : Colors.grey[700],
-                                        ),
-                                      ),
-                                  ],
+                                    )
+                                    : (user
+                                            .currentAvatarThumbnailImageUrl
+                                            .isNotEmpty
+                                        ? CachedNetworkImage(
+                                          imageUrl:
+                                              user.currentAvatarThumbnailImageUrl,
+                                          fit: BoxFit.cover,
+                                          httpHeaders: headers,
+                                          placeholder:
+                                              (context, url) => Container(
+                                                color: Colors.grey[300],
+                                              ),
+                                          errorWidget:
+                                              (context, url, error) =>
+                                                  const Icon(
+                                                    Icons.person,
+                                                    size: 80,
+                                                    color: Colors.white70,
+                                                  ),
+                                        )
+                                        : Container(
+                                          color: Colors.grey[800],
+                                          child: const Icon(
+                                            Icons.person,
+                                            size: 80,
+                                            color: Colors.white70,
+                                          ),
+                                        )),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        user.displayName,
+                        style: GoogleFonts.poppins(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          shadows: [
+                            const Shadow(
+                              color: Colors.black26,
+                              blurRadius: 5,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      if (user.statusDescription.isNotEmpty) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black26,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: statusColor, width: 1.5),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                user.statusDescription,
+                                style: GoogleFonts.notoSans(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('グループ詳細機能は準備中です')),
-                              );
-                            },
-                            icon: const Icon(Icons.visibility_outlined),
-                            label: Text(
-                              'グループ詳細を表示',
-                              style: GoogleFonts.notoSans(),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.indigo,
-                              side: const BorderSide(color: Colors.indigo),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    } else {
-                      return const SizedBox.shrink();
-                    }
-                  },
-                  loading:
-                      () => const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
-                      ),
-                  error: (_, _) => const SizedBox.shrink(),
-                ),
-                const SizedBox(height: 32),
-              ],
+                      ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 24),
+                  if (user.location != 'offline' && user.location != null)
+                    _buildInfoCard(
+                      context: context,
+                      title: '現在の場所',
+                      icon: Icons.location_on_outlined,
+                      isDarkMode: isDarkMode,
+                      customColor: Colors.green,
+                      children: [
+                        _buildLocationInfo(context, user, isDarkMode, ref),
+                      ],
+                    ),
+                  const SizedBox(height: 24),
+                  _buildInfoCard(
+                    context: context,
+                    title: '基本情報',
+                    icon: Icons.person_outline,
+                    isDarkMode: isDarkMode,
+                    children: [
+                      _buildInfoRow(
+                        icon: Icons.badge,
+                        label: 'ユーザーID',
+                        value: user.id,
+                        isDarkMode: isDarkMode,
+                      ),
+                      _buildInfoRow(
+                        icon: Icons.calendar_today,
+                        label: '登録日',
+                        value:
+                            user.dateJoined !=
+                                    DateTime.fromMillisecondsSinceEpoch(0)
+                                ? _formatDate(user.dateJoined)
+                                : 'Unknown',
+                        isDarkMode: isDarkMode,
+                      ),
+                      _buildInfoRow(
+                        icon: Icons.timer,
+                        label: '最終ログイン',
+                        value: _formatDate(user.lastLogin),
+                        isDarkMode: isDarkMode,
+                      ),
+                      _buildInfoRow(
+                        icon: Icons.verified_user,
+                        label: 'ユーザータイプ',
+                        value: UserTypeHelper.getUserTypeText(user.tags),
+                        isDarkMode: isDarkMode,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (user.bio.isNotEmpty)
+                    _buildInfoCard(
+                      context: context,
+                      title: '自己紹介',
+                      icon: Icons.info_outline,
+                      isDarkMode: isDarkMode,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color:
+                                isDarkMode
+                                    ? Colors.grey[850]
+                                    : Colors.grey[100],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[700]!
+                                      : Colors.grey[300]!,
+                            ),
+                          ),
+                          child: Text(
+                            user.bio,
+                            style: GoogleFonts.notoSans(
+                              fontSize: 16,
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[300]
+                                      : Colors.grey[800],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 16),
+                  userRepresentedGroupAsync.when(
+                    data: (group) {
+                      if (group?.groupId != null) {
+                        return _buildInfoCard(
+                          context: context,
+                          title: '所属グループ',
+                          icon: Icons.group_outlined,
+                          isDarkMode: isDarkMode,
+                          customColor: Colors.indigo,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (group?.iconUrl != null)
+                                  Container(
+                                    width: 60,
+                                    height: 60,
+                                    margin: const EdgeInsets.only(right: 16),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color:
+                                            isDarkMode
+                                                ? Colors.grey[700]!
+                                                : Colors.grey[300]!,
+                                      ),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: CachedNetworkImage(
+                                        imageUrl: group!.iconUrl!,
+                                        httpHeaders: headers,
+                                        fit: BoxFit.cover,
+                                        placeholder:
+                                            (context, url) => Container(
+                                              color:
+                                                  isDarkMode
+                                                      ? Colors.grey[800]
+                                                      : Colors.grey[200],
+                                              child: Icon(
+                                                Icons.group,
+                                                color:
+                                                    isDarkMode
+                                                        ? Colors.grey[600]
+                                                        : Colors.grey[400],
+                                                size: 30,
+                                              ),
+                                            ),
+                                        errorWidget:
+                                            (context, url, error) => Container(
+                                              color:
+                                                  isDarkMode
+                                                      ? Colors.grey[800]
+                                                      : Colors.grey[200],
+                                              child: Icon(
+                                                Icons.group,
+                                                color:
+                                                    isDarkMode
+                                                        ? Colors.grey[600]
+                                                        : Colors.grey[400],
+                                                size: 30,
+                                              ),
+                                            ),
+                                      ),
+                                    ),
+                                  ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        group?.name ?? 'Unknown Group',
+                                        style: GoogleFonts.notoSans(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color:
+                                              isDarkMode
+                                                  ? Colors.white
+                                                  : Colors.black87,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      if (group?.shortCode != null) ...[
+                                        Text(
+                                          'グループコード: ${group?.shortCode}',
+                                          style: GoogleFonts.notoSans(
+                                            fontSize: 14,
+                                            color:
+                                                isDarkMode
+                                                    ? Colors.grey[300]
+                                                    : Colors.grey[700],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                      ],
+                                      if (group?.memberCount != null)
+                                        Text(
+                                          'メンバー数: ${group?.memberCount}人',
+                                          style: GoogleFonts.notoSans(
+                                            fontSize: 14,
+                                            color:
+                                                isDarkMode
+                                                    ? Colors.grey[300]
+                                                    : Colors.grey[700],
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('グループ詳細機能は準備中です'),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.visibility_outlined),
+                              label: Text(
+                                'グループ詳細を表示',
+                                style: GoogleFonts.notoSans(),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.indigo,
+                                side: const BorderSide(color: Colors.indigo),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    },
+                    loading:
+                        () => const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                    error: (_, _) => const SizedBox.shrink(),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -973,7 +1015,6 @@ class FriendDetailPage extends ConsumerWidget {
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
-                          decoration: TextDecoration.underline,
                           shadows: [
                             Shadow(
                               color: Colors.black.withValues(alpha: 0.8),

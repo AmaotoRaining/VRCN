@@ -105,15 +105,15 @@ class Navigation extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildTwitterNavItem(
+              _buildNavItem(
                 context,
                 0,
-                Icons.people_outline,
-                Icons.people,
+                Icons.home_outlined,
+                Icons.home,
                 isDarkMode,
                 ref,
               ),
-              _buildTwitterNavItem(
+              _buildNavItem(
                 context,
                 1,
                 Icons.search_outlined,
@@ -121,7 +121,7 @@ class Navigation extends ConsumerWidget {
                 isDarkMode,
                 ref,
               ),
-              _buildTwitterNavItem(
+              _buildNavItem(
                 context,
                 2,
                 Icons.notifications_none_outlined,
@@ -136,7 +136,7 @@ class Navigation extends ConsumerWidget {
     );
   }
 
-  Widget _buildTwitterNavItem(
+  Widget _buildNavItem(
     BuildContext context,
     int index,
     IconData icon,
@@ -164,19 +164,14 @@ class Navigation extends ConsumerWidget {
         switch (index) {
           case 0:
             destination = '/';
-            break; // breakを追加
           case 1:
             destination = '/search';
-            break; // breakを追加
           case 2:
             destination = '/notifications';
-            break; // breakを追加
           default:
             destination = '/';
-            break; // breakを追加
         }
 
-        // extraパラメータを使わずに単純に遷移
         router.go(destination);
       },
       child: SizedBox(

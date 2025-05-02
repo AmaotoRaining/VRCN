@@ -109,7 +109,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
               // 通知設定
               _buildSettingsSection(
-                title: '通知',
+                title: '通知 - 実装中',
                 icon: Icons.notifications_outlined,
                 children: [
                   _buildSwitchSetting(
@@ -143,7 +143,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
               // データと通信設定
               _buildSettingsSection(
-                title: 'データと通信',
+                title: 'データと通信 - 実装中',
                 icon: Icons.data_usage_outlined,
                 children: [
                   _buildSwitchSetting(
@@ -210,21 +210,27 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                       icon: Icons.email_outlined,
                       title: 'お問い合わせ',
                       subtitle: '不具合報告・ご意見はこちら',
-                      onTap: () => _launchURL('https://null-base.com/'),
+                      onTap: () => _launchURL('https://discord.gg/xAcm4KBZGk'),
                       isDarkMode: isDarkMode,
                     ),
                     _buildLinkInfoItem(
                       icon: Icons.security_outlined,
                       title: 'プライバシーポリシー',
                       subtitle: '個人情報の取り扱いについて',
-                      onTap: () => _launchURL('https://null-base.com/'),
+                      onTap:
+                          () => _launchURL(
+                            'https://null-base.com/vrcn/privacy-policy/',
+                          ),
                       isDarkMode: isDarkMode,
                     ),
                     _buildLinkInfoItem(
                       icon: Icons.description_outlined,
                       title: '利用規約',
-                      subtitle: 'サービスのご利用条件',
-                      onTap: () => _launchURL('https://null-base.com/'),
+                      subtitle: 'アプリのご利用条件',
+                      onTap:
+                          () => _launchURL(
+                            'https://null-base.com/vrcn/terms-of-service',
+                          ),
                       isDarkMode: isDarkMode,
                     ),
                     _buildLinkInfoItem(
@@ -988,7 +994,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
   Future<void> _launchURL(String urlString) async {
     final url = Uri.parse(urlString);
     if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
+      await launchUrl(url);
     } else {
       if (mounted) {
         ScaffoldMessenger.of(
