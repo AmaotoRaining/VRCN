@@ -253,7 +253,7 @@ class WorldInstanceView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GestureDetector(
-                      onTap: () => context.push('/worlds/${worldInfo.id}'),
+                      onTap: () => context.push('/world/${worldInfo.id}'),
                       child: Text(
                         instanceInfo != null
                             ? '${worldInfo.name}#${instanceInfo.name}'

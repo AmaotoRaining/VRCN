@@ -14,7 +14,7 @@ import 'package:vrchat/provider/streaming_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
 import 'package:vrchat/theme/app_theme.dart';
-import 'package:vrchat/widgets/custom_loading.dart';
+import 'package:vrchat/widgets/loading_indicator.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,7 +83,7 @@ class VRChatApp extends ConsumerWidget {
 
     // 初期化中はローディング画面、完了後は通常のルーターを使用
     if (isInitializing) {
-      return _buildApp(themeMode: themeMode, home: const CustomLoading());
+      return _buildApp(themeMode: themeMode, home: const LoadingIndicator());
     }
 
     // 自動ログイン試行

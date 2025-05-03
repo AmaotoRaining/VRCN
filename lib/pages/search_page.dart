@@ -7,7 +7,7 @@ import 'package:vrchat/provider/group_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
-import 'package:vrchat/widgets/custom_loading.dart';
+import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
 // 検索クエリを管理するためのプロバイダー
@@ -319,7 +319,7 @@ class SearchPageState extends ConsumerState<SearchPage>
     }
 
     if (searchState.isLoading && offset == 0) {
-      return const Center(child: CustomLoading(message: '検索中...'));
+      return const Center(child: LoadingIndicator(message: '検索中...'));
     }
 
     if (searchState.hasError && cachedResults.isEmpty) {
@@ -505,7 +505,7 @@ class SearchPageState extends ConsumerState<SearchPage>
     );
 
     if (searchState.isLoading && offset == 0) {
-      return const Center(child: CustomLoading(message: '検索中...'));
+      return const Center(child: LoadingIndicator(message: '検索中...'));
     }
 
     // エラー状態の処理
@@ -844,7 +844,7 @@ class SearchPageState extends ConsumerState<SearchPage>
 
     // 検索クエリが変わった場合、ローディング状態を優先表示
     if (searchState.isLoading && offset == 0) {
-      return const Center(child: CustomLoading(message: '検索中...'));
+      return const Center(child: LoadingIndicator(message: '検索中...'));
     }
 
     // エラー状態の処理

@@ -180,7 +180,7 @@ class FriendLocationGroup extends ConsumerWidget {
                           if (effectiveWorldId != null &&
                               !isPrivate &&
                               !isOffline) {
-                            context.push('/worlds/$effectiveWorldId');
+                            context.push('/world/$effectiveWorldId');
                           }
                         },
                         child: Row(

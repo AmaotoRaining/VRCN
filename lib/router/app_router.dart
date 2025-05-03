@@ -9,6 +9,7 @@ import 'package:vrchat/pages/credits_page.dart';
 import 'package:vrchat/pages/favorites_page.dart';
 import 'package:vrchat/pages/friend_detail_page.dart';
 import 'package:vrchat/pages/friends_page.dart';
+import 'package:vrchat/pages/group_detail_page.dart';
 import 'package:vrchat/pages/groups_page.dart';
 import 'package:vrchat/pages/login_page.dart';
 import 'package:vrchat/pages/notifications_page.dart';
@@ -18,7 +19,7 @@ import 'package:vrchat/pages/settings_page.dart';
 import 'package:vrchat/pages/world_detail_page.dart';
 import 'package:vrchat/provider/navigation_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
-import 'package:vrchat/widgets/custom_loading.dart';
+import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat/widgets/navigation_bar.dart';
 
 // スプラッシュ画面が表示されているかを追跡
@@ -187,9 +188,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/search',
             pageBuilder: (context, state) {
               return MaterialPage(
-                child: SearchPage(
-                  key: ref.read(searchPageKeyProvider),
-                ),
+                child: SearchPage(key: ref.read(searchPageKeyProvider)),
               );
             },
           ),
@@ -209,7 +208,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
       GoRoute(
         path: '/loading',
-        builder: (context, state) => const CustomLoading(),
+        builder: (context, state) => const LoadingIndicator(),
       ),
       GoRoute(
         path: '/settings',
@@ -227,10 +226,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/worlds/:worldId',
+        path: '/world/:worldId',
         builder: (context, state) {
           final worldId = state.pathParameters['worldId']!;
           return WorldDetailPage(worldId: worldId);
+        },
+      ),
+      GoRoute(
+        path: '/group/:groupId',
+        builder: (context, state) {
+          final groupId = state.pathParameters['groupId']!;
+          return GroupDetailPage(groupId: groupId);
         },
       ),
       GoRoute(

@@ -64,3 +64,45 @@ final groupSearchProvider =
 final groupSearchResultsProvider = StateProvider<List<LimitedGroup>>(
   (ref) => [],
 );
+
+/// グループ情報の詳細を取得するプロバイダー
+final groupDetailProvider = FutureProvider.family<Group, GroupDetailParams>((
+  ref,
+  params,
+) async {
+  final groupsApi = await ref.watch(vrchatGroupProvider.future);
+
+  try {
+    final response = await groupsApi.getGroup(
+      groupId: params.groupId,
+      includeRoles: params.includeRoles,
+    );
+
+    if (response.data == null) {
+      throw Exception('グループデータが取得できませんでした: ${params.groupId}');
+    }
+    return response.data!;
+  } catch (e) {
+    throw Exception('グループ情報の取得に失敗しました: $e');
+  }
+});
+
+/// グループ詳細取得パラメータクラス
+@immutable
+class GroupDetailParams {
+  final String groupId;
+  final bool includeRoles;
+
+  const GroupDetailParams({required this.groupId, this.includeRoles = false});
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is GroupDetailParams &&
+        other.groupId == groupId &&
+        other.includeRoles == includeRoles;
+  }
+
+  @override
+  int get hashCode => Object.hash(groupId, includeRoles);
+}

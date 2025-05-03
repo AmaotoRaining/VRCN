@@ -3,6 +3,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/provider/friends_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
@@ -531,12 +532,7 @@ class ProfilePage extends ConsumerWidget {
                               const SizedBox(height: 16),
                               OutlinedButton.icon(
                                 onPressed: () {
-                                  // TODO: グループ詳細画面への遷移
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('グループ詳細機能は準備中です'),
-                                    ),
-                                  );
+                                  context.push('/group/${group.groupId}');
                                 },
                                 icon: const Icon(Icons.visibility_outlined),
                                 label: Text(
