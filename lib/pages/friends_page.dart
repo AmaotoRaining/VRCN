@@ -199,7 +199,7 @@ class FriendsPage extends ConsumerWidget {
           locationName: location,
           locationIcon: Icons.public,
           friends: locationFriends,
-          onTapFriend: (friend) => context.push('/friends/${friend.id}'),
+          onTapFriend: (friend) => context.push('/user/${friend.id}'),
           iconColor: Colors.green,
           // ワールド情報プロバイダーを渡す（世界名を表示するため）
           worldId:
@@ -217,7 +217,7 @@ class FriendsPage extends ConsumerWidget {
           locationName: 'プライベート',
           locationIcon: Icons.lock_outline,
           friends: privateFriends,
-          onTapFriend: (friend) => context.push('/friends/${friend.id}'),
+          onTapFriend: (friend) => context.push('/user/${friend.id}'),
           iconColor: Colors.redAccent,
           isPrivate: true,
           compact: false, // コンパクトモードをオフに
@@ -232,7 +232,7 @@ class FriendsPage extends ConsumerWidget {
           locationName: 'アクティブ',
           locationIcon: Icons.circle,
           friends: activeOfflineFriends,
-          onTapFriend: (friend) => context.push('/friends/${friend.id}'),
+          onTapFriend: (friend) => context.push('/user/${friend.id}'),
           iconColor: Colors.green,
           isOffline: true,
           isActive: true, // アクティブフラグをオンに
@@ -248,7 +248,7 @@ class FriendsPage extends ConsumerWidget {
           locationName: 'オフライン',
           locationIcon: Icons.offline_bolt,
           friends: offlineFriends,
-          onTapFriend: (friend) => context.push('/friends/${friend.id}'),
+          onTapFriend: (friend) => context.push('/user/${friend.id}'),
           iconColor: Colors.grey,
           isOffline: true,
           compact: false, // コンパクトモードをオフに

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/provider/user_provider.dart';
+import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/widgets/custom_loading.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
@@ -14,8 +15,17 @@ final searchQueryProvider = StateProvider<String>((ref) => '');
 // 検索中状態を管理するプロバイダー
 final searchingProvider = StateProvider<bool>((ref) => false);
 
-// 検索ページオフセット管理
-final searchOffsetProvider = StateProvider<int>((ref) => 0);
+// 検索オフセットを各タブ用に分離
+final userSearchOffsetProvider = StateProvider<int>((ref) => 0);
+final worldSearchOffsetProvider = StateProvider<int>((ref) => 0);
+final avatarSearchOffsetProvider = StateProvider<int>((ref) => 0);
+final groupSearchOffsetProvider = StateProvider<int>((ref) => 0);
+
+// 検索結果キャッシュを保持するためのプロバイダーを追加
+final worldSearchResultsProvider = StateProvider<List<LimitedWorld>>(
+  (ref) => [],
+);
+final userSearchResultsProvider = StateProvider<List<LimitedUser>>((ref) => []);
 
 // 検索ページの状態にアクセスするためのGlobalKey
 final searchPageKeyProvider = Provider((ref) => GlobalKey<SearchPageState>());
@@ -52,7 +62,12 @@ class SearchPageState extends ConsumerState<SearchPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _searchController = TextEditingController();
-  final _scrollController = ScrollController();
+
+  // 各タブ用のスクロールコントローラーを分離
+  final _userScrollController = ScrollController();
+  final _worldScrollController = ScrollController();
+  final _avatarScrollController = ScrollController();
+  final _groupScrollController = ScrollController();
 
   @override
   void initState() {
@@ -62,47 +77,118 @@ class SearchPageState extends ConsumerState<SearchPage>
       () => _onSearchChanged(_searchController.text),
     );
 
-    // スクロール検知でページネーション用
-    _scrollController.addListener(_onScroll);
+    // タブ変更時の処理を追加
+    _tabController.addListener(_onTabChanged);
+
+    // 各スクロールコントローラーにリスナーを設定
+    _userScrollController.addListener(() => _onScroll(0));
+    _worldScrollController.addListener(() => _onScroll(1));
+    _avatarScrollController.addListener(() => _onScroll(2));
+    _groupScrollController.addListener(() => _onScroll(3));
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     _searchController.removeListener(
       () => _onSearchChanged(_searchController.text),
     );
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
+
+    // 各スクロールコントローラーのリスナーを解除
+    _userScrollController.removeListener(() => _onScroll(0));
+    _worldScrollController.removeListener(() => _onScroll(1));
+    _avatarScrollController.removeListener(() => _onScroll(2));
+    _groupScrollController.removeListener(() => _onScroll(3));
+
+    // すべてのスクロールコントローラーを破棄
+    _userScrollController.dispose();
+    _worldScrollController.dispose();
+    _avatarScrollController.dispose();
+    _groupScrollController.dispose();
+
     _searchController.dispose();
     super.dispose();
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent * 0.8) {
-      _loadMoreResults();
+  // タブ変更時の処理
+  void _onTabChanged() {
+    // タブが変わったときにスクロール位置をリセットしない
+    setState(() {});
+  }
+
+  // タブインデックスに応じたスクロール処理
+  void _onScroll(int tabIndex) {
+    if (tabIndex != _tabController.index) return;
+
+    // 現在のタブに応じたスクロールコントローラーを取得
+    final controller = _getScrollController(tabIndex);
+    if (controller.position.pixels >=
+        controller.position.maxScrollExtent * 0.8) {
+      _loadMoreResults(tabIndex);
     }
   }
 
-  void _loadMoreResults() {
+  // タブインデックスに応じたスクロールコントローラーを取得
+  ScrollController _getScrollController(int tabIndex) {
+    switch (tabIndex) {
+      case 0:
+        return _userScrollController;
+      case 1:
+        return _worldScrollController;
+      case 2:
+        return _avatarScrollController;
+      case 3:
+        return _groupScrollController;
+      default:
+        return _userScrollController;
+    }
+  }
+
+  // タブ別に追加結果を読み込む
+  void _loadMoreResults(int tabIndex) {
     // すでに検索中なら追加読み込みしない
     if (ref.read(searchingProvider)) return;
 
-    final currentOffset = ref.read(searchOffsetProvider);
-    ref.read(searchOffsetProvider.notifier).state = currentOffset + 60;
+    // タブに応じたオフセットプロバイダーを取得
+    final offsetProvider = _getOffsetProvider(tabIndex);
+    final currentOffset = ref.read(offsetProvider);
+    ref.read(offsetProvider.notifier).state = currentOffset + 60;
 
     // 検索実行のトリガー
     setState(() {});
+  }
+
+  // タブインデックスに応じたオフセットプロバイダーを取得
+  StateProvider<int> _getOffsetProvider(int tabIndex) {
+    switch (tabIndex) {
+      case 0:
+        return userSearchOffsetProvider;
+      case 1:
+        return worldSearchOffsetProvider;
+      case 2:
+        return avatarSearchOffsetProvider;
+      case 3:
+        return groupSearchOffsetProvider;
+      default:
+        return userSearchOffsetProvider;
+    }
   }
 
   void _onSearchChanged(String query) {
     // デバッグ出力を追加
     debugPrint('検索クエリ変更: "$query"');
 
-    // 検索クエリが変わったらオフセットをリセット
+    // 検索クエリが変わったら各タブのオフセットをリセットし、キャッシュをクリア
     if (query != ref.read(searchQueryProvider)) {
-      ref.read(searchOffsetProvider.notifier).state = 0;
+      ref.read(userSearchOffsetProvider.notifier).state = 0;
+      ref.read(worldSearchOffsetProvider.notifier).state = 0;
+      ref.read(avatarSearchOffsetProvider.notifier).state = 0;
+      ref.read(groupSearchOffsetProvider.notifier).state = 0;
+
+      // 結果キャッシュもクリア
+      ref.read(worldSearchResultsProvider.notifier).state = [];
+      ref.read(userSearchResultsProvider.notifier).state = [];
     }
 
     ref.read(searchQueryProvider.notifier).state = query;
@@ -159,7 +245,7 @@ class SearchPageState extends ConsumerState<SearchPage>
                 // ユーザー検索結果
                 _buildUserSearchResults(),
                 // ワールド検索結果
-                _buildSearchResultTab('ワールド', Icons.public, isDarkMode),
+                _buildWorldSearchResults(),
                 // アバター検索結果
                 _buildSearchResultTab('アバター', Icons.person_outline, isDarkMode),
                 // グループ検索結果
@@ -175,24 +261,47 @@ class SearchPageState extends ConsumerState<SearchPage>
   // ユーザー検索結果表示（userSearchProviderを使用）
   Widget _buildUserSearchResults() {
     final query = ref.watch(searchQueryProvider);
-    final offset = ref.watch(searchOffsetProvider);
+    final offset = ref.watch(userSearchOffsetProvider);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    // 累積された結果を取得
+    final cachedResults = ref.watch(userSearchResultsProvider);
+
     final searchState = ref.watch(
       userSearchProvider(
         UserSearchParams(search: query, n: 60, offset: offset),
       ),
     );
 
-    // searchStateが変化したときに適切なタイミングで状態を更新
+    // searchStateが変化したときの処理（前述のワールド検索と同様）
     ref.listen<AsyncValue<List<LimitedUser>>>(
       userSearchProvider(
         UserSearchParams(search: query, n: 60, offset: offset),
       ),
-      (_, state) {
-        // マイクロタスクにスケジュールして、ビルド中の状態変更を回避
+      (previous, current) {
         Future.microtask(() {
-          if (state.isLoading) {
+          if (current.isLoading) {
             ref.read(searchingProvider.notifier).state = true;
+          } else if (current.hasValue) {
+            ref.read(searchingProvider.notifier).state = false;
+
+            final newResults = current.value ?? [];
+
+            if (offset == 0) {
+              ref.read(userSearchResultsProvider.notifier).state = newResults;
+            } else if (newResults.isNotEmpty) {
+              final List<LimitedUser> combinedResults = [...cachedResults];
+
+              final existingIds = cachedResults.map((u) => u.id).toSet();
+              for (final user in newResults) {
+                if (!existingIds.contains(user.id)) {
+                  combinedResults.add(user);
+                }
+              }
+
+              ref.read(userSearchResultsProvider.notifier).state =
+                  combinedResults;
+            }
           } else {
             ref.read(searchingProvider.notifier).state = false;
           }
@@ -204,83 +313,81 @@ class SearchPageState extends ConsumerState<SearchPage>
       return _buildEmptySearchState('ユーザー', Icons.people, isDarkMode);
     }
 
-    return searchState.when(
-      data: (users) {
-        if (users.isEmpty && offset == 0) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.search_off,
-                  size: 48,
-                  color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '「$query」の検索結果はありません',
-                  style: GoogleFonts.notoSans(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
-                  ),
-                ),
-              ],
+    if (searchState.isLoading && offset == 0) {
+      return const Center(child: CustomLoading(message: '検索中...'));
+    }
+
+    if (searchState.hasError && cachedResults.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
+            const SizedBox(height: 16),
+            Text(
+              'エラーが発生しました',
+              style: GoogleFonts.notoSans(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.red[300] : Colors.red[700],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              searchState.error.toString(),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.notoSans(
+                fontSize: 14,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (cachedResults.isEmpty && !searchState.isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.search_off,
+              size: 48,
+              color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '「$query」の検索結果はありません',
+              style: GoogleFonts.notoSans(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      controller: _userScrollController,
+      itemCount: cachedResults.length + 1,
+      itemBuilder: (context, index) {
+        if (index == cachedResults.length) {
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child:
+                  searchState.isLoading
+                      ? const CircularProgressIndicator()
+                      : const SizedBox(height: 40),
             ),
           );
         }
 
-        return ListView.builder(
-          controller: _scrollController,
-          itemCount: users.length + 1,
-          itemBuilder: (context, index) {
-            if (index == users.length) {
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Center(
-                  child:
-                      users.isEmpty
-                          ? const SizedBox()
-                          : const CustomLoading(message: '検索中...'),
-                ),
-              );
-            }
-
-            final user = users[index];
-            return _buildUserListItem(user, isDarkMode);
-          },
-        );
-      },
-      loading: () {
-        return const Center(child: CustomLoading(message: '検索中...'));
-      },
-      error: (error, stack) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
-              const SizedBox(height: 16),
-              Text(
-                'エラーが発生しました',
-                style: GoogleFonts.notoSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isDarkMode ? Colors.red[300] : Colors.red[700],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                error.toString(),
-                textAlign: TextAlign.center,
-                style: GoogleFonts.notoSans(
-                  fontSize: 14,
-                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        );
+        final user = cachedResults[index];
+        return _buildUserListItem(user, isDarkMode);
       },
     );
   }
@@ -291,20 +398,14 @@ class SearchPageState extends ConsumerState<SearchPage>
     return ListTile(
       leading: CircleAvatar(
         backgroundImage:
-            user.userIcon != null && user.userIcon!.isNotEmpty
-                ? CachedNetworkImageProvider(
-                  user.userIcon.toString(),
-                  headers: headers,
-                  cacheManager: JsonCacheManager(),
-                )
-                : user.currentAvatarThumbnailImageUrl != null &&
+            user.currentAvatarThumbnailImageUrl != null &&
                     user.currentAvatarThumbnailImageUrl!.isNotEmpty
                 ? CachedNetworkImageProvider(
-                  user.currentAvatarThumbnailImageUrl.toString(),
+                  user.currentAvatarThumbnailImageUrl!,
                   headers: headers,
                   cacheManager: JsonCacheManager(),
                 )
-                : const AssetImage('assets/images/default.png')
+                : const AssetImage('assets/images/default_avatar.png')
                     as ImageProvider,
         backgroundColor: Colors.grey[300],
       ),
@@ -328,9 +429,348 @@ class SearchPageState extends ConsumerState<SearchPage>
               )
               : null,
       onTap: () {
-        context.push('/friends/${user.id}');
+        context.push('/user/${user.id}');
       },
     );
+  }
+
+  // ワールド検索結果表示（worldSearchProviderを使用）
+  Widget _buildWorldSearchResults() {
+    final query = ref.watch(searchQueryProvider);
+    final offset = ref.watch(worldSearchOffsetProvider);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    // 累積された結果を取得
+    final cachedResults = ref.watch(worldSearchResultsProvider);
+
+    final searchState = ref.watch(
+      worldSearchProvider(
+        WorldSearchParams(search: query, n: 60, offset: offset),
+      ),
+    );
+
+    // クエリが空の場合は、遅延して結果をクリア
+    if (query.isEmpty) {
+      if (cachedResults.isNotEmpty) {
+        // ビルド後にマイクロタスクとして実行
+        Future.microtask(() {
+          ref.read(worldSearchResultsProvider.notifier).state = [];
+        });
+      }
+      return _buildEmptySearchState('ワールド', Icons.public, isDarkMode);
+    }
+
+    // searchStateが変化したときに適切なタイミングで状態を更新
+    ref.listen<AsyncValue<List<LimitedWorld>>>(
+      worldSearchProvider(
+        WorldSearchParams(search: query, n: 60, offset: offset),
+      ),
+      (previous, current) {
+        // マイクロタスクにスケジュールして、ビルド中の状態変更を回避
+        Future.microtask(() {
+          if (current.isLoading) {
+            ref.read(searchingProvider.notifier).state = true;
+          } else if (current.hasValue) {
+            ref.read(searchingProvider.notifier).state = false;
+
+            final newResults = current.value ?? [];
+
+            // 検索クエリが変わった場合はリセット、ページネーションの場合は追加
+            if (offset == 0) {
+              ref.read(worldSearchResultsProvider.notifier).state = newResults;
+            } else if (newResults.isNotEmpty) {
+              final List<LimitedWorld> combinedResults = [...cachedResults];
+
+              // 重複を避けるために既存のIDをチェック
+              final existingIds = cachedResults.map((w) => w.id).toSet();
+              for (final world in newResults) {
+                if (!existingIds.contains(world.id)) {
+                  combinedResults.add(world);
+                }
+              }
+
+              ref.read(worldSearchResultsProvider.notifier).state =
+                  combinedResults;
+            }
+          } else {
+            ref.read(searchingProvider.notifier).state = false;
+          }
+        });
+      },
+    );
+
+    if (searchState.isLoading && offset == 0) {
+      return const Center(child: CustomLoading(message: '検索中...'));
+    }
+
+    // エラー状態の処理
+    if (searchState.hasError && cachedResults.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
+            const SizedBox(height: 16),
+            Text(
+              'エラーが発生しました',
+              style: GoogleFonts.notoSans(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.red[300] : Colors.red[700],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              searchState.error.toString(),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.notoSans(
+                fontSize: 14,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 空の検索結果
+    if (cachedResults.isEmpty && !searchState.isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.search_off,
+              size: 48,
+              color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '「$query」の検索結果はありません',
+              style: GoogleFonts.notoSans(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // キャッシュされた結果を表示
+    return ListView.builder(
+      controller: _worldScrollController, // ワールドタブ用のスクロールコントローラー
+      itemCount: cachedResults.length + 1,
+      itemBuilder: (context, index) {
+        if (index == cachedResults.length) {
+          // 最後の項目の場合、ローディングインジケータを表示
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child:
+                  searchState.isLoading
+                      ? const CircularProgressIndicator()
+                      : const SizedBox(height: 40), // スペースを確保
+            ),
+          );
+        }
+
+        final world = cachedResults[index];
+        return _buildWorldListItem(world, isDarkMode);
+      },
+    );
+  }
+
+  // ワールドリストアイテムのウィジェト
+  Widget _buildWorldListItem(LimitedWorld world, bool isDarkMode) {
+    final headers = {'User-Agent': 'VRChat/1.0'};
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isDarkMode ? Colors.grey[800]! : Colors.grey[200]!,
+          width: 1,
+        ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          context.push('/worlds/${world.id}');
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ワールドのサムネイル画像
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child:
+                    world.thumbnailImageUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                          imageUrl: world.thumbnailImageUrl,
+                          fit: BoxFit.cover,
+                          placeholder:
+                              (context, url) => Container(
+                                color:
+                                    isDarkMode
+                                        ? Colors.grey[800]
+                                        : Colors.grey[300],
+                                child: const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                          errorWidget:
+                              (context, url, error) => Container(
+                                color:
+                                    isDarkMode
+                                        ? Colors.grey[800]
+                                        : Colors.grey[300],
+                                child: const Icon(Icons.error),
+                              ),
+                          cacheManager: JsonCacheManager(),
+                          httpHeaders: headers,
+                        )
+                        : Container(
+                          color:
+                              isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                          child: const Icon(Icons.image, size: 48),
+                        ),
+              ),
+            ),
+
+            // ワールド情報
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ワールド名とお気に入り数
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          world.name,
+                          style: GoogleFonts.notoSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: isDarkMode ? Colors.white : Colors.black87,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.favorite,
+                            size: 16,
+                            color: Colors.red[400],
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatNumber(world.popularity),
+                            style: GoogleFonts.notoSans(
+                              fontSize: 14,
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[300]
+                                      : Colors.grey[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  // 作者名
+                  if (world.authorName.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'by ${world.authorName}',
+                      style: GoogleFonts.notoSans(
+                        fontSize: 13,
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+
+                  // タグ
+                  if (world.tags.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children:
+                          world.tags.take(3).map((tag) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color:
+                                    isDarkMode
+                                        ? Colors.grey[800]
+                                        : Colors.grey[200],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                _formatTag(tag),
+                                style: GoogleFonts.notoSans(
+                                  fontSize: 12,
+                                  color:
+                                      isDarkMode
+                                          ? Colors.grey[300]
+                                          : Colors.grey[700],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 数字をフォーマットするヘルパーメソッド (1000 → 1K)
+  String _formatNumber(int number) {
+    if (number < 1000) return number.toString();
+    if (number < 1000000) return '${(number / 1000).toStringAsFixed(1)}K';
+    return '${(number / 1000000).toStringAsFixed(1)}M';
+  }
+
+  // タグをフォーマットするヘルパーメソッド
+  String _formatTag(String tag) {
+    // system_*の部分を削除
+    if (tag.startsWith('system_')) {
+      tag = tag.substring(7);
+    }
+
+    // アンダースコアをスペースに置換して先頭を大文字に
+    final words = tag
+        .split('_')
+        .map((word) {
+          if (word.isEmpty) return '';
+          return word[0].toUpperCase() + word.substring(1);
+        })
+        .join(' ');
+
+    return words;
   }
 
   // 検索結果のプレースホルダー（他のタブ用）

@@ -77,7 +77,7 @@ class CreditsPage extends StatelessWidget {
                       ),
                       onTap: () {
                         context.push(
-                          '/friends/usr_1d67de93-8afb-48dc-af7d-da7a33834f52',
+                          '/user/usr_1d67de93-8afb-48dc-af7d-da7a33834f52',
                         );
                       },
                     ),

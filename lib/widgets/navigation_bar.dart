@@ -65,8 +65,12 @@ class Navigation extends ConsumerWidget {
             if (searchPageController != null) {
               searchPageController.onSearchChanged(query);
             } else {
-              // 直接プロバイダーを操作
-              ref.read(searchOffsetProvider.notifier).state = 0;
+              // すべてのタブのオフセットをリセット
+              ref.read(userSearchOffsetProvider.notifier).state = 0;
+              ref.read(worldSearchOffsetProvider.notifier).state = 0;
+              ref.read(avatarSearchOffsetProvider.notifier).state = 0;
+              ref.read(groupSearchOffsetProvider.notifier).state = 0;
+              // 検索クエリを更新
               ref.read(searchQueryProvider.notifier).state = query;
             }
           },

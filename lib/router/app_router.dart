@@ -220,7 +220,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ProfilePage(),
       ),
       GoRoute(
-        path: '/friends/:id',
+        path: '/user/:id',
         builder: (context, state) {
           final userId = state.pathParameters['id']!;
           return FriendDetailPage(userId: userId);
