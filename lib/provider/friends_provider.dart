@@ -265,16 +265,6 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
   }
 }
 
-// 特定のフレンドの詳細情報を取得するプロバイダー
-final friendDetailProvider = FutureProvider.family<User, String>((
-  ref,
-  userId,
-) async {
-  final rawApi = await ref.watch(vrchatRawApiProvider);
-  final response = await rawApi.getUsersApi().getUser(userId: userId);
-  return response.data!;
-});
-
 // 現在のユーザー（自分自身）の情報を取得するプロバイダー
 final currentUserProvider = FutureProvider<CurrentUser>((ref) async {
   final auth = await ref.watch(vrchatAuthProvider.future);

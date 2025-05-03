@@ -2,9 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart' hide Badge;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:vrchat/provider/friends_provider.dart';
 import 'package:vrchat/provider/group_provider.dart';
 import 'package:vrchat/provider/instance_provider.dart';
+import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -27,7 +27,7 @@ class FriendDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final friendDetailAsync = ref.watch(friendDetailProvider(userId));
+    final friendDetailAsync = ref.watch(userDetailProvider(userId));
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -37,7 +37,7 @@ class FriendDetailPage extends ConsumerWidget {
         error:
             (error, stackTrace) => ErrorContainer(
               message: 'ユーザー情報の取得に失敗しました: ${error.toString()}',
-              onRetry: () => ref.refresh(friendDetailProvider(userId)),
+              onRetry: () => ref.refresh(userDetailProvider(userId)),
             ),
       ),
     );
@@ -68,7 +68,7 @@ class FriendDetailPage extends ConsumerWidget {
 
     return RefreshIndicator(
       onRefresh: () async {
-        ref.refresh(friendDetailProvider(userId));
+        ref.refresh(userDetailProvider(userId));
         if (user.worldId != null) {
           ref.refresh(worldDetailProvider(user.worldId!));
         }

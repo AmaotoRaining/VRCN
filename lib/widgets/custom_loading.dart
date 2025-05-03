@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:vrchat/theme/app_theme.dart';
 
 class CustomLoading extends StatefulWidget {
   final String message;
@@ -95,20 +94,6 @@ class _CustomLoadingState extends State<CustomLoading>
               ],
             ),
           ),
-
-          const SizedBox(height: 30),
-
-          // ローディングインジケーター
-          Container(
-            width: 240,
-            height: 8,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-            child: LinearProgressIndicator(
-              backgroundColor: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-              valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
-            ),
-          ),
-
           const SizedBox(height: 25),
 
           // メッセージ

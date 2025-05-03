@@ -25,7 +25,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     this.onAvatarPressed,
     this.showSearchBar = false,
     this.onSearchChanged,
-    this.searchHint = 'ユーザー、ワールド、アバターを検索',
+    this.searchHint = '検索',
     this.searchController,
   });
 
@@ -96,7 +96,6 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                                     currentUser.currentAvatarThumbnailImageUrl,
                                     headers: headers,
                                     cacheManager: JsonCacheManager(),
-
                                   )
                                   : const AssetImage(
                                         'assets/images/default.png',
@@ -145,17 +144,34 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     );
   }
 
-  // 検索フィールドを構築するメソッド - Twitter風UI
+  // 検索フィールドを構築するメソッド
   Widget _buildSearchField(BuildContext context, bool isDarkMode) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: TextField(
+        controller: searchController,
         decoration: InputDecoration(
-          hintText: '検索',
+          hintText: searchHint,
           prefixIcon: Icon(
             Icons.search,
             color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
           ),
+          suffixIcon:
+              searchController?.text.isNotEmpty ?? false
+                  ? IconButton(
+                    icon: Icon(
+                      Icons.clear,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                      size: 18,
+                    ),
+                    onPressed: () {
+                      searchController?.clear();
+                      if (onSearchChanged != null) {
+                        onSearchChanged!('');
+                      }
+                    },
+                  )
+                  : null,
           filled: true,
           fillColor: isDarkMode ? Colors.grey[800] : Colors.grey[200],
           border: OutlineInputBorder(
@@ -168,10 +184,9 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
           ),
         ),
         style: GoogleFonts.notoSans(fontSize: 16),
-        // TODO: 検索機能の実装
-        onChanged: (value) {
-          // 検索クエリの処理
-        },
+        onChanged: onSearchChanged,
+        textInputAction: TextInputAction.search,
+        onSubmitted: onSearchChanged,
       ),
     );
   }

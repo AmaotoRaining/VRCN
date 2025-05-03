@@ -186,12 +186,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/search',
             pageBuilder: (context, state) {
-              final immediate =
-                  (state.extra as Map<String, dynamic>?)?['immediate'] == true;
-              if (immediate) {
-                return const NoTransitionPage(child: SearchPage());
-              }
-              return const MaterialPage(child: SearchPage());
+              return MaterialPage(
+                child: SearchPage(
+                  key: ref.read(searchPageKeyProvider),
+                ),
+              );
             },
           ),
           GoRoute(

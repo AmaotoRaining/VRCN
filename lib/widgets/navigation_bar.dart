@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vrchat/pages/search_page.dart';
 import 'package:vrchat/provider/navigation_provider.dart';
 import 'package:vrchat/widgets/app_bar.dart';
 import 'package:vrchat/widgets/app_drawer.dart';
@@ -10,11 +11,10 @@ class Navigation extends ConsumerWidget {
   final Widget child;
   final int currentIndex;
 
-  const Navigation({
-    super.key,
-    required this.child,
-    required this.currentIndex,
-  });
+  // 検索ページへのアクセス用のキー
+  final searchPageKey = GlobalKey<SearchPageState>();
+
+  Navigation({super.key, required this.child, required this.currentIndex});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -50,9 +50,27 @@ class Navigation extends ConsumerWidget {
           ],
         );
       case 1:
+        // SearchPageのコントローラーを取得
+        final searchController = TextEditingController();
+        final searchPageController = SearchPage.of(context);
+
+        // 検索ページの初回表示時にコントローラーに現在の検索クエリをセット
+        searchController.text = ref.read(searchQueryProvider);
+
         return CustomAppBar(
           showSearchBar: true,
-          onSearchChanged: (query) {},
+          searchController:
+              searchPageController?.searchController ?? searchController,
+          onSearchChanged: (query) {
+            if (searchPageController != null) {
+              searchPageController.onSearchChanged(query);
+            } else {
+              // 直接プロバイダーを操作
+              ref.read(searchOffsetProvider.notifier).state = 0;
+              ref.read(searchQueryProvider.notifier).state = query;
+            }
+          },
+          searchHint: '検索',
           onAvatarPressed: () => scaffoldKey.currentState?.openDrawer(),
           actions: [
             IconButton(

@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:vrchat/provider/friends_provider.dart';
+import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/utils/status_helpers.dart';
@@ -40,7 +40,7 @@ class FriendListItem extends ConsumerWidget {
         (!compact &&
                 friend.location != 'offline' &&
                 friend.location != 'private')
-            ? ref.watch(friendDetailProvider(friend.id))
+            ? ref.watch(userDetailProvider(friend.id))
             : null;
 
     return Container(
