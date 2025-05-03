@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart' hide Badge;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
 class UserBadgesView extends StatelessWidget {
@@ -75,6 +76,7 @@ class UserBadgesView extends StatelessWidget {
           imageUrl: badge.badgeImageUrl,
           fit: BoxFit.cover,
           httpHeaders: headers,
+          cacheManager: JsonCacheManager(),
           placeholder:
               (context, url) => Container(
                 color: isDarkMode ? Colors.grey[800] : Colors.grey[300],

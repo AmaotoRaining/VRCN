@@ -51,7 +51,8 @@ class Navigation extends ConsumerWidget {
         );
       case 1:
         return CustomAppBar(
-          title: '検索',
+          showSearchBar: true,
+          onSearchChanged: (query) {},
           onAvatarPressed: () => scaffoldKey.currentState?.openDrawer(),
           actions: [
             IconButton(

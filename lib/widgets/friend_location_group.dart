@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
+import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/widgets/friend_list_item.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
@@ -108,13 +109,16 @@ class FriendLocationGroup extends ConsumerWidget {
                     height: 48,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                      border: Border.all(
+                        color: Colors.grey.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(7),
                       child: CachedNetworkImage(
                         imageUrl: thumbnailUrl!,
                         httpHeaders: headers,
+                        cacheManager: JsonCacheManager(),
                         fit: BoxFit.cover,
                         placeholder:
                             (context, url) => Container(
@@ -147,10 +151,10 @@ class FriendLocationGroup extends ConsumerWidget {
                       shape: BoxShape.circle,
                       color:
                           (isActive && isOffline)
-                              ? Colors.green.withOpacity(
-                                0.1,
+                              ? Colors.green.withValues(
+                                alpha: 0.1,
                               ) // アクティブなオフラインユーザー用の色
-                              : iconColor.withOpacity(0.1),
+                              : iconColor.withValues(alpha: 0.1),
                     ),
                     child: Icon(
                       (isActive && isOffline)
@@ -193,8 +197,8 @@ class FriendLocationGroup extends ConsumerWidget {
                                               .green
                                               .shade700 // アクティブなオフラインユーザー用の色
                                           : null,
-                                  decorationColor: Colors.green.withOpacity(
-                                    0.7,
+                                  decorationColor: Colors.green.withValues(
+                                    alpha: 0.7,
                                   ),
                                   decorationThickness: 1.2,
                                 ),
@@ -223,8 +227,8 @@ class FriendLocationGroup extends ConsumerWidget {
                           fontSize: 12,
                           color:
                               (isActive && isOffline)
-                                  ? Colors.green.withOpacity(
-                                    0.8,
+                                  ? Colors.green.withValues(
+                                    alpha: 0.8,
                                   ) // アクティブなオフラインユーザー用の色
                                   : (isDarkMode
                                       ? Colors.grey[400]

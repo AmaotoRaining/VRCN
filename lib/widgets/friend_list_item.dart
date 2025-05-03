@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/provider/friends_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
+import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/utils/status_helpers.dart';
 import 'package:vrchat/utils/user_type_helpers.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
@@ -105,11 +106,13 @@ class FriendListItem extends ConsumerWidget {
                                 ? CachedNetworkImageProvider(
                                   friend.userIcon!,
                                   headers: headers,
+                                  cacheManager: JsonCacheManager(),
                                 )
                                 : (friend.currentAvatarThumbnailImageUrl != null
                                     ? CachedNetworkImageProvider(
                                       friend.currentAvatarThumbnailImageUrl!,
                                       headers: headers,
+                                      cacheManager: JsonCacheManager(),
                                     )
                                     : null),
                         backgroundColor:

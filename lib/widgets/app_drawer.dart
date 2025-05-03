@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/provider/friends_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
+import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/utils/status_helpers.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
@@ -181,11 +182,13 @@ class AppDrawer extends ConsumerWidget {
                             ? CachedNetworkImageProvider(
                               user.userIcon,
                               headers: headers,
+                              cacheManager: JsonCacheManager(),
                             )
                             : user.currentAvatarThumbnailImageUrl.isNotEmpty
                             ? CachedNetworkImageProvider(
                               user.currentAvatarThumbnailImageUrl,
                               headers: headers,
+                              cacheManager: JsonCacheManager(),
                             )
                             : const AssetImage('assets/images/default.png')
                                 as ImageProvider,

@@ -8,6 +8,7 @@ import 'package:vrchat/provider/friends_provider.dart';
 import 'package:vrchat/provider/group_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
+import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/utils/status_helpers.dart';
 import 'package:vrchat/utils/user_type_helpers.dart';
 import 'package:vrchat/widgets/error_container.dart';
@@ -97,6 +98,7 @@ class ProfilePage extends ConsumerWidget {
                           imageUrl:
                               userRepresentedGroupAsync.valueOrNull!.bannerUrl!,
                           httpHeaders: headers,
+                          cacheManager: JsonCacheManager(),
                           fit: BoxFit.cover,
                           placeholder:
                               (context, url) =>
@@ -250,11 +252,13 @@ class ProfilePage extends ConsumerWidget {
                             ? CachedNetworkImageProvider(
                               user.userIcon,
                               headers: headers,
+                              cacheManager: JsonCacheManager(),
                             )
                             : user.currentAvatarThumbnailImageUrl.isNotEmpty
                             ? CachedNetworkImageProvider(
                               user.currentAvatarThumbnailImageUrl,
                               headers: headers,
+                              cacheManager: JsonCacheManager(),
                             )
                             : const AssetImage('assets/images/default.png')
                                 as ImageProvider,
@@ -431,6 +435,7 @@ class ProfilePage extends ConsumerWidget {
                                         child: CachedNetworkImage(
                                           imageUrl: group.iconUrl!,
                                           httpHeaders: headers,
+                                          cacheManager: JsonCacheManager(),
                                           fit: BoxFit.cover,
                                           placeholder:
                                               (context, url) => Container(

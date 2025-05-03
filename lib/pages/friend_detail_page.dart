@@ -8,6 +8,7 @@ import 'package:vrchat/provider/instance_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
+import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/utils/date_formatter.dart';
 import 'package:vrchat/utils/status_helpers.dart';
 import 'package:vrchat/utils/user_type_helpers.dart';
@@ -112,6 +113,7 @@ class FriendDetailPage extends ConsumerWidget {
                               imageUrl: group.bannerUrl!,
                               fit: BoxFit.cover,
                               httpHeaders: headers,
+                              cacheManager: JsonCacheManager(),
                               placeholder:
                                   (context, url) =>
                                       Container(color: AppTheme.primaryColor),
@@ -259,30 +261,121 @@ class FriendDetailPage extends ConsumerWidget {
   }
 
   Widget _buildUserTypeContainer(User user, bool isDarkMode) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.black26,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: UserTypeHelper.getUserTypeColor(user.tags),
-          width: 1.5,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            UserTypeHelper.getUserTypeText(user.tags),
-            style: GoogleFonts.notoSans(
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-              fontSize: 12,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // ユーザータイプを表示
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.black26,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: UserTypeHelper.getUserTypeColor(user.tags),
+              width: 1.5,
             ),
           ),
-        ],
-      ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                UserTypeHelper.getUserTypeText(user.tags),
+                style: GoogleFonts.notoSans(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // プラットフォーム表示
+        if (_getUserPlatform(user.lastPlatform) != null)
+          Container(
+            margin: const EdgeInsets.only(left: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.black26,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: _getPlatformColor(_getUserPlatform(user.lastPlatform)),
+                width: 1.5,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(width: 2),
+                Text(
+                  _getUserPlatform(user.lastPlatform).toString(),
+                  style: GoogleFonts.notoSans(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+        // 18+
+        if (user.ageVerified)
+          Container(
+            margin: const EdgeInsets.only(left: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.black26,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF596bdb), width: 1.5),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(width: 2),
+                Text(
+                  '18+',
+                  style: GoogleFonts.notoSans(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
+  }
+
+  // プラットフォーム情報取得
+  String? _getUserPlatform(String? lastPlatform) {
+    if (lastPlatform == null) return null;
+
+    switch (lastPlatform) {
+      case 'standalonewindows':
+        return 'PC';
+      case 'android':
+        return 'android';
+      case 'ios':
+        return 'iOS';
+      default:
+        return null;
+    }
+  }
+
+  // プラットフォームに対応する色を取得
+  Color _getPlatformColor(String? platform) {
+    switch (platform) {
+      case 'PC':
+        return Colors.blue;
+      case 'Android':
+        return Colors.green;
+      case 'iOS':
+        return Colors.grey;
+      default:
+        return Colors.grey;
+    }
   }
 
   Widget _buildUserHeader(User user, Color statusColor) {
@@ -339,6 +432,7 @@ class FriendDetailPage extends ConsumerWidget {
         imageUrl: user.userIcon,
         fit: BoxFit.cover,
         httpHeaders: headers,
+        cacheManager: JsonCacheManager(),
         placeholder: (context, url) => Container(color: Colors.grey[300]),
         errorWidget:
             (context, url, error) =>
@@ -349,6 +443,7 @@ class FriendDetailPage extends ConsumerWidget {
         imageUrl: user.currentAvatarThumbnailImageUrl,
         fit: BoxFit.cover,
         httpHeaders: headers,
+        cacheManager: JsonCacheManager(),
         placeholder: (context, url) => Container(color: Colors.grey[300]),
         errorWidget:
             (context, url, error) =>
@@ -454,6 +549,7 @@ class FriendDetailPage extends ConsumerWidget {
                         child: CachedNetworkImage(
                           imageUrl: group!.iconUrl!,
                           httpHeaders: headers,
+                          cacheManager: JsonCacheManager(),
                           fit: BoxFit.cover,
                           placeholder:
                               (context, url) => Container(

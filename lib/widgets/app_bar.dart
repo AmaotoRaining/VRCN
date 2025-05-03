@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/provider/friends_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
+import 'package:vrchat/utils/cache_manager.dart';
 
 /// アプリ共通のカスタムAppBarウィジェット
 class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -11,6 +12,10 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final List<Widget>? actions;
   final bool showAvatar;
   final VoidCallback? onAvatarPressed;
+  final bool showSearchBar; // 検索バーを表示するかどうか
+  final ValueChanged<String>? onSearchChanged; // 検索テキスト変更時のコールバック
+  final String searchHint; // 検索バーのヒントテキスト
+  final TextEditingController? searchController; // 検索コントローラー
 
   const CustomAppBar({
     super.key,
@@ -18,6 +23,10 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     this.actions,
     this.showAvatar = true,
     this.onAvatarPressed,
+    this.showSearchBar = false,
+    this.onSearchChanged,
+    this.searchHint = 'ユーザー、ワールド、アバターを検索',
+    this.searchController,
   });
 
   @override
@@ -27,6 +36,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUserAsync = ref.watch(currentUserProvider);
     final vrchatApi = ref.watch(vrchatProvider).value;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final headers = {
       'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
     };
@@ -45,17 +55,19 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
       elevation: 0,
       centerTitle: true,
       title:
-          title != null
-              ? Text(
-                title!,
-                style: GoogleFonts.notoSans(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              )
-              : const CircleAvatar(
-                backgroundImage: AssetImage('assets/images/default.png'),
-              ),
+          showSearchBar
+              ? _buildSearchField(context, isDarkMode)
+              : (title != null
+                  ? Text(
+                    title!,
+                    style: GoogleFonts.notoSans(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  )
+                  : const CircleAvatar(
+                    backgroundImage: AssetImage('assets/images/default.png'),
+                  )),
       iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       actions: actions,
       leadingWidth: 56, // 適切な幅を設定
@@ -75,6 +87,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                                   ? CachedNetworkImageProvider(
                                     currentUser.userIcon,
                                     headers: headers,
+                                    cacheManager: JsonCacheManager(),
                                   )
                                   : currentUser
                                       .currentAvatarThumbnailImageUrl
@@ -82,6 +95,8 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                                   ? CachedNetworkImageProvider(
                                     currentUser.currentAvatarThumbnailImageUrl,
                                     headers: headers,
+                                    cacheManager: JsonCacheManager(),
+
                                   )
                                   : const AssetImage(
                                         'assets/images/default.png',
@@ -126,6 +141,37 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   ? Colors.grey[900]
                   : Colors.grey[200],
         ),
+      ),
+    );
+  }
+
+  // 検索フィールドを構築するメソッド - Twitter風UI
+  Widget _buildSearchField(BuildContext context, bool isDarkMode) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: TextField(
+        decoration: InputDecoration(
+          hintText: '検索',
+          prefixIcon: Icon(
+            Icons.search,
+            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+          ),
+          filled: true,
+          fillColor: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(24),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 12,
+            horizontal: 16,
+          ),
+        ),
+        style: GoogleFonts.notoSans(fontSize: 16),
+        // TODO: 検索機能の実装
+        onChanged: (value) {
+          // 検索クエリの処理
+        },
       ),
     );
   }

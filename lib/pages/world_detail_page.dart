@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
+import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/widgets/app_back_button.dart';
 import 'package:vrchat/widgets/error_view.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
@@ -89,6 +90,7 @@ class WorldDetailPage extends ConsumerWidget {
                 imageUrl: world.imageUrl,
                 fit: BoxFit.cover,
                 httpHeaders: headers,
+                cacheManager: JsonCacheManager(),
                 placeholder:
                     (context, url) => Container(
                       color: isDarkMode ? Colors.grey[800] : Colors.grey[300],

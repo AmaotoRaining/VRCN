@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/provider/friends_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
+import 'package:vrchat/utils/cache_manager.dart';
 
 /// アプリ共通のカスタムAppBarウィジェット
 class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -61,6 +62,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                         ? CachedNetworkImageProvider(
                             currentUser.currentAvatarThumbnailImageUrl,
                             headers: headers,
+                            cacheManager: JsonCacheManager(),
                           )
                         : const AssetImage('assets/images/default.png') as ImageProvider,
                   ),
