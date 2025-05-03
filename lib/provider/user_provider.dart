@@ -30,6 +30,18 @@ final userDetailProvider = FutureProvider.family<User, String>((
   }
 });
 
+// ユーザーの代表グループを取得するプロバイダー
+final userRepresentedGroupProvider =
+    FutureProvider.family<RepresentedGroup?, String>((ref, userId) async {
+      final usersApi = await ref.watch(vrchatUserProvider.future);
+      try {
+        final response = await usersApi.getUserRepresentedGroup(userId: userId);
+        return response.data;
+      } catch (e) {
+        return null;
+      }
+    });
+
 // ユーザー検索パラメータクラス
 @immutable
 class UserSearchParams {
@@ -37,11 +49,7 @@ class UserSearchParams {
   final int? n;
   final int? offset;
 
-  const UserSearchParams({
-    this.search,
-    this.n = 60,
-    this.offset = 0,
-  });
+  const UserSearchParams({this.search, this.n = 60, this.offset = 0});
 
   @override
   bool operator ==(Object other) {
@@ -53,7 +61,7 @@ class UserSearchParams {
   }
 
   @override
-  int get hashCode => Object.hash(search,  n, offset);
+  int get hashCode => Object.hash(search, n, offset);
 }
 
 // ユーザー検索プロバイダー

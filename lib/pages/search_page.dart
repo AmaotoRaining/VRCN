@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/provider/group_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
@@ -26,6 +27,9 @@ final worldSearchResultsProvider = StateProvider<List<LimitedWorld>>(
   (ref) => [],
 );
 final userSearchResultsProvider = StateProvider<List<LimitedUser>>((ref) => []);
+final groupSearchResultsProvider = StateProvider<List<LimitedGroup>>(
+  (ref) => [],
+);
 
 // 検索ページの状態にアクセスするためのGlobalKey
 final searchPageKeyProvider = Provider((ref) => GlobalKey<SearchPageState>());
@@ -189,6 +193,7 @@ class SearchPageState extends ConsumerState<SearchPage>
       // 結果キャッシュもクリア
       ref.read(worldSearchResultsProvider.notifier).state = [];
       ref.read(userSearchResultsProvider.notifier).state = [];
+      ref.read(groupSearchResultsProvider.notifier).state = []; // これを追加
     }
 
     ref.read(searchQueryProvider.notifier).state = query;
@@ -249,7 +254,7 @@ class SearchPageState extends ConsumerState<SearchPage>
                 // アバター検索結果
                 _buildSearchResultTab('アバター', Icons.person_outline, isDarkMode),
                 // グループ検索結果
-                _buildSearchResultTab('グループ', Icons.group, isDarkMode),
+                _buildGroupSearchResults(),
               ],
             ),
           ),
@@ -290,7 +295,7 @@ class SearchPageState extends ConsumerState<SearchPage>
             if (offset == 0) {
               ref.read(userSearchResultsProvider.notifier).state = newResults;
             } else if (newResults.isNotEmpty) {
-              final List<LimitedUser> combinedResults = [...cachedResults];
+              final combinedResults = <LimitedUser>[...cachedResults];
 
               final existingIds = cachedResults.map((u) => u.id).toSet();
               for (final user in newResults) {
@@ -479,7 +484,7 @@ class SearchPageState extends ConsumerState<SearchPage>
             if (offset == 0) {
               ref.read(worldSearchResultsProvider.notifier).state = newResults;
             } else if (newResults.isNotEmpty) {
-              final List<LimitedWorld> combinedResults = [...cachedResults];
+              final combinedResults = <LimitedWorld>[...cachedResults];
 
               // 重複を避けるために既存のIDをチェック
               final existingIds = cachedResults.map((w) => w.id).toSet();
@@ -615,6 +620,7 @@ class SearchPageState extends ConsumerState<SearchPage>
                         ? CachedNetworkImage(
                           imageUrl: world.thumbnailImageUrl,
                           fit: BoxFit.cover,
+
                           placeholder:
                               (context, url) => Container(
                                 color:
@@ -771,6 +777,285 @@ class SearchPageState extends ConsumerState<SearchPage>
         .join(' ');
 
     return words;
+  }
+
+  // グループ検索結果表示（groupSearchProviderを使用）
+  Widget _buildGroupSearchResults() {
+    final query = ref.watch(searchQueryProvider);
+    final offset = ref.watch(groupSearchOffsetProvider);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    // 累積された結果を取得
+    final cachedResults = ref.watch(groupSearchResultsProvider);
+
+    final searchState = ref.watch(
+      groupSearchProvider(
+        GroupSearchParams(query: query, n: 60, offset: offset),
+      ),
+    );
+
+    // searchStateが変化したときに適切なタイミングで状態を更新
+    ref.listen<AsyncValue<List<LimitedGroup>>>(
+      groupSearchProvider(
+        GroupSearchParams(query: query, n: 60, offset: offset),
+      ),
+      (previous, current) {
+        Future.microtask(() {
+          if (current.isLoading) {
+            ref.read(searchingProvider.notifier).state = true;
+          } else if (current.hasValue) {
+            ref.read(searchingProvider.notifier).state = false;
+
+            final newResults = current.value ?? [];
+
+            if (offset == 0) {
+              ref.read(groupSearchResultsProvider.notifier).state = newResults;
+            } else if (newResults.isNotEmpty) {
+              final combinedResults = <LimitedGroup>[...cachedResults];
+
+              // 重複を避けるために既存のIDをチェック
+              final existingIds = cachedResults.map((g) => g.id).toSet();
+              for (final group in newResults) {
+                if (!existingIds.contains(group.id)) {
+                  combinedResults.add(group);
+                }
+              }
+
+              ref.read(groupSearchResultsProvider.notifier).state =
+                  combinedResults;
+            }
+          } else {
+            ref.read(searchingProvider.notifier).state = false;
+          }
+        });
+      },
+    );
+
+    if (query.isEmpty) {
+      // 検索クエリがない場合は結果をクリア
+      if (cachedResults.isNotEmpty) {
+        // ビルド後にマイクロタスクとして実行
+        Future.microtask(() {
+          ref.read(groupSearchResultsProvider.notifier).state = [];
+        });
+      }
+      return _buildEmptySearchState('グループ', Icons.group, isDarkMode);
+    }
+
+    // 検索クエリが変わった場合、ローディング状態を優先表示
+    if (searchState.isLoading && offset == 0) {
+      return const Center(child: CustomLoading(message: '検索中...'));
+    }
+
+    // エラー状態の処理
+    if (searchState.hasError && cachedResults.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
+            const SizedBox(height: 16),
+            Text(
+              'エラーが発生しました',
+              style: GoogleFonts.notoSans(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.red[300] : Colors.red[700],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              searchState.error.toString(),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.notoSans(
+                fontSize: 14,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 空の検索結果
+    if (cachedResults.isEmpty && !searchState.isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.search_off,
+              size: 48,
+              color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '「$query」の検索結果はありません',
+              style: GoogleFonts.notoSans(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // キャッシュされた結果を表示
+    return ListView.builder(
+      controller: _groupScrollController, // グループタブ用のスクロールコントローラー
+      itemCount: cachedResults.length + 1,
+      itemBuilder: (context, index) {
+        if (index == cachedResults.length) {
+          // 最後の項目の場合、ローディングインジケータを表示
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child:
+                  searchState.isLoading
+                      ? const CircularProgressIndicator()
+                      : const SizedBox(height: 40), // スペースを確保
+            ),
+          );
+        }
+
+        final group = cachedResults[index];
+        return _buildGroupListItem(group, isDarkMode);
+      },
+    );
+  }
+
+  // グループリストアイテムのウィジェット
+  Widget _buildGroupListItem(LimitedGroup group, bool isDarkMode) {
+    final headers = {'User-Agent': 'VRChat/1.0'};
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isDarkMode ? Colors.grey[800]! : Colors.grey[200]!,
+          width: 1,
+        ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          context.push('/group/${group.id}');
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // グループアイコン
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  width: 60,
+                  height: 60,
+                  child:
+                      group.iconUrl != null && group.iconUrl!.isNotEmpty
+                          ? CachedNetworkImage(
+                            imageUrl: group.iconUrl!,
+                            fit: BoxFit.cover,
+                            placeholder:
+                                (context, url) => Container(
+                                  color:
+                                      isDarkMode
+                                          ? Colors.grey[800]
+                                          : Colors.grey[300],
+                                  child: const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ),
+                            errorWidget:
+                                (context, url, error) => Container(
+                                  color:
+                                      isDarkMode
+                                          ? Colors.grey[800]
+                                          : Colors.grey[300],
+                                  child: const Icon(Icons.group),
+                                ),
+                            cacheManager: JsonCacheManager(),
+                            httpHeaders: headers,
+                          )
+                          : Container(
+                            color:
+                                isDarkMode
+                                    ? Colors.grey[800]
+                                    : Colors.grey[300],
+                            child: const Icon(Icons.group, size: 30),
+                          ),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // グループ情報
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // グループ名
+                    Text(
+                      group.name.toString(),
+                      style: GoogleFonts.notoSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+
+                    // グループ説明
+                    if (group.shortCode != null) ...[
+                      Text(
+                        '${group.shortCode}',
+                        style: GoogleFonts.notoSans(
+                          fontSize: 13,
+                          color:
+                              isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                    ],
+
+                    // メンバー数
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.people,
+                          size: 16,
+                          color:
+                              isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${group.memberCount ?? "?"} メンバー',
+                          style: GoogleFonts.notoSans(
+                            fontSize: 13,
+                            color:
+                                isDarkMode
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   // 検索結果のプレースホルダー（他のタブ用）
