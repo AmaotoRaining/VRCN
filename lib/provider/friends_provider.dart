@@ -265,25 +265,15 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
   }
 }
 
-// 現在のユーザー（自分自身）の情報を取得するプロバイダー
-final currentUserProvider = FutureProvider<CurrentUser>((ref) async {
-  final auth = await ref.watch(vrchatAuthProvider.future);
-  final currentUser = auth.currentUser;
-  if (currentUser == null) {
-    throw Exception('ユーザー情報を取得できませんでした');
-  }
-  return currentUser;
-});
-
 // フレンドの状態を更新するハンドラー
-final friendStateUpdaterProvider =
-    Provider<void Function(String, {required bool isOnline})>((ref) {
-      return (String userId, {required bool isOnline}) {
-        ref
-            .read(friendsProvider.notifier)
-            .updateFriendState(userId, isOnline: isOnline);
-      };
-    });
+// final friendStateUpdaterProvider =
+//     Provider<void Function(String, {required bool isOnline})>((ref) {
+//       return (String userId, {required bool isOnline}) {
+//         ref
+//             .read(friendsProvider.notifier)
+//             .updateFriendState(userId, isOnline: isOnline);
+//       };
+//     });
 
 // フレンドの位置情報を更新するハンドラー
 final friendLocationUpdaterProvider =

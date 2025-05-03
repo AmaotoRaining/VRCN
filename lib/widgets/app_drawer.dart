@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:vrchat/provider/friends_provider.dart';
+import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/utils/cache_manager.dart';
@@ -35,7 +35,7 @@ class AppDrawer extends ConsumerWidget {
                 (user) =>
                     _buildStylishHeader(context, user, headers, isDarkMode),
             loading: () => _buildLoadingHeader(context),
-            error: (_, _) => _buildErrorHeader(context),
+            error: (_, _) => _buildErrorHeader(context, ref),
           ),
 
           Expanded(
@@ -308,7 +308,7 @@ class AppDrawer extends ConsumerWidget {
   }
 
   // エラー時のヘッダー
-  Widget _buildErrorHeader(BuildContext context) {
+  Widget _buildErrorHeader(BuildContext context, WidgetRef ref) {
     return Container(
       height: 250,
       decoration: BoxDecoration(
@@ -328,6 +328,24 @@ class AppDrawer extends ConsumerWidget {
               'ユーザー情報の取得に失敗しました',
               style: GoogleFonts.notoSans(color: Colors.white, fontSize: 14),
               textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            // リトライボタン
+            ElevatedButton(
+              onPressed: () {
+                // プロバイダーをリフレッシュして再取得
+                final refreshedUser = ref.refresh(currentUserProvider);
+                // ユーザー情報が更新されるのを待つ
+                refreshedUser.whenData((_) => {});
+              },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.red[700],
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: Text('再試行', style: GoogleFonts.notoSans()),
             ),
           ],
         ),

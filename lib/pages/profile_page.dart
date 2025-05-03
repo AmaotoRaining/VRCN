@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:vrchat/provider/friends_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -14,13 +13,35 @@ import 'package:vrchat/utils/status_helpers.dart';
 import 'package:vrchat/utils/user_type_helpers.dart';
 import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
+import 'package:vrchat/widgets/profile_edit_sheet.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
-class ProfilePage extends ConsumerWidget {
+class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends ConsumerState<ProfilePage> {
+  // リロードトリガー用のキー
+  Key _refreshKey = UniqueKey();
+
+  Future<void> _refreshProfile() async {
+    setState(() {
+      // キーを更新することでウィジェットツリーの再構築を強制
+      _refreshKey = UniqueKey();
+    });
+
+    // プロバイダの再取得を実行
+    ref.invalidate(currentUserProvider);
+
+    // 明示的に新しいデータを待機
+    await ref.read(currentUserProvider.future);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final currentUserAsync = ref.watch(currentUserProvider);
     final vrchatApi = ref.watch(vrchatProvider).value;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -30,20 +51,52 @@ class ProfilePage extends ConsumerWidget {
     };
 
     return Scaffold(
+      key: _refreshKey, // リフレッシュキーを設定
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: () {
-              // TODO: プロフィール編集機能の実装
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('この機能は準備中です')));
-            },
+          currentUserAsync.when(
+            data:
+                (user) => IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () async {
+                    final result = await showModalBottomSheet<bool>(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) {
+                        return ProfileEditSheet(user: user);
+                      },
+                    );
+
+                    // プロフィールが更新されたら、情報を再取得
+                    if (result == true) {
+                      // ローディングインジケータを表示
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('プロフィール情報を更新中...'),
+                            duration: Duration(milliseconds: 1000),
+                          ),
+                        );
+                      }
+
+                      // 更新処理を待機
+                      await _refreshProfile();
+
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('プロフィールを更新しました')),
+                        );
+                      }
+                    }
+                  },
+                ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
           ),
         ],
       ),
@@ -55,7 +108,7 @@ class ProfilePage extends ConsumerWidget {
         error:
             (error, stackTrace) => ErrorContainer(
               message: 'プロフィール情報の取得に失敗しました: ${error.toString()}',
-              onRetry: () => ref.refresh(currentUserProvider),
+              onRetry: _refreshProfile,
             ),
       ),
     );
@@ -112,9 +165,7 @@ class ProfilePage extends ConsumerWidget {
                     if (userRepresentedGroupAsync.valueOrNull?.bannerUrl !=
                         null)
                       Positioned.fill(
-                        child: Container(
-                          color: Colors.black.withValues(alpha: 0.3),
-                        ),
+                        child: Container(color: Colors.black.withAlpha(76)),
                       ),
                   ],
                 ),
@@ -132,7 +183,7 @@ class ProfilePage extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
+                        color: Colors.black.withAlpha(25),
                         blurRadius: 15,
                         offset: const Offset(0, 5),
                       ),
@@ -182,12 +233,10 @@ class ProfilePage extends ConsumerWidget {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: statusColor.withValues(alpha: 0.1),
+                                      color: statusColor.withAlpha(25),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: statusColor.withValues(
-                                          alpha: 0.3,
-                                        ),
+                                        color: statusColor.withAlpha(76),
                                       ),
                                     ),
                                     child: Row(
@@ -239,7 +288,7 @@ class ProfilePage extends ConsumerWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
+                        color: Colors.black.withAlpha(51),
                         blurRadius: 15,
                         offset: const Offset(0, 5),
                       ),
@@ -587,7 +636,7 @@ class ProfilePage extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withAlpha(13),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -619,7 +668,7 @@ class ProfilePage extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withValues(alpha: 0.1),
+            color: AppTheme.primaryColor.withAlpha(25),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: AppTheme.primaryColor, size: 20),
@@ -655,7 +704,7 @@ class ProfilePage extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withAlpha(13),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -668,7 +717,7 @@ class ProfilePage extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+              color: AppTheme.primaryColor.withAlpha(25),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(20),
               ),

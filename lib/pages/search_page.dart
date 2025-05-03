@@ -603,7 +603,7 @@ class SearchPageState extends ConsumerState<SearchPage>
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
-          context.push('/worlds/${world.id}');
+          context.push('/world/${world.id}');
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

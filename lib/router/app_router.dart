@@ -18,6 +18,7 @@ import 'package:vrchat/pages/search_page.dart';
 import 'package:vrchat/pages/settings_page.dart';
 import 'package:vrchat/pages/world_detail_page.dart';
 import 'package:vrchat/provider/navigation_provider.dart';
+import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat/widgets/navigation_bar.dart';
@@ -96,8 +97,17 @@ final performAutoLoginProvider = FutureProvider<void>((ref) async {
 });
 
 // スプラッシュ画面を削除するヘルパー関数
-void _removeSplashScreen(Ref ref) {
+void _removeSplashScreen(Ref ref) async {
+  // スプラッシュが表示されている場合
   if (ref.read(splashActiveProvider)) {
+    // ユーザー情報を先に取得しておく（エラー時も続行）
+    try {
+      await ref.read(currentUserProvider.future);
+    } catch (e) {
+      debugPrint('初期ユーザー情報取得でエラー: $e');
+      // エラーがあってもスプラッシュは消す
+    }
+
     FlutterNativeSplash.remove();
     ref.read(splashActiveProvider.notifier).state = false;
   }

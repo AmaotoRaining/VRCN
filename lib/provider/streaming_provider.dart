@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vrchat/provider/friends_provider.dart';
+import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
@@ -44,7 +45,7 @@ class StreamingController {
       });
 
       // ストリーミング接続を開始
-      api.streaming.start();
+      // api.streaming.start();
 
       // 接続状態を更新（初期化後なので安全）
       ref.read(streamingStateProvider.notifier).state = true;
@@ -86,6 +87,7 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
       debugPrint('フレンドオンライン: ${friendOnlineEvent.user.displayName}');
       debugPrint('詳細: ${jsonEncode(event)}');
 
+      var friendStateUpdaterProvider;
       ref.read(friendStateUpdaterProvider)(
         friendOnlineEvent.userId,
         isOnline: true,
@@ -95,6 +97,7 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
       final friendOfflineEvent = event as FriendOfflineEvent;
       debugPrint('フレンドオフライン: ${friendOfflineEvent.userId}');
 
+      var friendStateUpdaterProvider;
       ref.read(friendStateUpdaterProvider)(
         friendOfflineEvent.userId,
         isOnline: false,
@@ -148,8 +151,27 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
       ref.read(notificationHandlerProvider)(notificationEvent.notification);
 
     case VrcStreamingEventType.userUpdate:
-      debugPrint('ユーザー更新イベント');
-      debugPrint('詳細: ${jsonEncode(event)}');
+      try {
+        final userUpdateEvent = event as UserUpdateEvent;
+        debugPrint('ユーザー更新イベント: ${userUpdateEvent.user.displayName}');
+
+        // currentUserProviderの更新が必要な場合はここで実装
+        ref.refresh(currentUserProvider);
+
+        // ユーザーのステータス情報を取得
+        final status = userUpdateEvent.user.status;
+        final statusDescription = userUpdateEvent.user.statusDescription;
+
+        // フレンドリストの更新（自分自身の更新も含む）
+        ref.read(friendInfoUpdaterProvider)(
+          userUpdateEvent.userId,
+          status: status,
+          statusDescription: statusDescription,
+        );
+      } catch (e) {
+        debugPrint('UserUpdateEventの処理中にエラーが発生: $e');
+        debugPrint('生データ: ${event is UnknownEvent ? event.rawString : "不明"}');
+      }
 
     case VrcStreamingEventType.userLocation:
       try {

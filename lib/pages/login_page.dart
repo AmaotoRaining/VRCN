@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
 import 'package:vrchat/utils/auto_otp_helper.dart';
@@ -136,9 +137,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
           _tryAutoOtpInput();
         }
       } else {
-        // 認証状態を更新
-        ref.read(authRefreshProvider.notifier).state++;
-        context.go('/');
+        await _handleLoginSuccess();
       }
     } catch (e) {
       if (!mounted) return;
@@ -178,10 +177,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
           _errorMessage = '二段階認証に失敗しました。コードが正しいか確認してください。';
         });
       } else {
-        // 認証状態を更新
-        ref.read(authRefreshProvider.notifier).state++;
-        // ホーム画面に遷移
-        context.go('/');
+        await _handleLoginSuccess();
       }
     } catch (e) {
       if (!mounted) return;
@@ -194,6 +190,25 @@ class _LoginPageState extends ConsumerState<LoginPage>
           _isLoading = false;
         });
       }
+    }
+  }
+
+  // ログイン成功時の処理
+  Future<void> _handleLoginSuccess() async {
+    // 認証状態を更新
+    ref.read(authRefreshProvider.notifier).state++;
+
+    try {
+      // ユーザー情報を先に取得してキャッシュしておく
+      await ref.read(currentUserProvider.future);
+    } catch (e) {
+      debugPrint('ログイン後のユーザー情報取得でエラー: $e');
+      // エラーがあっても続行（後でリトライする）
+    }
+
+    // ホーム画面に遷移
+    if (mounted) {
+      context.go('/');
     }
   }
 

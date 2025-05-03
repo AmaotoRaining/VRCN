@@ -55,7 +55,7 @@ class GroupDetailPage extends ConsumerWidget {
 
     return RefreshIndicator(
       onRefresh: () async {
-        ref.refresh(
+        return ref.refresh(
           groupDetailProvider(
             GroupDetailParams(groupId: groupId, includeRoles: true),
           ),

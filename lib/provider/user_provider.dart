@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vrchat/provider/auth_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
@@ -85,5 +86,57 @@ final userSearchProvider =
         return response.data!;
       } catch (e) {
         throw Exception('ユーザー検索に失敗しました: $e');
+      }
+    });
+
+// 現在のユーザー（自分自身）の情報を取得するプロバイダー
+final currentUserProvider = FutureProvider<CurrentUser>((ref) async {
+  final auth = await ref.watch(vrchatAuthProvider.future);
+
+  try {
+    // 現在のユーザーを取得（認証情報からキャッシュされたユーザー）
+    final currentUser = auth.currentUser;
+
+    // 認証情報があるが、ユーザー情報がない場合は再取得を試みる
+    if (currentUser == null) {
+      // 認証状態を確認
+      final isLoggedIn = await ref.watch(authStateProvider.future);
+      if (!isLoggedIn) {
+        throw Exception('ログインしていません');
+      }
+
+      throw Exception('ユーザー情報を取得できませんでした');
+    }
+
+    return currentUser;
+  } catch (e) {
+    throw Exception('ユーザー情報を取得できませんでした: $e');
+  }
+});
+
+// ユーザー情報を更新するプロバイダー
+final updateUserProvider =
+    FutureProvider.family<CurrentUser, UpdateUserRequest>((
+      ref,
+      updateUserRequest,
+    ) async {
+      final usersApi = await ref.watch(vrchatUserProvider.future);
+      final userId = ref.watch(currentUserProvider).value?.id;
+
+      try {
+        final response = await usersApi.updateUser(
+          userId: userId.toString(),
+          updateUserRequest: updateUserRequest,
+        );
+
+        if (response.statusMessage != 'OK') {
+          throw Exception('ユーザー情報の更新に失敗しました');
+        }
+
+        ref.invalidate(currentUserProvider);
+
+        return response.data!;
+      } catch (e) {
+        throw Exception('ユーザー情報の更新に失敗しました: $e');
       }
     });
