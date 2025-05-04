@@ -16,21 +16,31 @@ class ProfileEditSheet extends ConsumerStatefulWidget {
 }
 
 class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet> {
-  late final TextEditingController _statusDescriptionController;
-  late final TextEditingController _bioController;
-  late final List<TextEditingController> _bioLinkControllers;
-  late final TextEditingController _pronounsController;
-  UserStatus _selectedStatus = UserStatus.active;
+  late TextEditingController _statusDescriptionController;
+  late TextEditingController _bioController;
+  List<TextEditingController> _bioLinkControllers = [];
+  late TextEditingController _pronounsController;
+  late UserStatus _selectedStatus;
   var _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _initializeControllers();
+  }
+
+  void _initializeControllers() {
     _statusDescriptionController = TextEditingController(
       text: widget.user.statusDescription,
     );
     _bioController = TextEditingController(text: widget.user.bio);
 
+    // 既存のコントローラがあれば破棄
+    for (final controller in _bioLinkControllers) {
+      controller.dispose();
+    }
+
+    // 新しいリストを作成
     _bioLinkControllers =
         widget.user.bioLinks
             .map((link) => TextEditingController(text: link))
@@ -45,6 +55,48 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet> {
   }
 
   @override
+  void didUpdateWidget(ProfileEditSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.user != widget.user) {
+      _statusDescriptionController.text = widget.user.statusDescription;
+      _bioController.text = widget.user.bio;
+      _pronounsController.text = widget.user.pronouns;
+      _selectedStatus = widget.user.status;
+      _updateBioLinkControllers();
+    }
+  }
+
+  void _updateBioLinkControllers() {
+    final currentControllers = List<TextEditingController>.from(
+      _bioLinkControllers,
+    );
+    _bioLinkControllers = [];
+
+    for (var i = 0; i < widget.user.bioLinks.length; i++) {
+      if (i < currentControllers.length) {
+        currentControllers[i].text = widget.user.bioLinks[i];
+        _bioLinkControllers.add(currentControllers[i]);
+      } else {
+        _bioLinkControllers.add(
+          TextEditingController(text: widget.user.bioLinks[i]),
+        );
+      }
+    }
+
+    for (
+      var i = widget.user.bioLinks.length;
+      i < currentControllers.length;
+      i++
+    ) {
+      currentControllers[i].dispose();
+    }
+
+    if (_bioLinkControllers.isEmpty) {
+      _bioLinkControllers.add(TextEditingController());
+    }
+  }
+
+  @override
   void dispose() {
     _statusDescriptionController.dispose();
     _bioController.dispose();
@@ -53,23 +105,6 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet> {
     }
     _pronounsController.dispose();
     super.dispose();
-  }
-
-  void _addLinkField() {
-    setState(() {
-      _bioLinkControllers.add(TextEditingController());
-    });
-  }
-
-  void _removeLinkField(int index) {
-    setState(() {
-      _bioLinkControllers[index].dispose();
-      _bioLinkControllers.removeAt(index);
-
-      if (_bioLinkControllers.isEmpty) {
-        _bioLinkControllers.add(TextEditingController());
-      }
-    });
   }
 
   Future<void> _saveChanges() async {
@@ -97,6 +132,12 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet> {
       await ref.read(updateUserProvider(updateRequest).future);
 
       ref.invalidate(currentUserProvider);
+
+      try {
+        await ref.read(currentUserProvider.future);
+      } catch (e) {
+        debugPrint('ユーザー情報の再取得中にエラーが発生: $e');
+      }
 
       if (mounted) {
         Navigator.of(context).pop(true);
@@ -392,5 +433,22 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet> {
         }),
       ],
     );
+  }
+
+  void _addLinkField() {
+    setState(() {
+      _bioLinkControllers.add(TextEditingController());
+    });
+  }
+
+  void _removeLinkField(int index) {
+    setState(() {
+      _bioLinkControllers[index].dispose();
+      _bioLinkControllers.removeAt(index);
+
+      if (_bioLinkControllers.isEmpty) {
+        _bioLinkControllers.add(TextEditingController());
+      }
+    });
   }
 }

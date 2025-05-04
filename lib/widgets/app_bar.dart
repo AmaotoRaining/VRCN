@@ -43,7 +43,6 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     // ドロワーを開くための関数
     void openDrawer() {
-      // 重要: ScaffoldMessengerではなくScaffoldを直接取得
       final scaffold = Scaffold.maybeOf(context);
       if (scaffold != null && scaffold.hasDrawer) {
         scaffold.openDrawer();

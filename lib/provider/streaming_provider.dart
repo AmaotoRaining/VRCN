@@ -75,12 +75,37 @@ class StreamingController {
 
 // ストリーミングイベントハンドラー
 void _handleVrcEvent(VrcStreamingEvent event, ref) {
-  final eventType = event.type.toString().split('.').last;
-
   // イベント受信のログ
-  debugPrint('======= VRC EVENT RECEIVED: $eventType =======');
+  debugPrint('======= VRC EVENT RECEIVED: $event =======');
 
-  // イベントタイプ別に詳細を表示
+  // final String message;
+  // switch (event.type) {
+  //   case VrcStreamingEventType.unknown:
+  //     final unknownEvent = event as UnknownEvent;
+  //     message =
+  //         'Unknown [VrcStreamingEvent] received: ${unknownEvent.rawString}';
+  //   case VrcStreamingEventType.error:
+  //   case VrcStreamingEventType.friendOnline:
+  //   case VrcStreamingEventType.friendOffline:
+  //   case VrcStreamingEventType.friendActive:
+  //   case VrcStreamingEventType.friendAdd:
+  //   case VrcStreamingEventType.friendDelete:
+  //   case VrcStreamingEventType.friendUpdate:
+  //   case VrcStreamingEventType.friendLocation:
+  //   case VrcStreamingEventType.userUpdate:
+  //   case VrcStreamingEventType.userLocation:
+  //   case VrcStreamingEventType.notificationReceived:
+  //   case VrcStreamingEventType.notificationSeen:
+  //   case VrcStreamingEventType.notificationResponse:
+  //   case VrcStreamingEventType.notificationHide:
+  //     message = jsonEncode(event);
+  //   case VrcStreamingEventType.notificationClear:
+  //     message = 'NotificationClear';
+  // }
+
+  // debugPrint(message);
+
+  // // イベントタイプ別に詳細を表示
   switch (event.type) {
     case VrcStreamingEventType.friendOnline:
       final friendOnlineEvent = event as FriendOnlineEvent;

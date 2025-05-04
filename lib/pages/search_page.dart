@@ -206,14 +206,6 @@ class SearchPageState extends ConsumerState<SearchPage>
     final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Scaffold(
-      // 空のAppBarを使用（実際のAppBarはnavigation_bar.dartで提供）
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(0),
-        child: AppBar(
-          elevation: 0,
-          backgroundColor: Theme.of(context).colorScheme.surface,
-        ),
-      ),
       body: Column(
         children: [
           // タブバーのみを表示し、検索バーは表示しない

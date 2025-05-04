@@ -266,14 +266,14 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
 }
 
 // フレンドの状態を更新するハンドラー
-// final friendStateUpdaterProvider =
-//     Provider<void Function(String, {required bool isOnline})>((ref) {
-//       return (String userId, {required bool isOnline}) {
-//         ref
-//             .read(friendsProvider.notifier)
-//             .updateFriendState(userId, isOnline: isOnline);
-//       };
-//     });
+final friendStateUpdaterProvider =
+    Provider<void Function(String, {required bool isOnline})>((ref) {
+      return (String userId, {required bool isOnline}) {
+        ref
+            .read(friendsProvider.notifier)
+            .updateFriendState(userId, isOnline: isOnline);
+      };
+    });
 
 // フレンドの位置情報を更新するハンドラー
 final friendLocationUpdaterProvider =
