@@ -260,6 +260,8 @@ class _FavoriteFriendsTab extends ConsumerWidget {
                               color: folderColor,
                               isDarkMode: isDarkMode,
                               itemCount: folderFavorites.length,
+                              isExpanded: true,
+                              onToggle: () {},
                             ),
                             if (folderFavorites.isEmpty)
                               _buildEmptyFolderMessage(
@@ -403,6 +405,8 @@ class _FavoriteWorldsTab extends ConsumerWidget {
                               color: folderColor,
                               isDarkMode: isDarkMode,
                               itemCount: folderFavorites.length,
+                              isExpanded: true,
+                              onToggle: () {},
                             ),
                             if (folderFavorites.isEmpty)
                               _buildEmptyFolderMessage(
@@ -562,6 +566,8 @@ class _FavoriteAvatarsTab extends ConsumerWidget {
                               color: folderColor,
                               isDarkMode: isDarkMode,
                               itemCount: folderFavorites.length,
+                              isExpanded: true,
+                              onToggle: () {},
                             ),
                             if (folderFavorites.isEmpty)
                               _buildEmptyFolderMessage(
@@ -662,77 +668,84 @@ class _StylishFolderHeader extends StatelessWidget {
   final Color color;
   final bool isDarkMode;
   final int itemCount;
+  final bool isExpanded;
+  final VoidCallback onToggle;
 
   const _StylishFolderHeader({
     required this.folderName,
     required this.color,
     required this.isDarkMode,
     required this.itemCount,
+    required this.isExpanded,
+    required this.onToggle,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(8, 16, 8, 12),
-      child: Row(
-        children: [
-          // カラーマーカーとアイコン
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha:0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: const Icon(Icons.folder, size: 18, color: Colors.white),
-          ),
-
-          const SizedBox(width: 12),
-
-          // フォルダ名とカウント
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  folderName,
-                  style: GoogleFonts.notoSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: isDarkMode ? Colors.white : Colors.black87,
+    return GestureDetector(
+      onTap: onToggle,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(8, 16, 8, 12),
+        child: Row(
+          children: [
+            // カラーマーカーとアイコン
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: .3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
                   ),
-                ),
-                Text(
-                  '$itemCount アイテム',
-                  style: GoogleFonts.notoSans(
-                    fontSize: 12,
-                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                  ),
-                ),
-              ],
+                ],
+              ),
+              child: const Icon(Icons.folder, size: 18, color: Colors.white),
             ),
-          ),
 
-          // 展開アイコン（将来的な機能用）
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-              borderRadius: BorderRadius.circular(20),
+            const SizedBox(width: 12),
+
+            // フォルダ名とカウント
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    folderName,
+                    style: GoogleFonts.notoSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    '$itemCount アイテム',
+                    style: GoogleFonts.notoSans(
+                      fontSize: 12,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
             ),
-            child: Icon(
-              Icons.keyboard_arrow_down,
-              size: 16,
-              color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+
+            // 展開/折りたたみアイコン
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Icon(
+                isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_right,
+                size: 16,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
