@@ -20,7 +20,7 @@ class AvatarDetailPage extends ConsumerStatefulWidget {
 }
 
 class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
-  bool _isLoading = false;
+  var _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +129,10 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.7),
+                  ],
                   stops: const [0.6, 1.0],
                 ),
               ),
@@ -144,7 +147,7 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
             color: Colors.white,
             shadows: [
               Shadow(
-                color: Colors.black.withOpacity(0.8),
+                color: Colors.black.withValues(alpha: 0.8),
                 blurRadius: 5,
                 offset: const Offset(0, 1),
               ),
@@ -434,46 +437,8 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
     );
   }
 
-  Widget _buildStatItem({
-    required IconData icon,
-    required String value,
-    required String label,
-    required bool isDarkMode,
-  }) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withAlpha(25),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: AppTheme.primaryColor, size: 20),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        Text(
-          label,
-          style: GoogleFonts.notoSans(
-            fontSize: 12,
-            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-          ),
-        ),
-      ],
-    );
-  }
-
   String _formatDate(DateTime date) {
     return '${date.year}/${date.month}/${date.day}';
-  }
-
-  String _formatFileSize(int bytes) {
-    if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
   String _getReleaseStatusText(ReleaseStatus status) {

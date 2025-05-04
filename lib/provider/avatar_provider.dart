@@ -9,17 +9,29 @@ final vrchatAvatarProvider = FutureProvider((ref) async {
   return rawApi.getAvatarsApi();
 });
 
-// 現在のユーザーのアバター情報
+// 現在のユーザーのアバター情報を取得する
 final ownAvatarProvider = FutureProvider.family<Avatar, String>((
   ref,
   userId,
 ) async {
   final avatarApi = ref.watch(vrchatAvatarProvider).value;
+
+  final currentUser = await ref.watch(currentUserProvider.future);
   if (avatarApi == null) {
-    throw Exception('アバター情報を取得できませんでした');
+    throw Exception('アバターAPIを初期化できませんでした');
   }
-  final response = await avatarApi.getOwnAvatar(userId: userId);
-  return response.data!;
+
+  try {
+    final response = await avatarApi.getOwnAvatar(userId: currentUser.id);
+
+    if (response.data == null) {
+      throw Exception('自分のアバター情報が取得できませんでした');
+    }
+
+    return response.data!;
+  } catch (e) {
+    throw Exception('自分のアバター取得に失敗しました: $e');
+  }
 });
 
 // 特定のアバターIDからアバター情報を取得する
@@ -63,7 +75,7 @@ class AvatarSearchParams {
     this.n,
     this.order,
     this.offset,
-    this.releaseStatus,
+    this.releaseStatus, String? tag,
   });
 
   // パラメータのハッシュコードを計算（キャッシュの一意性のため）

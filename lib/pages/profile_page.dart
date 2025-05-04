@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/provider/avatar_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -148,6 +149,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final userRepresentedGroupAsync = ref.watch(
       userRepresentedGroupProvider(user.id),
     );
+
+    // 現在使用中のアバター情報を取得
+    final ownAvatarAsync = ref.watch(ownAvatarProvider(user.id));
 
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
@@ -317,32 +321,82 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       ),
                     ],
                   ),
-                  child: CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Colors.grey[300],
-                    backgroundImage:
-                        user.userIcon.isNotEmpty
-                            ? CachedNetworkImageProvider(
-                              user.userIcon,
-                              headers: headers,
-                              cacheManager: JsonCacheManager(),
-                            )
-                            : user.currentAvatarThumbnailImageUrl.isNotEmpty
-                            ? CachedNetworkImageProvider(
-                              user.currentAvatarThumbnailImageUrl,
-                              headers: headers,
-                              cacheManager: JsonCacheManager(),
-                            )
-                            : const AssetImage('assets/images/default.png')
-                                as ImageProvider,
-                    child:
-                        user.currentAvatarThumbnailImageUrl.isEmpty
-                            ? const Icon(
-                              Icons.person,
-                              size: 30,
-                              color: Colors.white70,
-                            )
-                            : null,
+                  child: ownAvatarAsync.when(
+                    data:
+                        (avatar) => GestureDetector(
+                          onTap: () {
+                            // アバター詳細ページに遷移
+                            if (avatar.id.isNotEmpty) {
+                              context.push('/avatar/${avatar.id}');
+                            }
+                          },
+                          child: CircleAvatar(
+                            radius: 50,
+                            backgroundColor: Colors.grey[300],
+                            backgroundImage:
+                                user.userIcon.isNotEmpty
+                                    ? CachedNetworkImageProvider(
+                                      user.userIcon,
+                                      headers: headers,
+                                      cacheManager: JsonCacheManager(),
+                                    )
+                                    : user
+                                        .currentAvatarThumbnailImageUrl
+                                        .isNotEmpty
+                                    ? CachedNetworkImageProvider(
+                                      user.currentAvatarThumbnailImageUrl,
+                                      headers: headers,
+                                      cacheManager: JsonCacheManager(),
+                                    )
+                                    : const AssetImage(
+                                          'assets/images/default.png',
+                                        )
+                                        as ImageProvider,
+                            child:
+                                user.currentAvatarThumbnailImageUrl.isEmpty
+                                    ? const Icon(
+                                      Icons.person,
+                                      size: 30,
+                                      color: Colors.white70,
+                                    )
+                                    : null,
+                          ),
+                        ),
+                    loading:
+                        () => CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Colors.grey[300],
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppTheme.primaryColor,
+                            ),
+                          ),
+                        ),
+                    error:
+                        (_, _) => CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Colors.grey[300],
+                          backgroundImage:
+                              user.currentAvatarThumbnailImageUrl.isNotEmpty
+                                  ? CachedNetworkImageProvider(
+                                    user.currentAvatarThumbnailImageUrl,
+                                    headers: headers,
+                                    cacheManager: JsonCacheManager(),
+                                  )
+                                  : const AssetImage(
+                                        'assets/images/default.png',
+                                      )
+                                      as ImageProvider,
+                          child:
+                              user.currentAvatarThumbnailImageUrl.isEmpty
+                                  ? const Icon(
+                                    Icons.person,
+                                    size: 30,
+                                    color: Colors.white70,
+                                  )
+                                  : null,
+                        ),
                   ),
                 ),
               ),
@@ -392,6 +446,159 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       isDarkMode: isDarkMode,
                     ),
                   ],
+                ),
+
+                // 現在のアバター情報セクション（新規追加）
+                const SizedBox(height: 20),
+                ownAvatarAsync.when(
+                  data:
+                      (avatar) => _buildInfoCard(
+                        context: context,
+                        title: '現在のアバター',
+                        icon: Icons.face,
+                        isDarkMode: isDarkMode,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // アバターサムネイル
+                              Container(
+                                width: 80,
+                                height: 80,
+                                margin: const EdgeInsets.only(right: 16),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color:
+                                        isDarkMode
+                                            ? Colors.grey[700]!
+                                            : Colors.grey[300]!,
+                                  ),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: CachedNetworkImage(
+                                    imageUrl: avatar.imageUrl,
+                                    httpHeaders: headers,
+                                    cacheManager: JsonCacheManager(),
+                                    fit: BoxFit.cover,
+                                    placeholder:
+                                        (context, url) => Container(
+                                          color:
+                                              isDarkMode
+                                                  ? Colors.grey[800]
+                                                  : Colors.grey[200],
+                                          child: const Center(
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          ),
+                                        ),
+                                    errorWidget:
+                                        (context, url, error) => Container(
+                                          color:
+                                              isDarkMode
+                                                  ? Colors.grey[800]
+                                                  : Colors.grey[200],
+                                          child: Icon(
+                                            Icons.broken_image,
+                                            color:
+                                                isDarkMode
+                                                    ? Colors.grey[600]
+                                                    : Colors.grey[400],
+                                          ),
+                                        ),
+                                  ),
+                                ),
+                              ),
+
+                              // アバター情報
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      avatar.name,
+                                      style: GoogleFonts.notoSans(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color:
+                                            isDarkMode
+                                                ? Colors.white
+                                                : Colors.black87,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '作成者: ${avatar.authorName}',
+                                      style: GoogleFonts.notoSans(
+                                        fontSize: 14,
+                                        color:
+                                            isDarkMode
+                                                ? Colors.grey[300]
+                                                : Colors.grey[700],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: _getReleaseStatusColor(
+                                          avatar.releaseStatus,
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        _getReleaseStatusText(
+                                          avatar.releaseStatus,
+                                        ),
+                                        style: GoogleFonts.notoSans(
+                                          fontSize: 12,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          // アバター詳細ボタン
+                          const SizedBox(height: 16),
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              context.push('/avatar/${avatar.id}');
+                            },
+                            icon: const Icon(Icons.visibility_outlined),
+                            label: Text(
+                              'アバター詳細を表示',
+                              style: GoogleFonts.notoSans(),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.primaryColor,
+                              side: const BorderSide(
+                                color: AppTheme.primaryColor,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                  loading:
+                      () => const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                  error: (_, _) => const SizedBox.shrink(),
                 ),
 
                 // ステータスメッセージ（存在する場合）
@@ -831,5 +1038,33 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   String _formatDate(DateTime? date) {
     if (date == null) return '不明';
     return '${date.year}/${date.month}/${date.day}';
+  }
+
+  // リリースステータスの色
+  Color _getReleaseStatusColor(ReleaseStatus status) {
+    switch (status) {
+      case ReleaseStatus.public:
+        return Colors.green;
+      case ReleaseStatus.private:
+        return Colors.orange;
+      case ReleaseStatus.hidden:
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  // リリースステータスのテキスト
+  String _getReleaseStatusText(ReleaseStatus status) {
+    switch (status) {
+      case ReleaseStatus.public:
+        return '公開';
+      case ReleaseStatus.private:
+        return '非公開';
+      case ReleaseStatus.hidden:
+        return '非表示';
+      default:
+        return '不明';
+    }
   }
 }
