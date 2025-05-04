@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:vrchat/provider/avatar_provider.dart';
 import 'package:vrchat/provider/favorite_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
@@ -10,6 +12,7 @@ import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/utils/cache_manager.dart';
+import 'package:vrchat/utils/status_helpers.dart';
 import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat_dart/vrchat_dart.dart' hide FavoriteType;
@@ -55,6 +58,11 @@ class FavoritesPage extends ConsumerStatefulWidget {
 class _FavoritesPageState extends ConsumerState<FavoritesPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final _scrollControllers = <ScrollController>[
+    ScrollController(),
+    ScrollController(),
+    ScrollController(),
+  ];
 
   @override
   void initState() {
@@ -65,6 +73,9 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage>
   @override
   void dispose() {
     _tabController.dispose();
+    for (final controller in _scrollControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -72,37 +83,103 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage>
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor =
-        isDarkMode ? const Color(0xFF151515) : const Color(0xFFF5F5F5);
+        isDarkMode ? const Color(0xFF151515) : const Color(0xFFF8F8F8);
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'お気に入り',
-          style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        bottom: TabBar(
+      body: NestedScrollView(
+        headerSliverBuilder:
+            (context, innerBoxIsScrolled) => [
+              SliverAppBar(
+                expandedHeight: 100.0,
+                pinned: true,
+                floating: true,
+                forceElevated: innerBoxIsScrolled,
+                backgroundColor: backgroundColor,
+                title: Text(
+                  'お気に入り',
+                  style: GoogleFonts.notoSans(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: isDarkMode ? Colors.white : Colors.black87,
+                  ),
+                ),
+                centerTitle: true,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: isDarkMode
+                            ? [
+                                Colors.purple.withValues(alpha:0.3),
+                                Colors.blue.withValues(alpha:0.2),
+                              ]
+                            : [
+                                Colors.purple.withValues(alpha:0.1),
+                                Colors.blue.withValues(alpha:0.05),
+                              ],
+                      ),
+                    ),
+                  ),
+                ),
+                bottom: TabBar(
+                  controller: _tabController,
+                  labelStyle: GoogleFonts.notoSans(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                  unselectedLabelStyle: GoogleFonts.notoSans(),
+                  indicatorColor: AppTheme.primaryColor,
+                  indicatorWeight: 3,
+                  labelColor: isDarkMode ? Colors.white : Colors.black87,
+                  unselectedLabelColor:
+                      isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  indicatorSize: TabBarIndicatorSize.label,
+                  tabs: const [
+                    Tab(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.people, size: 20),
+                          SizedBox(width: 6),
+                          Text('フレンド'),
+                        ],
+                      ),
+                    ),
+                    Tab(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.public, size: 20),
+                          SizedBox(width: 6),
+                          Text('ワールド'),
+                        ],
+                      ),
+                    ),
+                    Tab(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.face, size: 20),
+                          SizedBox(width: 6),
+                          Text('アバター'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+        body: TabBarView(
           controller: _tabController,
-          labelStyle: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
-          unselectedLabelStyle: GoogleFonts.notoSans(),
-          indicatorColor: AppTheme.primaryColor,
-          labelColor: isDarkMode ? Colors.white : Colors.black87,
-          unselectedLabelColor:
-              isDarkMode ? Colors.grey[400] : Colors.grey[600],
-          tabs: const [Tab(text: 'フレンド'), Tab(text: 'ワールド'), Tab(text: 'アバター')],
+          children: [
+            _FavoriteFriendsTab(controller: _scrollControllers[0]),
+            _FavoriteWorldsTab(controller: _scrollControllers[1]),
+            _FavoriteAvatarsTab(controller: _scrollControllers[2]),
+          ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: const [
-          // フレンド タブ
-          _FavoriteFriendsTab(),
-          // ワールド タブ
-          _FavoriteWorldsTab(),
-          // アバター タブ
-          _FavoriteAvatarsTab(),
-        ],
       ),
     );
   }
@@ -110,7 +187,9 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage>
 
 // フレンドお気に入りタブ
 class _FavoriteFriendsTab extends ConsumerWidget {
-  const _FavoriteFriendsTab();
+  final ScrollController controller;
+
+  const _FavoriteFriendsTab({required this.controller});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -122,7 +201,6 @@ class _FavoriteFriendsTab extends ConsumerWidget {
       data: (favorites) {
         return favoriteGroupsAsync.when(
           data: (groups) {
-            // フィルタリングしてフレンドタイプのグループだけを取得
             final friendGroups =
                 groups
                     .where(
@@ -131,7 +209,6 @@ class _FavoriteFriendsTab extends ConsumerWidget {
                     )
                     .toList();
 
-            // フレンドグループが一つもない場合だけ空の状態を表示
             if (friendGroups.isEmpty) {
               return _buildEmptyState(
                 context,
@@ -142,133 +219,107 @@ class _FavoriteFriendsTab extends ConsumerWidget {
               );
             }
 
-            // お気に入りが空でも各フォルダを表示する
-            // グループ別にフレンドお気に入りを整理
             final groupedFavorites = _groupFavoritesByFolder(
               favorites: favorites,
               groups: groups,
               type: FavoriteType.friend,
             );
 
-            // フォルダがあっても、お気に入りがない場合の追加処理
-            // すべてのフレンドフォルダが存在することを確認
             for (final group in friendGroups) {
-              final displayName = group.displayName ?? group.name;
+              final displayName = group.displayName;
               if (!groupedFavorites.containsKey(displayName)) {
                 groupedFavorites[displayName] = [];
               }
             }
 
-            // グループごとにセクションを作成
-            return ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: groupedFavorites.length,
-              itemBuilder: (context, index) {
-                final folderName = groupedFavorites.keys.elementAt(index);
-                final folderFavorites = groupedFavorites[folderName]!;
+            return AnimationLimiter(
+              child: ListView.builder(
+                controller: controller,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 8,
+                ),
+                itemCount: groupedFavorites.length,
+                itemBuilder: (context, index) {
+                  final folderName = groupedFavorites.keys.elementAt(index);
+                  final folderFavorites = groupedFavorites[folderName]!;
+                  final folderColor = _getFolderColor(folderName, isDarkMode);
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // フォルダ名を表示
-                    _FolderHeader(
-                      folderName: folderName,
-                      isDarkMode: isDarkMode,
-                    ),
-
-                    // フォルダ内のフレンド一覧
-                    if (folderFavorites.isEmpty)
-                      // 空のフォルダの場合
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Center(
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.people_outline,
-                                size: 40,
-                                color:
-                                    isDarkMode
-                                        ? Colors.grey[600]
-                                        : Colors.grey[400],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
+                  return AnimationConfiguration.staggeredList(
+                    position: index,
+                    duration: const Duration(milliseconds: 375),
+                    child: SlideAnimation(
+                      verticalOffset: 50.0,
+                      child: FadeInAnimation(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _StylishFolderHeader(
+                              folderName: folderName,
+                              color: folderColor,
+                              isDarkMode: isDarkMode,
+                              itemCount: folderFavorites.length,
+                            ),
+                            if (folderFavorites.isEmpty)
+                              _buildEmptyFolderMessage(
+                                context,
                                 'このフォルダにはフレンドがいません',
-                                style: GoogleFonts.notoSans(
-                                  fontSize: 14,
-                                  color:
-                                      isDarkMode
-                                          ? Colors.grey[400]
-                                          : Colors.grey[600],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    else
-                      Column(
-                        children:
-                            folderFavorites.map((favorite) {
-                              final userAsync = ref.watch(
-                                userDetailProvider(favorite.favoriteId),
-                              );
+                                Icons.people_outline,
+                                isDarkMode,
+                              )
+                            else
+                              ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: folderFavorites.length,
+                                itemBuilder: (context, itemIndex) {
+                                  final favorite = folderFavorites[itemIndex];
+                                  final userAsync = ref.watch(
+                                    userDetailProvider(favorite.favoriteId),
+                                  );
 
-                              return userAsync.when(
-                                data:
-                                    (user) => _buildFriendItem(
-                                      context,
-                                      user,
-                                      favorite.id,
-                                      ref,
-                                      isDarkMode,
-                                    ),
-                                loading:
-                                    () => const Card(
-                                      margin: EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      child: Padding(
-                                        padding: EdgeInsets.all(12),
-                                        child: Center(
-                                          child: CircularProgressIndicator(),
-                                        ),
-                                      ),
-                                    ),
-                                error:
-                                    (_, _) => Card(
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      child: ListTile(
-                                        title: Text(
-                                          'ID: ${favorite.favoriteId}',
-                                        ),
-                                        subtitle: const Text('情報の取得に失敗しました'),
-                                        trailing: IconButton(
-                                          icon: const Icon(
-                                            Icons.favorite,
-                                            color: Colors.red,
-                                          ),
-                                          onPressed:
-                                              () => _removeFavorite(
-                                                context,
-                                                ref,
+                                  return AnimationConfiguration.staggeredList(
+                                    position: itemIndex,
+                                    duration: const Duration(milliseconds: 250),
+                                    delay: const Duration(milliseconds: 50),
+                                    child: SlideAnimation(
+                                      horizontalOffset: 50.0,
+                                      child: FadeInAnimation(
+                                        child: userAsync.when(
+                                          data:
+                                              (user) =>
+                                                  _buildEnhancedFriendItem(
+                                                    context,
+                                                    user,
+                                                    favorite.id,
+                                                    ref,
+                                                    isDarkMode,
+                                                  ),
+                                          loading:
+                                              () =>
+                                                  _buildLoadingItem(isDarkMode),
+                                          error:
+                                              (_, _) => _buildErrorItem(
+                                                favorite.favoriteId,
                                                 favorite.id,
-                                                '友達',
+                                                ref,
+                                                context,
+                                                isDarkMode,
                                               ),
                                         ),
                                       ),
                                     ),
-                              );
-                            }).toList(),
+                                  );
+                                },
+                              ),
+                          ],
+                        ),
                       ),
-                  ],
-                );
-              },
+                    ),
+                  );
+                },
+              ),
             );
           },
           loading: () => const LoadingIndicator(message: 'フォルダ情報を読み込み中...'),
@@ -276,7 +327,7 @@ class _FavoriteFriendsTab extends ConsumerWidget {
               (_, _) => ErrorContainer(
                 message: '情報の取得に失敗しました',
                 onRetry: () {
-                  ref.refresh(myFavoriteGroupsProvider);
+                   ref.refresh(myFavoriteGroupsProvider);
                   ref.refresh(favoriteFriendsProvider);
                 },
               ),
@@ -294,7 +345,9 @@ class _FavoriteFriendsTab extends ConsumerWidget {
 
 // ワールドお気に入りタブ
 class _FavoriteWorldsTab extends ConsumerWidget {
-  const _FavoriteWorldsTab();
+  final ScrollController controller;
+
+  const _FavoriteWorldsTab({required this.controller});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -316,159 +369,125 @@ class _FavoriteWorldsTab extends ConsumerWidget {
 
         return favoriteGroupsAsync.when(
           data: (groups) {
-            // グループ別にワールドお気に入りを整理
             final groupedFavorites = _groupFavoritesByFolder(
               favorites: favorites,
               groups: groups,
               type: FavoriteType.world,
             );
 
-            // フォルダごとのリストを構築
-            return ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: groupedFavorites.length,
-              itemBuilder: (context, index) {
-                final folderName = groupedFavorites.keys.elementAt(index);
-                final folderFavorites = groupedFavorites[folderName]!;
+            return AnimationLimiter(
+              child: ListView.builder(
+                controller: controller,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 8,
+                ),
+                itemCount: groupedFavorites.length,
+                itemBuilder: (context, index) {
+                  final folderName = groupedFavorites.keys.elementAt(index);
+                  final folderFavorites = groupedFavorites[folderName]!;
+                  final folderColor = _getFolderColor(folderName, isDarkMode);
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // フォルダ名を表示
-                    _FolderHeader(
-                      folderName: folderName,
-                      isDarkMode: isDarkMode,
-                    ),
-
-                    // フォルダ内のワールドをグリッドで表示
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(8),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 0.75,
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 10,
-                          ),
-                      itemCount:
-                          folderFavorites.isEmpty
-                              ? 1 // 空の場合は1つのセルにメッセージを表示
-                              : folderFavorites.length,
-                      itemBuilder: (context, itemIndex) {
-                        // 空のフォルダの場合はメッセージを表示
-                        if (folderFavorites.isEmpty) {
-                          return Card(
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.folder_open,
-                                      size: 40,
-                                      color:
-                                          isDarkMode
-                                              ? Colors.grey[600]
-                                              : Colors.grey[400],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      'このフォルダには\nアイテムがありません',
-                                      style: GoogleFonts.notoSans(
-                                        fontSize: 12,
-                                        color:
-                                            isDarkMode
-                                                ? Colors.grey[400]
-                                                : Colors.grey[600],
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
-                              ),
+                  return AnimationConfiguration.staggeredList(
+                    position: index,
+                    duration: const Duration(milliseconds: 375),
+                    child: SlideAnimation(
+                      verticalOffset: 50.0,
+                      child: FadeInAnimation(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _StylishFolderHeader(
+                              folderName: folderName,
+                              color: folderColor,
+                              isDarkMode: isDarkMode,
+                              itemCount: folderFavorites.length,
                             ),
-                          );
-                        }
-
-                        // 通常のアイテム表示（既存のコード）
-                        final favorite = folderFavorites[itemIndex];
-                        final worldAsync = ref.watch(
-                          worldDetailProvider(favorite.favoriteId),
-                        );
-
-                        return worldAsync.when(
-                          data:
-                              (world) => _buildWorldItem(
+                            if (folderFavorites.isEmpty)
+                              _buildEmptyFolderMessage(
                                 context,
-                                world,
-                                favorite.id,
-                                ref,
+                                'このフォルダにはワールドがありません',
+                                Icons.public,
                                 isDarkMode,
-                              ),
-                          loading:
-                              () => const Card(
-                                child: Center(
-                                  child: CircularProgressIndicator(),
+                              )
+                            else
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4.0,
                                 ),
-                              ),
-                          error:
-                              (_, _) => Card(
-                                child: Center(
-                                  child: Text(
-                                    'ワールド情報の取得に失敗しました\nID: ${favorite.favoriteId}',
+                                child: StaggeredGrid.count(
+                                  crossAxisCount: 2,
+                                  mainAxisSpacing: 10,
+                                  crossAxisSpacing: 10,
+                                  children: List.generate(
+                                    folderFavorites.length,
+                                    (itemIndex) {
+                                      final favorite =
+                                          folderFavorites[itemIndex];
+                                      final worldAsync = ref.watch(
+                                        worldDetailProvider(
+                                          favorite.favoriteId,
+                                        ),
+                                      );
+
+                                      return StaggeredGridTile.fit(
+                                        crossAxisCellCount: 1,
+                                        child: AnimationConfiguration.staggeredList(
+                                          position: itemIndex,
+                                          duration: const Duration(
+                                            milliseconds: 250,
+                                          ),
+                                          child: SlideAnimation(
+                                            verticalOffset: 50.0,
+                                            child: FadeInAnimation(
+                                              child: worldAsync.when(
+                                                data:
+                                                    (world) =>
+                                                        _buildEnhancedWorldItem(
+                                                          context,
+                                                          world,
+                                                          favorite.id,
+                                                          ref,
+                                                          isDarkMode,
+                                                        ),
+                                                loading:
+                                                    () =>
+                                                        _buildWorldLoadingItem(
+                                                          isDarkMode,
+                                                        ),
+                                                error:
+                                                    (_, _) =>
+                                                        _buildWorldErrorItem(
+                                                          favorite.favoriteId,
+                                                          isDarkMode,
+                                                        ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
                               ),
-                        );
-                      },
+                            const SizedBox(height: 20),
+                          ],
+                        ),
+                      ),
                     ),
-                  ],
-                );
-              },
+                  );
+                },
+              ),
             );
           },
           loading: () => const LoadingIndicator(message: 'フォルダ情報を読み込み中...'),
           error:
-              (_, _) => GridView.builder(
-                padding: const EdgeInsets.all(12),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.75,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
-                itemCount: favorites.length,
-                itemBuilder: (context, index) {
-                  final favorite = favorites[index];
-                  final worldAsync = ref.watch(
-                    worldDetailProvider(favorite.favoriteId),
-                  );
-
-                  return worldAsync.when(
-                    data:
-                        (world) => _buildWorldItem(
-                          context,
-                          world,
-                          favorite.id,
-                          ref,
-                          isDarkMode,
-                        ),
-                    loading:
-                        () => const Card(
-                          child: Center(child: CircularProgressIndicator()),
-                        ),
-                    error:
-                        (_, _) => Card(
-                          child: Center(
-                            child: Text(
-                              'ワールド情報の取得に失敗しました\nID: ${favorite.favoriteId}',
-                            ),
-                          ),
-                        ),
-                  );
+              (_, _) => ErrorContainer(
+                message: '情報の取得に失敗しました',
+                onRetry: () {
+                  ref.refresh(myFavoriteGroupsProvider);
+                  ref.refresh(favoriteWorldsProvider);
                 },
               ),
         );
@@ -481,148 +500,13 @@ class _FavoriteWorldsTab extends ConsumerWidget {
           ),
     );
   }
-
-  // ワールドアイテム表示用のウィジェット
-  Widget _buildWorldItem(
-    BuildContext context,
-    World world,
-    String favoriteId,
-    WidgetRef ref,
-    bool isDarkMode,
-  ) {
-    final vrchatApi = ref.watch(vrchatProvider).value;
-    final headers = <String, String>{
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
-
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: () => context.push('/world/${world.id}'),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ワールド画像
-            Stack(
-              children: [
-                AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: CachedNetworkImage(
-                    imageUrl: world.imageUrl,
-                    fit: BoxFit.cover,
-                    httpHeaders: headers,
-                    cacheManager: JsonCacheManager(),
-                    placeholder:
-                        (context, url) => Container(
-                          color:
-                              isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
-                    errorWidget:
-                        (context, url, error) => Container(
-                          color:
-                              isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                          child: const Icon(Icons.broken_image),
-                        ),
-                  ),
-                ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: Colors.black.withAlpha(153),
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.favorite,
-                        color: Colors.red,
-                        size: 20,
-                      ),
-                      onPressed:
-                          () => _removeFavorite(
-                            context,
-                            ref,
-                            favoriteId,
-                            world.name,
-                          ),
-                      tooltip: 'お気に入りから削除',
-                      iconSize: 20,
-                      padding: const EdgeInsets.all(4),
-                      constraints: const BoxConstraints(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    world.name,
-                    style: GoogleFonts.notoSans(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '作者: ${world.authorName}',
-                    style: GoogleFonts.notoSans(
-                      fontSize: 12,
-                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // お気に入り削除処理
-  Future<void> _removeFavorite(
-    BuildContext context,
-    WidgetRef ref,
-    String favoriteId,
-    String name,
-  ) async {
-    try {
-      await ref
-          .read(favoriteActionProvider.notifier)
-          .removeFavorite(favoriteId);
-      ref.invalidate(favoriteWorldsProvider);
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('$nameをお気に入りから削除しました')));
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('削除に失敗しました: $e')));
-      }
-    }
-  }
 }
 
-// アバターお気に入りタブ（フォルダ対応版）
+// アバターお気に入りタブ
 class _FavoriteAvatarsTab extends ConsumerWidget {
-  const _FavoriteAvatarsTab();
+  final ScrollController controller;
+
+  const _FavoriteAvatarsTab({required this.controller});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -644,159 +528,120 @@ class _FavoriteAvatarsTab extends ConsumerWidget {
 
         return favoriteGroupsAsync.when(
           data: (groups) {
-            // グループ別にアバターお気に入りを整理
             final groupedFavorites = _groupFavoritesByFolder(
               favorites: favorites,
               groups: groups,
               type: FavoriteType.avatar,
             );
 
-            // フォルダごとのリストを構築
-            return ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: groupedFavorites.length,
-              itemBuilder: (context, index) {
-                final folderName = groupedFavorites.keys.elementAt(index);
-                final folderFavorites = groupedFavorites[folderName]!;
+            return AnimationLimiter(
+              child: ListView.builder(
+                controller: controller,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 8,
+                ),
+                itemCount: groupedFavorites.length,
+                itemBuilder: (context, index) {
+                  final folderName = groupedFavorites.keys.elementAt(index);
+                  final folderFavorites = groupedFavorites[folderName]!;
+                  final folderColor = _getFolderColor(folderName, isDarkMode);
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // フォルダ名を表示
-                    _FolderHeader(
-                      folderName: folderName,
-                      isDarkMode: isDarkMode,
-                    ),
-
-                    // フォルダ内のアバターをグリッドで表示
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(8),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 0.75,
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 10,
-                          ),
-                      itemCount:
-                          folderFavorites.isEmpty
-                              ? 1 // 空の場合は1つのセルにメッセージを表示
-                              : folderFavorites.length,
-                      itemBuilder: (context, itemIndex) {
-                        // 空のフォルダの場合はメッセージを表示
-                        if (folderFavorites.isEmpty) {
-                          return Card(
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.folder_open,
-                                      size: 40,
-                                      color:
-                                          isDarkMode
-                                              ? Colors.grey[600]
-                                              : Colors.grey[400],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      'このフォルダには\nアイテムがありません',
-                                      style: GoogleFonts.notoSans(
-                                        fontSize: 12,
-                                        color:
-                                            isDarkMode
-                                                ? Colors.grey[400]
-                                                : Colors.grey[600],
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
-                              ),
+                  return AnimationConfiguration.staggeredList(
+                    position: index,
+                    duration: const Duration(milliseconds: 375),
+                    child: SlideAnimation(
+                      verticalOffset: 50.0,
+                      child: FadeInAnimation(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _StylishFolderHeader(
+                              folderName: folderName,
+                              color: folderColor,
+                              isDarkMode: isDarkMode,
+                              itemCount: folderFavorites.length,
                             ),
-                          );
-                        }
-
-                        // 通常のアイテム表示（既存のコード）
-                        final favorite = folderFavorites[itemIndex];
-                        final avatarAsync = ref.watch(
-                          avatarDetailProvider(favorite.favoriteId),
-                        );
-
-                        return avatarAsync.when(
-                          data:
-                              (avatar) => _buildAvatarItem(
+                            if (folderFavorites.isEmpty)
+                              _buildEmptyFolderMessage(
                                 context,
-                                avatar,
-                                favorite.id,
-                                ref,
+                                'このフォルダにはアバターがありません',
+                                Icons.face,
                                 isDarkMode,
-                              ),
-                          loading:
-                              () => const Card(
-                                child: Center(
-                                  child: CircularProgressIndicator(),
+                              )
+                            else
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4.0,
+                                ),
+                                child: StaggeredGrid.count(
+                                  crossAxisCount: 2,
+                                  mainAxisSpacing: 10,
+                                  crossAxisSpacing: 10,
+                                  children: List.generate(folderFavorites.length, (
+                                    itemIndex,
+                                  ) {
+                                    final favorite = folderFavorites[itemIndex];
+                                    final avatarAsync = ref.watch(
+                                      avatarDetailProvider(favorite.favoriteId),
+                                    );
+
+                                    return StaggeredGridTile.fit(
+                                      crossAxisCellCount: 1,
+                                      child: AnimationConfiguration.staggeredList(
+                                        position: itemIndex,
+                                        duration: const Duration(
+                                          milliseconds: 250,
+                                        ),
+                                        child: SlideAnimation(
+                                          verticalOffset: 50.0,
+                                          child: FadeInAnimation(
+                                            child: avatarAsync.when(
+                                              data:
+                                                  (avatar) =>
+                                                      _buildEnhancedAvatarItem(
+                                                        context,
+                                                        avatar,
+                                                        favorite.id,
+                                                        ref,
+                                                        isDarkMode,
+                                                      ),
+                                              loading:
+                                                  () => _buildAvatarLoadingItem(
+                                                    isDarkMode,
+                                                  ),
+                                              error:
+                                                  (_, _) =>
+                                                      _buildAvatarErrorItem(
+                                                        favorite.favoriteId,
+                                                        isDarkMode,
+                                                      ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
                                 ),
                               ),
-                          error:
-                              (_, _) => Card(
-                                child: Center(
-                                  child: Text(
-                                    'アバター情報の取得に失敗しました\nID: ${favorite.favoriteId}',
-                                  ),
-                                ),
-                              ),
-                        );
-                      },
+                            const SizedBox(height: 20),
+                          ],
+                        ),
+                      ),
                     ),
-                  ],
-                );
-              },
+                  );
+                },
+              ),
             );
           },
           loading: () => const LoadingIndicator(message: 'フォルダ情報を読み込み中...'),
           error:
-              (_, _) => GridView.builder(
-                padding: const EdgeInsets.all(12),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.75,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
-                itemCount: favorites.length,
-                itemBuilder: (context, index) {
-                  final favorite = favorites[index];
-                  final avatarAsync = ref.watch(
-                    avatarDetailProvider(favorite.favoriteId),
-                  );
-
-                  return avatarAsync.when(
-                    data:
-                        (avatar) => _buildAvatarItem(
-                          context,
-                          avatar,
-                          favorite.id,
-                          ref,
-                          isDarkMode,
-                        ),
-                    loading:
-                        () => const Card(
-                          child: Center(child: CircularProgressIndicator()),
-                        ),
-                    error:
-                        (_, _) => Card(
-                          child: Center(
-                            child: Text(
-                              'アバター情報の取得に失敗しました\nID: ${favorite.favoriteId}',
-                            ),
-                          ),
-                        ),
-                  );
+              (_, _) => ErrorContainer(
+                message: '情報の取得に失敗しました',
+                onRetry: () {
+                  ref.refresh(myFavoriteGroupsProvider);
+                  ref.refresh(favoriteAvatarsProvider);
                 },
               ),
         );
@@ -809,50 +654,1060 @@ class _FavoriteAvatarsTab extends ConsumerWidget {
           ),
     );
   }
-
-  // お気に入り削除処理のメソッドを _FavoriteAvatarsTab クラス内に移動
 }
 
-// フォルダヘッダーコンポーネント
-class _FolderHeader extends StatelessWidget {
+// スタイリッシュなフォルダヘッダー
+class _StylishFolderHeader extends StatelessWidget {
   final String folderName;
-  final Color? color;
+  final Color color;
   final bool isDarkMode;
+  final int itemCount;
 
-  const _FolderHeader({
+  const _StylishFolderHeader({
     required this.folderName,
-    this.color,
+    required this.color,
     required this.isDarkMode,
+    required this.itemCount,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(8, 16, 8, 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: color ?? (isDarkMode ? Colors.grey[800] : Colors.grey[200]),
-        borderRadius: BorderRadius.circular(8),
-      ),
+      margin: const EdgeInsets.fromLTRB(8, 16, 8, 12),
       child: Row(
         children: [
-          Icon(
-            Icons.folder,
-            size: 18,
-            color: isDarkMode ? Colors.white70 : Colors.black87,
+          // カラーマーカーとアイコン
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha:0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: const Icon(Icons.folder, size: 18, color: Colors.white),
           ),
-          const SizedBox(width: 8),
-          Text(
-            folderName,
-            style: GoogleFonts.notoSans(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: isDarkMode ? Colors.white : Colors.black87,
+
+          const SizedBox(width: 12),
+
+          // フォルダ名とカウント
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  folderName,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: isDarkMode ? Colors.white : Colors.black87,
+                  ),
+                ),
+                Text(
+                  '$itemCount アイテム',
+                  style: GoogleFonts.notoSans(
+                    fontSize: 12,
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // 展開アイコン（将来的な機能用）
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Icon(
+              Icons.keyboard_arrow_down,
+              size: 16,
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+// 強化されたフレンドアイテム
+Widget _buildEnhancedFriendItem(
+  BuildContext context,
+  User friend,
+  String favoriteId,
+  WidgetRef ref,
+  bool isDarkMode,
+) {
+  final vrchatApi = ref.watch(vrchatProvider).value;
+  final headers = <String, String>{
+    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
+  };
+
+  final statusColor = StatusHelper.getStatusColor(friend.status);
+
+  return Card(
+    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    elevation: 2,
+    color: isDarkMode ? const Color(0xFF222222) : Colors.white,
+    child: InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () => context.push('/user/${friend.id}'),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            // プロフィール画像（スタイル改善）
+            Stack(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isDarkMode ? Colors.grey[800]! : Colors.grey[200]!,
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(25),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    backgroundImage:
+                        friend.userIcon.isNotEmpty
+                            ? CachedNetworkImageProvider(
+                              friend.userIcon,
+                              headers: headers,
+                              cacheManager: JsonCacheManager(),
+                            )
+                            : null,
+                    child:
+                        friend.userIcon.isEmpty
+                            ? const Icon(
+                              Icons.person,
+                              color: Colors.white70,
+                              size: 30,
+                            )
+                            : null,
+                  ),
+                ),
+
+                // ステータスインジケーター
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 18,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      color: isDarkMode ? Colors.grey[900] : Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isDarkMode ? Colors.grey[800]! : Colors.white,
+                        width: 2,
+                      ),
+                    ),
+                    child: Center(
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: statusColor,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(width: 16),
+
+            // ユーザー情報（レイアウト改善）
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    friend.displayName,
+                    style: GoogleFonts.notoSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (friend.statusDescription.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      friend.statusDescription,
+                      style: GoogleFonts.notoSans(
+                        fontSize: 14,
+                        fontStyle: FontStyle.italic,
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+
+                  // 追加情報エリア
+                  if (friend.location != null &&
+                      friend.location != 'offline') ...[
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          size: 12,
+                          color: Colors.blue[400],
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            'オンライン',
+                            style: GoogleFonts.notoSans(
+                              fontSize: 12,
+                              color: Colors.blue[400],
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // お気に入り解除ボタン
+            SizedBox(
+              width: 36,
+              height: 36,
+              child: Material(
+                color: isDarkMode ? Colors.grey[800] : Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap:
+                      () => _removeFavorite(
+                        context,
+                        ref,
+                        favoriteId,
+                        friend.displayName,
+                      ),
+                  child: Icon(Icons.favorite, color: Colors.red[400], size: 20),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+// 強化されたワールドアイテム
+Widget _buildEnhancedWorldItem(
+  BuildContext context,
+  World world,
+  String favoriteId,
+  WidgetRef ref,
+  bool isDarkMode,
+) {
+  final vrchatApi = ref.watch(vrchatProvider).value;
+  final headers = <String, String>{
+    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
+  };
+
+  return Card(
+    clipBehavior: Clip.antiAlias,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    elevation: 4,
+    shadowColor: Colors.black26,
+    child: InkWell(
+      onTap: () => context.push('/world/${world.id}'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ワールド画像
+          Stack(
+            children: [
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Hero(
+                  tag: 'world-${world.id}',
+                  child: CachedNetworkImage(
+                    imageUrl: world.imageUrl,
+                    fit: BoxFit.cover,
+                    httpHeaders: headers,
+                    cacheManager: JsonCacheManager(),
+                    placeholder:
+                        (context, url) => Container(
+                          color:
+                              isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                    errorWidget:
+                        (context, url, error) => Container(
+                          color:
+                              isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                          child: const Icon(Icons.broken_image),
+                        ),
+                  ),
+                ),
+              ),
+
+              // グラデーションオーバーレイ
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha:0.7),
+                      ],
+                      stops: const [0.6, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+
+              // ワールド名（イメージの上に表示）
+              Positioned(
+                bottom: 10,
+                left: 10,
+                right: 10,
+                child: Text(
+                  world.name,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha:0.8),
+                        blurRadius: 3,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+
+              // お気に入り解除ボタン
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Material(
+                  elevation: 2,
+                  color: Colors.black.withValues(alpha:0.5),
+                  borderRadius: BorderRadius.circular(20),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap:
+                        () => _removeFavorite(
+                          context,
+                          ref,
+                          favoriteId,
+                          world.name,
+                        ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Icon(
+                        Icons.favorite,
+                        color: Colors.red[400],
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // ワールド情報
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    world.authorName,
+                    style: GoogleFonts.notoSans(
+                      fontSize: 12,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+
+                // ワールド統計
+                Row(
+                  children: [
+                    Icon(
+                      Icons.favorite_border,
+                      size: 14,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                    const SizedBox(width: 2),
+                    Text(
+                      _formatNumber(world.favorites ?? 0),
+                      style: GoogleFonts.notoSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+// 強化されたアバターアイテム
+Widget _buildEnhancedAvatarItem(
+  BuildContext context,
+  Avatar avatar,
+  String favoriteId,
+  WidgetRef ref,
+  bool isDarkMode,
+) {
+  final vrchatApi = ref.watch(vrchatProvider).value;
+  final headers = <String, String>{
+    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
+  };
+
+  // リリースステータスに応じた色を取得
+  Color statusColor = Colors.green;
+  switch (avatar.releaseStatus) {
+    case ReleaseStatus.private:
+      statusColor = Colors.orange;
+    case ReleaseStatus.hidden:
+      statusColor = Colors.red;
+    default:
+      statusColor = Colors.green;
+  }
+
+  return Card(
+    clipBehavior: Clip.antiAlias,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    elevation: 4,
+    shadowColor: Colors.black26,
+    child: InkWell(
+      onTap: () => context.push('/avatar/${avatar.id}'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // アバター画像
+          Stack(
+            children: [
+              AspectRatio(
+                aspectRatio: 1.0,
+                child: Hero(
+                  tag: 'avatar-${avatar.id}',
+                  child: CachedNetworkImage(
+                    imageUrl: avatar.imageUrl,
+                    fit: BoxFit.cover,
+                    httpHeaders: headers,
+                    cacheManager: JsonCacheManager(),
+                    placeholder:
+                        (context, url) => Container(
+                          color:
+                              isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                    errorWidget:
+                        (context, url, error) => Container(
+                          color:
+                              isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                          child: const Icon(Icons.broken_image),
+                        ),
+                  ),
+                ),
+              ),
+
+              // グラデーションオーバーレイ
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha:0.7),
+                      ],
+                      stops: const [0.6, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+
+              // リリースステータスバッジ
+              Positioned(
+                bottom: 8,
+                left: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha:0.8),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    _getReleaseStatusText(avatar.releaseStatus),
+                    style: GoogleFonts.notoSans(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+
+              // お気に入り解除ボタン
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Material(
+                  elevation: 2,
+                  color: Colors.black.withValues(alpha:0.5),
+                  borderRadius: BorderRadius.circular(20),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap:
+                        () => _removeFavorite(
+                          context,
+                          ref,
+                          favoriteId,
+                          avatar.name,
+                        ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Icon(
+                        Icons.favorite,
+                        color: Colors.red[400],
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // アバター情報
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  avatar.name,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+
+                const SizedBox(height: 4),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        avatar.authorName,
+                        style: GoogleFonts.notoSans(
+                          fontSize: 12,
+                          color:
+                              isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+
+                    // 追加情報（バージョンなど）
+                    Text(
+                      'v${avatar.version}',
+                      style: GoogleFonts.notoSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+// 空のフォルダメッセージ
+Widget _buildEmptyFolderMessage(
+  BuildContext context,
+  String message,
+  IconData icon,
+  bool isDarkMode,
+) {
+  return Container(
+    margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+    padding: const EdgeInsets.symmetric(vertical: 20),
+    decoration: BoxDecoration(
+      color:
+          isDarkMode ? Colors.grey[850]!.withValues(alpha:0.5) : Colors.grey[100]!,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
+        width: 1,
+      ),
+    ),
+    child: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: 40,
+            color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            style: GoogleFonts.notoSans(
+              fontSize: 14,
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+// ローディング中のアイテム表示（フレンド）
+Widget _buildLoadingItem(bool isDarkMode) {
+  return Card(
+    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    color: isDarkMode ? const Color(0xFF222222) : Colors.white,
+    child: Padding(
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          // アバターのプレースホルダー
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+
+          const SizedBox(width: 16),
+
+          // テキストのプレースホルダー
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 120,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: 80,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                    color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+// エラー表示のアイテム（フレンド）
+Widget _buildErrorItem(
+  String favoriteId,
+  String favoriteItemId,
+  WidgetRef ref,
+  BuildContext context,
+  bool isDarkMode,
+) {
+  return Card(
+    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    color: isDarkMode ? const Color(0xFF222222) : Colors.white,
+    child: Padding(
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          // エラーアイコン
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color:
+                  isDarkMode
+                      ? Colors.red[900]!.withValues(alpha:0.2)
+                      : Colors.red[50],
+              border: Border.all(
+                color: Colors.red[300]!.withValues(alpha:0.5),
+                width: 2,
+              ),
+            ),
+            child: Icon(Icons.error_outline, color: Colors.red[300], size: 30),
+          ),
+
+          const SizedBox(width: 16),
+
+          // エラーテキスト
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '読み込みエラー',
+                  style: GoogleFonts.notoSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red[300],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'ID: $favoriteId',
+                  style: GoogleFonts.notoSans(
+                    fontSize: 12,
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // 削除ボタン
+          SizedBox(
+            width: 36,
+            height: 36,
+            child: Material(
+              color: isDarkMode ? Colors.grey[800] : Colors.grey[100],
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap:
+                    () => _removeFavorite(
+                      context,
+                      ref,
+                      favoriteItemId,
+                      'エラーアイテム',
+                    ),
+                child: Icon(
+                  Icons.delete_outline,
+                  color: Colors.red[400],
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+// ワールド用のローディングアイテム
+Widget _buildWorldLoadingItem(bool isDarkMode) {
+  return Card(
+    clipBehavior: Clip.antiAlias,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    elevation: 4,
+    shadowColor: Colors.black26,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 画像プレースホルダー
+        AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Container(
+            color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+            child: const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+        ),
+
+        // テキストプレースホルダー
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 12,
+                backgroundColor:
+                    isDarkMode ? Colors.grey[700] : Colors.grey[400],
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Container(
+                  height: 14,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(7),
+                    color: isDarkMode ? Colors.grey[700] : Colors.grey[400],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// アバター用のローディングアイテム
+Widget _buildAvatarLoadingItem(bool isDarkMode) {
+  return Card(
+    clipBehavior: Clip.antiAlias,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    elevation: 4,
+    shadowColor: Colors.black26,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 画像プレースホルダー
+        AspectRatio(
+          aspectRatio: 1.0,
+          child: Container(
+            color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+            child: const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+        ),
+
+        // テキストプレースホルダー
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 100,
+                height: 16,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: isDarkMode ? Colors.grey[700] : Colors.grey[400],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                width: 70,
+                height: 12,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                  color: isDarkMode ? Colors.grey[700] : Colors.grey[400],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// ワールド用のエラーアイテム
+Widget _buildWorldErrorItem(String favoriteId, bool isDarkMode) {
+  return Card(
+    clipBehavior: Clip.antiAlias,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    elevation: 4,
+    shadowColor: Colors.black26,
+    child: Column(
+      children: [
+        // エラー画像プレースホルダー
+        AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Container(
+            color:
+                isDarkMode ? Colors.red[900]!.withValues(alpha:0.2) : Colors.red[50],
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, color: Colors.red[300], size: 30),
+                  const SizedBox(height: 8),
+                  Text(
+                    '読み込みエラー',
+                    style: GoogleFonts.notoSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red[300],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // エラーテキスト
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'ID: $favoriteId',
+                  style: GoogleFonts.notoSans(
+                    fontSize: 12,
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// アバター用のエラーアイテム
+Widget _buildAvatarErrorItem(String favoriteId, bool isDarkMode) {
+  return Card(
+    clipBehavior: Clip.antiAlias,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    elevation: 4,
+    shadowColor: Colors.black26,
+    child: Column(
+      children: [
+        // エラー画像プレースホルダー
+        AspectRatio(
+          aspectRatio: 1.0,
+          child: Container(
+            color:
+                isDarkMode ? Colors.red[900]!.withValues(alpha:0.2) : Colors.red[50],
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, color: Colors.red[300], size: 30),
+                  const SizedBox(height: 8),
+                  Text(
+                    '読み込みエラー',
+                    style: GoogleFonts.notoSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red[300],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // エラーテキスト
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'ID: $favoriteId',
+                  style: GoogleFonts.notoSans(
+                    fontSize: 12,
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// 数値をフォーマットする関数
+String _formatNumber(int number) {
+  if (number >= 1000000) {
+    return '${(number / 1000000).toStringAsFixed(1)}M';
+  } else if (number >= 1000) {
+    return '${(number / 1000).toStringAsFixed(1)}K';
+  }
+  return number.toString();
+}
+
+// リリースステータスのテキストを取得
+String _getReleaseStatusText(ReleaseStatus status) {
+  switch (status) {
+    case ReleaseStatus.public:
+      return '公開';
+    case ReleaseStatus.private:
+      return '非公開';
+    case ReleaseStatus.hidden:
+      return '非表示';
+    default:
+      return '不明';
   }
 }
 
@@ -953,104 +1808,6 @@ Widget _buildEmptyState(
   );
 }
 
-// フレンド表示用のウィジェット
-Widget _buildFriendItem(
-  BuildContext context,
-  User friend,
-  String favoriteId,
-  WidgetRef ref,
-  bool isDarkMode,
-) {
-  final vrchatApi = ref.watch(vrchatProvider).value;
-  final headers = <String, String>{
-    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-  };
-
-  return Card(
-    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    child: InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: () => context.push('/user/${friend.id}'),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            // プロフィール画像
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
-                ),
-              ),
-              child: CircleAvatar(
-                backgroundImage:
-                    friend.userIcon.isNotEmpty
-                        ? CachedNetworkImageProvider(
-                          friend.userIcon,
-                          headers: headers,
-                          cacheManager: JsonCacheManager(),
-                        )
-                        : null,
-                child:
-                    friend.userIcon.isEmpty
-                        ? const Icon(Icons.person, color: Colors.white70)
-                        : null,
-              ),
-            ),
-
-            const SizedBox(width: 16),
-
-            // ユーザー情報
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    friend.displayName,
-                    style: GoogleFonts.notoSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (friend.statusDescription.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      friend.statusDescription,
-                      style: GoogleFonts.notoSans(
-                        fontSize: 14,
-                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-
-            // お気に入り解除ボタン
-            IconButton(
-              icon: const Icon(Icons.favorite, color: Colors.red),
-              onPressed:
-                  () => _removeFavorite(
-                    context,
-                    ref,
-                    favoriteId,
-                    friend.displayName,
-                  ),
-              tooltip: 'お気に入りから削除',
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
 // お気に入り削除処理
 Future<void> _removeFavorite(
   BuildContext context,
@@ -1061,6 +1818,8 @@ Future<void> _removeFavorite(
   try {
     await ref.read(favoriteActionProvider.notifier).removeFavorite(favoriteId);
     ref.invalidate(favoriteFriendsProvider);
+    ref.invalidate(favoriteWorldsProvider);
+    ref.invalidate(favoriteAvatarsProvider);
 
     if (context.mounted) {
       ScaffoldMessenger.of(
@@ -1075,109 +1834,28 @@ Future<void> _removeFavorite(
     }
   }
 }
+// フォルダ名に基づいて色を取得する関数
+Color _getFolderColor(String folderName, bool isDarkMode) {
+  // ハッシュコードを使用して一貫した色を生成
+  final hash = folderName.hashCode.abs();
 
-// アバターアイテム表示用のウィジェット
-Widget _buildAvatarItem(
-  BuildContext context,
-  Avatar avatar,
-  String favoriteId,
-  WidgetRef ref,
-  bool isDarkMode,
-) {
-  final vrchatApi = ref.watch(vrchatProvider).value;
-  final headers = <String, String>{
-    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-  };
+  // 定義済みの色リスト
+  final colors = <MaterialColor>[
+    Colors.blue,
+    Colors.purple,
+    Colors.teal,
+    Colors.orange,
+    Colors.green,
+    Colors.pink,
+    Colors.indigo,
+    Colors.cyan,
+    Colors.amber,
+    Colors.deepOrange,
+  ];
 
-  return Card(
-    clipBehavior: Clip.antiAlias,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    child: InkWell(
-      onTap: () => context.push('/avatar/${avatar.id}'),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // アバター画像
-          Stack(
-            children: [
-              AspectRatio(
-                aspectRatio: 1.0,
-                child: CachedNetworkImage(
-                  imageUrl: avatar.imageUrl,
-                  fit: BoxFit.cover,
-                  httpHeaders: headers,
-                  cacheManager: JsonCacheManager(),
-                  placeholder:
-                      (context, url) => Container(
-                        color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                        child: const Center(child: CircularProgressIndicator()),
-                      ),
-                  errorWidget:
-                      (context, url, error) => Container(
-                        color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                        child: const Icon(Icons.broken_image),
-                      ),
-                ),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withAlpha(153),
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.favorite,
-                      color: Colors.red,
-                      size: 20,
-                    ),
-                    onPressed:
-                        () => _removeFavorite(
-                          context,
-                          ref,
-                          favoriteId,
-                          avatar.name,
-                        ),
-                    tooltip: 'お気に入りから削除',
-                    iconSize: 20,
-                    padding: const EdgeInsets.all(4),
-                    constraints: const BoxConstraints(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  avatar.name,
-                  style: GoogleFonts.notoSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '作者: ${avatar.authorName}',
-                  style: GoogleFonts.notoSans(
-                    fontSize: 12,
-                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
+  // ハッシュコードを使用して色を選択
+  final baseColor = colors[hash % colors.length];
+
+  // ダークモードの場合は明るい色合いを、ライトモードの場合は濃い色合いを返す
+  return isDarkMode ? baseColor[400]! : baseColor[600]!;
 }

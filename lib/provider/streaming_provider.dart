@@ -237,19 +237,6 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
       final unknownEvent = event as UnknownEvent;
       debugPrint('不明なイベント');
       debugPrint('生データ: ${unknownEvent.rawString}');
-
-    default:
-      // その他のイベントタイプが安全に処理できるよう保護
-      try {
-        debugPrint('その他イベント: ${event.type}');
-        if (event is! UnknownEvent) {
-          debugPrint('詳細: ${jsonEncode(event)}');
-        } else {
-          debugPrint('未知のイベント形式: ${event.rawString}');
-        }
-      } catch (e) {
-        debugPrint('イベント処理中にエラーが発生: $e');
-      }
   }
 
   debugPrint('=========================================');
