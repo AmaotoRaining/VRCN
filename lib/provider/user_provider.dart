@@ -140,3 +140,20 @@ final updateUserProvider =
         throw Exception('ユーザー情報の更新に失敗しました: $e');
       }
     });
+
+// ユーザーのグループ一覧を取得するプロバイダー
+final userGroupsProvider =
+    FutureProvider.family<List<LimitedUserGroups>, String>((ref, userId) async {
+      final usersApi = await ref.watch(vrchatUserProvider.future);
+
+      try {
+        final response = await usersApi.getUserGroups(userId: userId);
+
+        if (response.data == null) {
+          return [];
+        }
+        return response.data!;
+      } catch (e) {
+        throw Exception('ユーザーのグループ情報の取得に失敗しました: $e');
+      }
+    });
