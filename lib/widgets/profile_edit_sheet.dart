@@ -160,9 +160,10 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet> {
 
     return PopScope(
       canPop: !_hasUnsavedChanges(),
-      onPopInvoked: (didPop) async {
-        if (didPop) return;
-
+      onPopInvokedWithResult: (didPop, [dynamic result]) async {
+        if (didPop) {
+          return;
+        }
         final shouldPop = await _showDiscardChangesDialog();
         if (shouldPop && context.mounted) {
           Navigator.of(context).pop();

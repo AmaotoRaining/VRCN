@@ -123,17 +123,6 @@ class GroupDetailPage extends ConsumerWidget {
               ),
               centerTitle: false,
             ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.share),
-                onPressed: () {
-                  // TODO: 共有機能
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('共有機能は準備中です')));
-                },
-              ),
-            ],
           ),
 
           // グループアイコンとメンバー数
