@@ -356,7 +356,7 @@ class FriendDetailPage extends ConsumerWidget {
       case 'standalonewindows':
         return 'PC';
       case 'android':
-        return 'android';
+        return 'Android';
       case 'ios':
         return 'iOS';
       default:
@@ -369,7 +369,7 @@ class FriendDetailPage extends ConsumerWidget {
     switch (platform) {
       case 'PC':
         return Colors.blue;
-      case 'Android':
+      case 'android':
         return Colors.green;
       case 'iOS':
         return Colors.grey;
