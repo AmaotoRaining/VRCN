@@ -158,151 +158,162 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet> {
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      decoration: BoxDecoration(
-        color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey[400],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'プロフィールを編集',
-              style: GoogleFonts.notoSans(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'ステータス',
-              style: GoogleFonts.notoSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _buildStatusSelector(isDarkMode),
-            const SizedBox(height: 16),
-            Text(
-              'ステータスメッセージ',
-              style: GoogleFonts.notoSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _statusDescriptionController,
-              decoration: InputDecoration(
-                hintText: 'ステータスメッセージを入力',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-              ),
-              maxLength: 100,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '自己紹介',
-              style: GoogleFonts.notoSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _bioController,
-              decoration: InputDecoration(
-                hintText: '自己紹介を入力',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                contentPadding: const EdgeInsets.all(16),
-              ),
-              maxLines: 5,
-              maxLength: 500,
-            ),
-            const SizedBox(height: 16),
-            _buildBioLinksSection(),
-            const SizedBox(height: 16),
-            Text(
-              '代名詞',
-              style: GoogleFonts.notoSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _pronounsController,
-              decoration: InputDecoration(
-                hintText: '例: he/him, she/her, they/them',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-              ),
-              maxLength: 50,
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _saveChanges,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+    return PopScope(
+      canPop: !_hasUnsavedChanges(),
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+
+        final shouldPop = await _showDiscardChangesDialog();
+        if (shouldPop && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        decoration: BoxDecoration(
+          color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child:
-                    _isLoading
-                        ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                        : Text(
-                          '保存する',
-                          style: GoogleFonts.notoSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
+              const SizedBox(height: 20),
+              Text(
+                'プロフィールを編集',
+                style: GoogleFonts.notoSans(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'ステータス',
+                style: GoogleFonts.notoSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildStatusSelector(isDarkMode),
+              const SizedBox(height: 16),
+              Text(
+                'ステータスメッセージ',
+                style: GoogleFonts.notoSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _statusDescriptionController,
+                decoration: InputDecoration(
+                  hintText: 'ステータスメッセージを入力',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+                maxLength: 100,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '自己紹介',
+                style: GoogleFonts.notoSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _bioController,
+                decoration: InputDecoration(
+                  hintText: '自己紹介を入力',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.all(16),
+                ),
+                maxLines: 5,
+                maxLength: 500,
+              ),
+              const SizedBox(height: 16),
+              _buildBioLinksSection(),
+              const SizedBox(height: 16),
+              Text(
+                '代名詞',
+                style: GoogleFonts.notoSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _pronounsController,
+                decoration: InputDecoration(
+                  hintText: '例: he/him, she/her, they/them',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+                maxLength: 50,
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _saveChanges,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                          : Text(
+                            '保存する',
+                            style: GoogleFonts.notoSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
@@ -450,5 +461,62 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet> {
         _bioLinkControllers.add(TextEditingController());
       }
     });
+  }
+
+  // 変更があるかチェックする関数
+  bool _hasUnsavedChanges() {
+    // オリジナルの値と現在の値を比較
+    if (_statusDescriptionController.text != widget.user.statusDescription) {
+      return true;
+    }
+    if (_bioController.text != widget.user.bio) {
+      return true;
+    }
+    if (_pronounsController.text != widget.user.pronouns) {
+      return true;
+    }
+    if (_selectedStatus != widget.user.status) {
+      return true;
+    }
+
+    // リンク数が変わっていれば変更あり
+    if (_bioLinkControllers.length != widget.user.bioLinks.length) {
+      return true;
+    }
+
+    // リンクの中身を比較
+    for (var i = 0; i < _bioLinkControllers.length; i++) {
+      if (i >= widget.user.bioLinks.length ||
+          _bioLinkControllers[i].text.trim() != widget.user.bioLinks[i]) {
+        return true;
+      }
+    }
+
+    return false; // 変更なし
+  }
+
+  // 確認ダイアログを表示する関数
+  Future<bool> _showDiscardChangesDialog() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('変更を破棄しますか？'),
+            content: const Text('プロフィールに加えた変更は保存されません。'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false), // キャンセル
+                child: const Text('キャンセル'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true), // 破棄して閉じる
+                child: Text('破棄', style: TextStyle(color: Colors.red[700])),
+              ),
+            ],
+          ),
+    );
+
+    // nullの場合はダイアログ外をタップして閉じた場合（破棄しない）
+    return result ?? false;
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vrchat/pages/avatar_detail_page.dart';
 import 'package:vrchat/pages/avatars_page.dart';
 import 'package:vrchat/pages/credits_page.dart';
 import 'package:vrchat/pages/favorites_page.dart';
@@ -234,6 +235,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           final userId = state.pathParameters['id']!;
           return FriendDetailPage(userId: userId);
         },
+      ),
+      GoRoute(
+        path: '/avatar/:avatarId',
+        builder:
+            (context, state) =>
+                AvatarDetailPage(avatarId: state.pathParameters['avatarId']!),
       ),
       GoRoute(
         path: '/world/:worldId',

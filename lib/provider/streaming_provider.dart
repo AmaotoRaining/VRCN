@@ -2,8 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:vrchat/provider/friends_provider.dart';
-import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
@@ -112,21 +110,21 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
       debugPrint('フレンドオンライン: ${friendOnlineEvent.user.displayName}');
       debugPrint('詳細: ${jsonEncode(event)}');
 
-      var friendStateUpdaterProvider;
-      ref.read(friendStateUpdaterProvider)(
-        friendOnlineEvent.userId,
-        isOnline: true,
-      );
+    //   var friendStateUpdaterProvider;
+    //   ref.read(friendStateUpdaterProvider)(
+    //     friendOnlineEvent.userId,
+    //     isOnline: true,
+    //   );
 
     case VrcStreamingEventType.friendOffline:
       final friendOfflineEvent = event as FriendOfflineEvent;
       debugPrint('フレンドオフライン: ${friendOfflineEvent.userId}');
 
-      var friendStateUpdaterProvider;
-      ref.read(friendStateUpdaterProvider)(
-        friendOfflineEvent.userId,
-        isOnline: false,
-      );
+    //   var friendStateUpdaterProvider;
+    //   ref.read(friendStateUpdaterProvider)(
+    //     friendOfflineEvent.userId,
+    //     isOnline: false,
+    //   );
 
     case VrcStreamingEventType.friendLocation:
       final friendLocationEvent = event as FriendLocationEvent;
@@ -134,11 +132,11 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
       debugPrint('ロケーション: ${friendLocationEvent.location}');
       debugPrint('詳細: ${jsonEncode(event)}');
 
-      ref.read(friendLocationUpdaterProvider)(
-        friendLocationEvent.userId,
-        friendLocationEvent.location ?? 'unknown',
-        null,
-      );
+    //   ref.read(friendLocationUpdaterProvider)(
+    //     friendLocationEvent.userId,
+    //     friendLocationEvent.location ?? 'unknown',
+    //     null,
+    //   );
 
     case VrcStreamingEventType.friendUpdate:
       final friendUpdateEvent = event as FriendUpdateEvent;
@@ -147,25 +145,25 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
       debugPrint('ステータス説明: ${friendUpdateEvent.user.statusDescription}');
       debugPrint('詳細: ${jsonEncode(event)}');
 
-      ref.read(friendInfoUpdaterProvider)(
-        friendUpdateEvent.userId,
-        status: friendUpdateEvent.user.status,
-        statusDescription: friendUpdateEvent.user.statusDescription,
-      );
+    //   ref.read(friendInfoUpdaterProvider)(
+    //     friendUpdateEvent.userId,
+    //     status: friendUpdateEvent.user.status,
+    //     statusDescription: friendUpdateEvent.user.statusDescription,
+    //   );
 
     case VrcStreamingEventType.friendAdd:
       final friendAddEvent = event as FriendAddEvent;
       debugPrint('フレンド追加: ${friendAddEvent.user.displayName}');
       debugPrint('詳細: ${jsonEncode(event)}');
 
-      ref.read(friendAddHandlerProvider)(friendAddEvent.userId);
+    //   ref.read(friendAddHandlerProvider)(friendAddEvent.userId);
 
     case VrcStreamingEventType.friendDelete:
       final friendDeleteEvent = event as FriendDeleteEvent;
       debugPrint('フレンド削除: ${friendDeleteEvent.userId}');
       debugPrint('詳細: ${jsonEncode(event)}');
 
-      ref.read(friendDeleteHandlerProvider)(friendDeleteEvent.userId);
+    //   ref.read(friendDeleteHandlerProvider)(friendDeleteEvent.userId);
 
     case VrcStreamingEventType.notificationReceived:
       final notificationEvent = event as NotificationReceivedEvent;
@@ -173,42 +171,42 @@ void _handleVrcEvent(VrcStreamingEvent event, ref) {
       debugPrint('送信者: ${notificationEvent.notification.senderUserId}');
       debugPrint('詳細: ${jsonEncode(event)}');
 
-      ref.read(notificationHandlerProvider)(notificationEvent.notification);
+    //   ref.read(notificationHandlerProvider)(notificationEvent.notification);
 
-    case VrcStreamingEventType.userUpdate:
-      try {
-        final userUpdateEvent = event as UserUpdateEvent;
-        debugPrint('ユーザー更新イベント: ${userUpdateEvent.user.displayName}');
+    // case VrcStreamingEventType.userUpdate:
+    //   try {
+    //     final userUpdateEvent = event as UserUpdateEvent;
+    //     debugPrint('ユーザー更新イベント: ${userUpdateEvent.user.displayName}');
 
-        // currentUserProviderの更新が必要な場合はここで実装
-        ref.refresh(currentUserProvider);
+    // //     // currentUserProviderの更新が必要な場合はここで実装
+    // //     ref.refresh(currentUserProvider);
 
-        // ユーザーのステータス情報を取得
-        final status = userUpdateEvent.user.status;
-        final statusDescription = userUpdateEvent.user.statusDescription;
+    // //     // ユーザーのステータス情報を取得
+    // //     final status = userUpdateEvent.user.status;
+    // //     final statusDescription = userUpdateEvent.user.statusDescription;
 
-        // フレンドリストの更新（自分自身の更新も含む）
-        ref.read(friendInfoUpdaterProvider)(
-          userUpdateEvent.userId,
-          status: status,
-          statusDescription: statusDescription,
-        );
-      } catch (e) {
-        debugPrint('UserUpdateEventの処理中にエラーが発生: $e');
-        debugPrint('生データ: ${event is UnknownEvent ? event.rawString : "不明"}');
-      }
+    // //     // フレンドリストの更新（自分自身の更新も含む）
+    // //     ref.read(friendInfoUpdaterProvider)(
+    // //       userUpdateEvent.userId,
+    // //       status: status,
+    // //       statusDescription: statusDescription,
+    // //     );
+    //   } catch (e) {
+    //     debugPrint('UserUpdateEventの処理中にエラーが発生: $e');
+    //     debugPrint('生データ: ${event is UnknownEvent ? event.rawString : "不明"}');
+    // }
 
-    case VrcStreamingEventType.userLocation:
-      try {
-        final userLocationEvent = event as UserLocationEvent;
+    // case VrcStreamingEventType.userLocation:
+    //   try {
+    //     final userLocationEvent = event as UserLocationEvent;
 
-        debugPrint('ユーザー位置変更イベント: ${userLocationEvent.userId}');
-        debugPrint('新しい位置: ${userLocationEvent.location}');
-      } catch (e) {
-        // パースエラーの場合は詳細をログに記録
-        debugPrint('UserLocationEventの処理中にエラーが発生: $e');
-        debugPrint('生データ: ${event is UnknownEvent ? event.rawString : "不明"}');
-      }
+    //     debugPrint('ユーザー位置変更イベント: ${userLocationEvent.userId}');
+    //     debugPrint('新しい位置: ${userLocationEvent.location}');
+    //   } catch (e) {
+    //     // パースエラーの場合は詳細をログに記録
+    //     debugPrint('UserLocationEventの処理中にエラーが発生: $e');
+    //     debugPrint('生データ: ${event is UnknownEvent ? event.rawString : "不明"}');
+    //   }
 
     case VrcStreamingEventType.error:
       final errorEvent = event as ErrorEvent;

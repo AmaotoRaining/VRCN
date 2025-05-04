@@ -59,60 +59,65 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           currentUserAsync.when(
-            data: (user) => IconButton(
-              icon: const Icon(Icons.edit_outlined),
-              onPressed: () async {
-                // 編集前に最新情報を取得
-                ref.invalidate(currentUserProvider);
+            data:
+                (user) => IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () async {
+                    // 編集前に最新情報を取得
+                    ref.invalidate(currentUserProvider);
 
-                // ローディングインジケータを表示
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('最新のユーザー情報を取得中...'),
-                      duration: Duration(milliseconds: 1000),
-                    ),
-                  );
-                }
+                    // ローディングインジケータを表示
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('最新のユーザー情報を取得中...'),
+                          duration: Duration(milliseconds: 1000),
+                        ),
+                      );
+                    }
 
-                // 最新のユーザー情報を待機
-                final updatedUser = await ref.read(currentUserProvider.future);
+                    // 最新のユーザー情報を待機
+                    final updatedUser = await ref.read(
+                      currentUserProvider.future,
+                    );
 
-                if (!context.mounted) return;
+                    if (!context.mounted) return;
 
-                // 最新の情報で編集シートを表示
-                final result = await showModalBottomSheet<bool>(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) {
-                    return ProfileEditSheet(user: updatedUser);
+                    // 最新の情報で編集シートを表示
+                    final result = await showModalBottomSheet<bool>(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      enableDrag: true,
+                      isDismissible: true,
+                      builder: (context) {
+                        return ProfileEditSheet(user: updatedUser);
+                      },
+                    );
+
+                    // プロフィールが更新されたら、情報を再取得
+                    if (result == true) {
+                      // ローディングインジケータを表示
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('プロフィール情報を更新中...'),
+                            duration: Duration(milliseconds: 1000),
+                          ),
+                        );
+                      }
+
+                      // 更新処理を待機
+                      await _refreshProfile();
+
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('プロフィールを更新しました')),
+                        );
+                      }
+                    }
                   },
-                );
-
-                // プロフィールが更新されたら、情報を再取得
-                if (result == true) {
-                  // ローディングインジケータを表示
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('プロフィール情報を更新中...'),
-                        duration: Duration(milliseconds: 1000),
-                      ),
-                    );
-                  }
-
-                  // 更新処理を待機
-                  await _refreshProfile();
-
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('プロフィールを更新しました')),
-                    );
-                  }
-                }
-              },
-            ),
+                ),
             loading: () => const SizedBox.shrink(),
             error: (_, _) => const SizedBox.shrink(),
           ),

@@ -25,11 +25,12 @@ class LocationInfoCard extends ConsumerWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isDarkMode
-              ? Colors.red.shade900.withValues(alpha:0.2)
-              : Colors.red.shade50,
+          color:
+              isDarkMode
+                  ? Colors.red.shade900.withValues(alpha: 0.2)
+                  : Colors.red.shade50,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.redAccent.withValues(alpha:0.3)),
+          border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -51,20 +52,22 @@ class LocationInfoCard extends ConsumerWidget {
     }
 
     // 必要なデータソースの取得
-    final worldDetailAsync = user.worldId != null
-        ? ref.watch(worldDetailProvider(user.worldId!))
-        : null;
+    final worldDetailAsync =
+        user.worldId != null
+            ? ref.watch(worldDetailProvider(user.worldId!))
+            : null;
 
-    final instanceDetailAsync = (user.worldId != null && user.instanceId != null)
-        ? ref.watch(
-            instanceDetailProvider(
-              InstanceParams(
-                worldId: user.worldId!,
-                instanceId: user.instanceId!,
+    final instanceDetailAsync =
+        (user.worldId != null && user.instanceId != null)
+            ? ref.watch(
+              instanceDetailProvider(
+                InstanceParams(
+                  worldId: user.worldId!,
+                  instanceId: user.instanceId!,
+                ),
               ),
-            ),
-          )
-        : null;
+            )
+            : null;
 
     final vrchatApi = ref.watch(vrchatProvider).value;
     final headers = {
@@ -76,10 +79,10 @@ class LocationInfoCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: isDarkMode ? const Color(0xFF1A3320) : const Color(0xFFE0F5E6),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.green.withValues(alpha:0.3)),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             spreadRadius: 1,
           ),
@@ -104,15 +107,67 @@ class LocationInfoCard extends ConsumerWidget {
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      ref.watch(
-                        inviteMyselfProvider(
-                          InviteParams(
-                            worldId: user.worldId!,
-                            instanceId: user.instanceId!,
+                    onPressed: () async {
+                      // ボタンを押したときのフィードバック用にScaffoldMessengerを使用
+                      try {
+                        // ローディング表示
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('招待を送信中...'),
+                            duration: Duration(seconds: 1),
                           ),
-                        ),
-                      );
+                        );
+
+                        // 招待プロバイダーを呼び出し、結果を待つ
+                        await ref.read(
+                          inviteMyselfProvider(
+                            InviteParams(
+                              worldId: user.worldId!,
+                              instanceId: user.instanceId!,
+                            ),
+                          ).future,
+                        );
+
+                        // 招待が成功した場合
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('招待を送信しました。通知から参加できます'),
+                              backgroundColor: Colors.green[700],
+                              duration: const Duration(seconds: 3),
+                              action: SnackBarAction(
+                                label: '閉じる',
+                                textColor: Colors.white,
+                                onPressed: () {
+                                  ScaffoldMessenger.of(
+                                    context,
+                                  ).hideCurrentSnackBar();
+                                },
+                              ),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        // エラーが発生した場合
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('招待の送信に失敗しました: ${e.toString()}'),
+                              backgroundColor: Colors.red[700],
+                              duration: const Duration(seconds: 5),
+                              action: SnackBarAction(
+                                label: '閉じる',
+                                textColor: Colors.white,
+                                onPressed: () {
+                                  ScaffoldMessenger.of(
+                                    context,
+                                  ).hideCurrentSnackBar();
+                                },
+                              ),
+                            ),
+                          );
+                        }
+                      }
                     },
                     icon: const Icon(Icons.login),
                     label: Text(

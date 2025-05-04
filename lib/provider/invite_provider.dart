@@ -33,10 +33,7 @@ class InviteParams {
 
 // 自分に招待を送信
 final inviteMyselfProvider =
-    FutureProvider.family<SentNotification, InviteParams>((
-      ref,
-      params,
-    ) async {
+    FutureProvider.family<SentNotification, InviteParams>((ref, params) async {
       final inviteApi = ref.watch(vrchatInviteProvider).value;
       if (inviteApi == null) {
         throw Exception('招待の送信に失敗しました');
