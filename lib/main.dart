@@ -1,4 +1,3 @@
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +8,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vrchat/analytics_repository.dart';
 import 'package:vrchat/firebase_options.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/provider/streaming_provider.dart';
@@ -26,11 +26,6 @@ Future<void> main() async {
 
   // Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  if (!kDebugMode) {
-    // Firebase Analysis
-    await FirebaseAnalytics.instance.logAppOpen();
-  }
 
   // システムUIの設定
   SystemChrome.setSystemUIOverlayStyle(
@@ -84,6 +79,14 @@ class VRChatApp extends ConsumerWidget {
     final isInitializing = ref.watch(apiInitializingProvider);
     final themeMode = ref.watch(themeModeProvider);
 
+    final analytics = ref.watch(analyticsRepository);
+
+    if (!kDebugMode) {
+      // Firebase Analysis
+      // アプリ開いたとき
+      analytics.logAppOpen();
+    }
+
     // APIの初期化を開始
     ref.watch(vrchatProvider);
 
@@ -92,7 +95,6 @@ class VRChatApp extends ConsumerWidget {
     authState.whenData((isLoggedIn) {
       if (isLoggedIn) {
         // ログイン済みならストリーミングコントローラーを使用して接続を開始
-        // Future.microtaskを使用して初期化後に接続開始
         Future.microtask(
           () => ref.read(streamingControllerProvider).startConnection(),
         );

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vrchat/analytics_repository.dart';
 import 'package:vrchat/pages/avatar_detail_page.dart';
 import 'package:vrchat/pages/avatars_page.dart';
 import 'package:vrchat/pages/credits_page.dart';
@@ -123,6 +124,8 @@ final routerProvider = Provider<GoRouter>((ref) {
   // 自動ログイン処理を開始（状態を監視）
   ref.watch(performAutoLoginProvider);
 
+  final analyticsObserver = ref.watch(analyticsObserverRepository);
+
   return GoRouter(
     refreshListenable: GoRouterRefreshStream(
       ref.read(authRefreshProvider.notifier).stream,
@@ -131,6 +134,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     routerNeglect: true,
     observers: [
       VRChatNavigationObserver(ref.read(navigationIndexProvider.notifier)),
+      analyticsObserver,
     ],
     redirect: (context, state) {
       final isLoginRoute = state.uri.toString() == '/login';
@@ -168,10 +172,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       );
     },
     routes: [
-      // ナビゲーションバーを持つシェルルート
       ShellRoute(
         builder: (context, state, child) {
-          // 現在のパスに基づいて適切なタブインデックスを設定
           final location = state.uri.toString();
           var currentIndex = 0;
 
@@ -181,16 +183,18 @@ final routerProvider = Provider<GoRouter>((ref) {
             currentIndex = 2;
           }
 
-          // プロバイダーの状態を更新する代わりに、currentIndexを直接渡す
           return Navigation(currentIndex: currentIndex, child: child);
         },
         routes: [
           GoRoute(
             path: '/',
+            name: 'friends',
             pageBuilder: (context, state) {
               // 即時遷移フラグがある場合はNoTransitionPageを使用
               final immediate =
                   (state.extra as Map<String, dynamic>?)?['immediate'] == true;
+              // スクリーン名を設定
+              _setCurrentScreen(ref, 'フレンド画面');
               if (immediate) {
                 return const NoTransitionPage(child: FriendsPage());
               }
@@ -199,7 +203,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/search',
+            name: 'search',
             pageBuilder: (context, state) {
+              _setCurrentScreen(ref, '検索画面');
               return MaterialPage(
                 child: SearchPage(key: ref.read(searchPageKeyProvider)),
               );
@@ -207,7 +213,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/notifications',
+            name: 'notifications',
             pageBuilder: (context, state) {
+              _setCurrentScreen(ref, '通知画面');
               final immediate =
                   (state.extra as Map<String, dynamic>?)?['immediate'] == true;
               if (immediate) {
@@ -218,62 +226,115 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+      GoRoute(
+        path: '/login',
+        name: 'login',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'ログイン画面');
+          return const LoginPage();
+        },
+      ),
       GoRoute(
         path: '/loading',
-        builder: (context, state) => const LoadingIndicator(),
+        name: 'loading',
+        builder: (context, state) {
+          _setCurrentScreen(ref, '読み込み中');
+          return const LoadingIndicator();
+        },
       ),
       GoRoute(
         path: '/settings',
-        builder: (context, state) => const SettingsPage(),
+        name: 'settings',
+        builder: (context, state) {
+          _setCurrentScreen(ref, '設定画面');
+          return const SettingsPage();
+        },
       ),
       GoRoute(
         path: '/profile',
-        builder: (context, state) => const ProfilePage(),
+        name: 'profile',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'プロフィール画面');
+          return const ProfilePage();
+        },
       ),
       GoRoute(
         path: '/user/:id',
+        name: 'user_details',
         builder: (context, state) {
           final userId = state.pathParameters['id']!;
+          _setCurrentScreen(ref, 'ユーザー詳細画面:$userId');
           return FriendDetailPage(userId: userId);
         },
       ),
       GoRoute(
         path: '/avatar/:avatarId',
-        builder:
-            (context, state) =>
-                AvatarDetailPage(avatarId: state.pathParameters['avatarId']!),
+        name: 'avatar_details',
+        builder: (context, state) {
+          final avatarId = state.pathParameters['avatarId']!;
+          _setCurrentScreen(ref, 'アバター詳細画面:$avatarId');
+          return AvatarDetailPage(avatarId: avatarId);
+        },
       ),
       GoRoute(
         path: '/world/:worldId',
+        name: 'world_details',
         builder: (context, state) {
           final worldId = state.pathParameters['worldId']!;
+          _setCurrentScreen(ref, 'ワールド詳細画面:$worldId');
           return WorldDetailPage(worldId: worldId);
         },
       ),
       GoRoute(
         path: '/group/:groupId',
+        name: 'group_details',
         builder: (context, state) {
           final groupId = state.pathParameters['groupId']!;
+          _setCurrentScreen(ref, 'グループ詳細画面:$groupId');
           return GroupDetailPage(groupId: groupId);
         },
       ),
       GoRoute(
         path: '/favorites',
-        builder: (context, state) => const FavoritesPage(),
+        name: 'favorites',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'お気に入り画面');
+          return const FavoritesPage();
+        },
       ),
-      GoRoute(path: '/groups', builder: (context, state) => const GroupsPage()),
+      GoRoute(
+        path: '/groups',
+        name: 'groups',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'グループ一覧画面');
+          return const GroupsPage();
+        },
+      ),
       GoRoute(
         path: '/avatars',
-        builder: (context, state) => const AvatarsPage(),
+        name: 'avatars',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'アバター一覧画面');
+          return const AvatarsPage();
+        },
       ),
       GoRoute(
         path: '/credits',
-        builder: (context, state) => const CreditsPage(),
+        name: 'credits',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'クレジット画面');
+          return const CreditsPage();
+        },
       ),
     ],
   );
 });
+
+// スクリーン名をFirebase Analyticsに設定するヘルパーメソッド
+void _setCurrentScreen(Ref ref, String screenName) {
+  final analytics = ref.read(analyticsRepository);
+  analytics.logScreenView(screenName: screenName);
+}
 
 // NoTransitionPageクラス - アニメーションなしの遷移ページ
 class NoTransitionPage<T> extends Page<T> {

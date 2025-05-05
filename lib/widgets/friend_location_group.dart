@@ -449,9 +449,7 @@ class FriendLocationGroup extends ConsumerWidget {
         children: [
           Expanded(
             child: ShaderMask(
-              shaderCallback: (bounds) {
-                return nameGradient.createShader(bounds);
-              },
+              shaderCallback: nameGradient.createShader,
               child: Text(
                 displayName,
                 style: GoogleFonts.notoSans(
