@@ -18,9 +18,10 @@ import 'package:vrchat/pages/profile_page.dart';
 import 'package:vrchat/pages/search_page.dart';
 import 'package:vrchat/pages/settings_page.dart';
 import 'package:vrchat/pages/world_detail_page.dart';
-import 'package:vrchat/provider/navigation_provider.dart';
+import 'package:vrchat/provider/search_providers.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
+import 'package:vrchat/router/navigation_observer.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat/widgets/navigation_bar.dart';
 
@@ -127,7 +128,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ref.read(authRefreshProvider.notifier).stream,
     ),
     initialLocation: '/',
-    routerNeglect: true, // 同じパスへの遷移をスキップ
+    routerNeglect: true,
+    observers: [
+      VRChatNavigationObserver(ref.read(navigationIndexProvider.notifier)),
+    ],
     redirect: (context, state) {
       final isLoginRoute = state.uri.toString() == '/login';
 
@@ -177,9 +181,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             currentIndex = 2;
           }
 
-          // プロバイダーの状態も更新
-          ref.read(navigationIndexProvider.notifier).state = currentIndex;
-
+          // プロバイダーの状態を更新する代わりに、currentIndexを直接渡す
           return Navigation(currentIndex: currentIndex, child: child);
         },
         routes: [

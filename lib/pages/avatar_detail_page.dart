@@ -52,7 +52,7 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
 
     return RefreshIndicator(
       onRefresh: () async {
-        ref.refresh(avatarDetailProvider(widget.avatarId));
+        ref.invalidate(avatarDetailProvider(widget.avatarId));
       },
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -129,10 +129,7 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.7),
-                  ],
+                  colors: [Colors.transparent, Colors.black.withAlpha(179)],
                   stops: const [0.6, 1.0],
                 ),
               ),
@@ -147,7 +144,7 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
             color: Colors.white,
             shadows: [
               Shadow(
-                color: Colors.black.withValues(alpha: 0.8),
+                color: Colors.black.withAlpha(204),
                 blurRadius: 5,
                 offset: const Offset(0, 1),
               ),
@@ -357,6 +354,7 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
                             setState(() {
                               _isLoading = false;
                             });
+
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('アバター「${avatar.name}」に変更しました'),
@@ -372,6 +370,7 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
                             setState(() {
                               _isLoading = false;
                             });
+
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('アバターの変更に失敗しました: $e'),

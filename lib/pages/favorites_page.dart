@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/provider/avatar_provider.dart';
 import 'package:vrchat/provider/favorite_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
@@ -111,15 +111,16 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage>
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: isDarkMode
-                            ? [
-                                Colors.purple.withValues(alpha:0.3),
-                                Colors.blue.withValues(alpha:0.2),
-                              ]
-                            : [
-                                Colors.purple.withValues(alpha:0.1),
-                                Colors.blue.withValues(alpha:0.05),
-                              ],
+                        colors:
+                            isDarkMode
+                                ? [
+                                  Colors.purple.withValues(alpha: 0.3),
+                                  Colors.blue.withValues(alpha: 0.2),
+                                ]
+                                : [
+                                  Colors.purple.withValues(alpha: 0.1),
+                                  Colors.blue.withValues(alpha: 0.05),
+                                ],
                       ),
                     ),
                   ),
@@ -329,8 +330,8 @@ class _FavoriteFriendsTab extends ConsumerWidget {
               (_, _) => ErrorContainer(
                 message: '情報の取得に失敗しました',
                 onRetry: () {
-                   ref.refresh(myFavoriteGroupsProvider);
-                  ref.refresh(favoriteFriendsProvider);
+                  ref.invalidate(myFavoriteGroupsProvider);
+                  ref.invalidate(favoriteFriendsProvider);
                 },
               ),
         );
@@ -339,7 +340,7 @@ class _FavoriteFriendsTab extends ConsumerWidget {
       error:
           (error, stack) => ErrorContainer(
             message: 'お気に入りの読み込みに失敗しました: $error',
-            onRetry: () => ref.refresh(favoriteFriendsProvider),
+            onRetry: () => ref.invalidate(favoriteFriendsProvider),
           ),
     );
   }
@@ -490,8 +491,8 @@ class _FavoriteWorldsTab extends ConsumerWidget {
               (_, _) => ErrorContainer(
                 message: '情報の取得に失敗しました',
                 onRetry: () {
-                  ref.refresh(myFavoriteGroupsProvider);
-                  ref.refresh(favoriteWorldsProvider);
+                  ref.invalidate(myFavoriteGroupsProvider);
+                  ref.invalidate(favoriteWorldsProvider);
                 },
               ),
         );
@@ -646,8 +647,8 @@ class _FavoriteAvatarsTab extends ConsumerWidget {
               (_, _) => ErrorContainer(
                 message: '情報の取得に失敗しました',
                 onRetry: () {
-                  ref.refresh(myFavoriteGroupsProvider);
-                  ref.refresh(favoriteAvatarsProvider);
+                  ref.invalidate(myFavoriteGroupsProvider);
+                  ref.invalidate(favoriteAvatarsProvider);
                 },
               ),
         );
@@ -739,7 +740,9 @@ class _StylishFolderHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Icon(
-                isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_right,
+                isExpanded
+                    ? Icons.keyboard_arrow_up
+                    : Icons.keyboard_arrow_right,
                 size: 16,
                 color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
               ),
@@ -996,7 +999,7 @@ Widget _buildEnhancedWorldItem(
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withValues(alpha:0.7),
+                        Colors.black.withValues(alpha: 0.7),
                       ],
                       stops: const [0.6, 1.0],
                     ),
@@ -1017,7 +1020,7 @@ Widget _buildEnhancedWorldItem(
                     color: Colors.white,
                     shadows: [
                       Shadow(
-                        color: Colors.black.withValues(alpha:0.8),
+                        color: Colors.black.withValues(alpha: 0.8),
                         blurRadius: 3,
                         offset: const Offset(0, 1),
                       ),
@@ -1034,7 +1037,7 @@ Widget _buildEnhancedWorldItem(
                 right: 8,
                 child: Material(
                   elevation: 2,
-                  color: Colors.black.withValues(alpha:0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(20),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(20),
@@ -1177,7 +1180,7 @@ Widget _buildEnhancedAvatarItem(
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withValues(alpha:0.7),
+                        Colors.black.withValues(alpha: 0.7),
                       ],
                       stops: const [0.6, 1.0],
                     ),
@@ -1195,7 +1198,7 @@ Widget _buildEnhancedAvatarItem(
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha:0.8),
+                    color: statusColor.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -1215,7 +1218,7 @@ Widget _buildEnhancedAvatarItem(
                 right: 8,
                 child: Material(
                   elevation: 2,
-                  color: Colors.black.withValues(alpha:0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(20),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(20),
@@ -1305,7 +1308,9 @@ Widget _buildEmptyFolderMessage(
     padding: const EdgeInsets.symmetric(vertical: 20),
     decoration: BoxDecoration(
       color:
-          isDarkMode ? Colors.grey[850]!.withValues(alpha:0.5) : Colors.grey[100]!,
+          isDarkMode
+              ? Colors.grey[850]!.withValues(alpha: 0.5)
+              : Colors.grey[100]!,
       borderRadius: BorderRadius.circular(16),
       border: Border.all(
         color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
@@ -1416,10 +1421,10 @@ Widget _buildErrorItem(
               shape: BoxShape.circle,
               color:
                   isDarkMode
-                      ? Colors.red[900]!.withValues(alpha:0.2)
+                      ? Colors.red[900]!.withValues(alpha: 0.2)
                       : Colors.red[50],
               border: Border.all(
-                color: Colors.red[300]!.withValues(alpha:0.5),
+                color: Colors.red[300]!.withValues(alpha: 0.5),
                 width: 2,
               ),
             ),
@@ -1598,7 +1603,9 @@ Widget _buildWorldErrorItem(String favoriteId, bool isDarkMode) {
           aspectRatio: 16 / 9,
           child: Container(
             color:
-                isDarkMode ? Colors.red[900]!.withValues(alpha:0.2) : Colors.red[50],
+                isDarkMode
+                    ? Colors.red[900]!.withValues(alpha: 0.2)
+                    : Colors.red[50],
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1656,7 +1663,9 @@ Widget _buildAvatarErrorItem(String favoriteId, bool isDarkMode) {
           aspectRatio: 1.0,
           child: Container(
             color:
-                isDarkMode ? Colors.red[900]!.withValues(alpha:0.2) : Colors.red[50],
+                isDarkMode
+                    ? Colors.red[900]!.withValues(alpha: 0.2)
+                    : Colors.red[50],
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1847,6 +1856,7 @@ Future<void> _removeFavorite(
     }
   }
 }
+
 // フォルダ名に基づいて色を取得する関数
 Color _getFolderColor(String folderName, bool isDarkMode) {
   // ハッシュコードを使用して一貫した色を生成

@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:favicon/favicon.dart';
 import 'package:flutter/material.dart' hide Badge;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/provider/instance_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
@@ -68,12 +70,12 @@ class FriendDetailPage extends ConsumerWidget {
 
     return RefreshIndicator(
       onRefresh: () async {
-        ref.refresh(userDetailProvider(userId));
+        ref.invalidate(userDetailProvider(userId));
         if (user.worldId != null) {
-          ref.refresh(worldDetailProvider(user.worldId!));
+          ref.invalidate(worldDetailProvider(user.worldId!));
         }
         if (user.worldId != null && user.instanceId != null) {
-          ref.refresh(
+          ref.invalidate(
             instanceDetailProvider(
               InstanceParams(
                 worldId: user.worldId!,
@@ -82,7 +84,7 @@ class FriendDetailPage extends ConsumerWidget {
             ),
           );
         }
-        ref.refresh(userRepresentedGroupProvider(user.id));
+        ref.invalidate(userRepresentedGroupProvider(user.id));
       },
       color: statusColor,
       backgroundColor: isDarkMode ? Colors.grey[850] : Colors.white,
@@ -242,6 +244,9 @@ class FriendDetailPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   _buildUserBioCard(user, isDarkMode),
+                  const SizedBox(height: 16),
+                  if (user.bioLinks.isNotEmpty)
+                    _buildBioLinksCard(context, user.bioLinks, isDarkMode),
                   const SizedBox(height: 16),
                   _buildUserGroupCard(
                     context,
@@ -499,16 +504,218 @@ class FriendDetailPage extends ConsumerWidget {
               color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
             ),
           ),
-          child: Text(
-            user.bio,
-            style: GoogleFonts.notoSans(
-              fontSize: 16,
-              color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+          child: SelectionArea(
+            child: Text(
+              user.bio,
+              style: GoogleFonts.notoSans(
+                fontSize: 16,
+                color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+              ),
             ),
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildBioLinksCard(
+    BuildContext context,
+    List<String> bioLinks,
+    bool isDarkMode,
+  ) {
+    return FutureBuilder(
+      future: Future.wait(
+        bioLinks.map((link) async {
+          try {
+            final uri = Uri.parse(_ensureHttpPrefix(link));
+            debugPrint('ファビコン取得開始: ${uri.host}');
+
+            // ファビコン取得を強化
+            Favicon? favicon;
+            try {
+              favicon = await FaviconFinder.getBest(link);
+              debugPrint('ファビコンを取得: ${favicon?.url}');
+            } catch (e) {
+              debugPrint('FaviconFinder.getBestでエラー: $e');
+            }
+
+            String? faviconUrl;
+            if (favicon != null && favicon.url.isNotEmpty) {
+              faviconUrl = favicon.url;
+            } else {
+              faviconUrl = '${uri.scheme}://${uri.host}/favicon.ico';
+              debugPrint('代替ファビコンURLを使用: $faviconUrl');
+            }
+
+            return {'url': link, 'favicon': faviconUrl, 'domain': uri.host};
+          } catch (e) {
+            debugPrint('ファビコン取得エラー: $e');
+            return {
+              'url': link,
+              'favicon': null,
+              'domain': _extractDomain(link),
+            };
+          }
+        }).toList(),
+      ),
+      builder: (context, snapshot) {
+        final linkData = snapshot.data as List<Map<String, dynamic>>? ?? [];
+
+        return InfoCard(
+          title: 'リンク',
+          icon: Icons.link,
+          isDarkMode: isDarkMode,
+          customColor: Colors.teal,
+          children:
+              linkData.isEmpty
+                  ? [_buildLoadingLinksIndicator(isDarkMode)]
+                  : linkData
+                      .map((data) => _buildLinkItem(context, data, isDarkMode))
+                      .toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildLinkItem(
+    BuildContext context,
+    Map<String, dynamic> linkData,
+    bool isDarkMode,
+  ) {
+    final url = linkData['url'] as String;
+    final faviconUrl = linkData['favicon'] as String?;
+    final domain = linkData['domain'] as String;
+
+    return InkWell(
+      onTap: () => _launchURL(url),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: isDarkMode ? Colors.grey[850] : Colors.grey[100],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child:
+                  faviconUrl != null
+                      ? ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Image.network(
+                          faviconUrl,
+                          width: 16,
+                          height: 16,
+                          errorBuilder:
+                              (context, error, stackTrace) => Icon(
+                                Icons.language,
+                                size: 16,
+                                color:
+                                    isDarkMode
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                              ),
+                        ),
+                      )
+                      : Icon(
+                        Icons.language,
+                        size: 16,
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                      ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    domain,
+                    style: GoogleFonts.notoSans(
+                      fontWeight: FontWeight.w500,
+                      color: Colors.teal,
+                    ),
+                  ),
+                  Text(
+                    _truncateUrl(url),
+                    style: GoogleFonts.notoSans(
+                      fontSize: 14,
+                      color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.open_in_new,
+              size: 18,
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingLinksIndicator(bool isDarkMode) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      alignment: Alignment.center,
+      child: Column(
+        children: [
+          CircularProgressIndicator(
+            strokeWidth: 2,
+            color: isDarkMode ? Colors.teal[300] : Colors.teal,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'リンク情報を読み込み中...',
+            style: GoogleFonts.notoSans(
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _launchURL(String urlString) async {
+    final url = Uri.parse(_ensureHttpPrefix(urlString));
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      debugPrint('URLを開けませんでした: $urlString');
+    }
+  }
+
+  String _ensureHttpPrefix(String url) {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return 'https://$url';
+  }
+
+  String _extractDomain(String url) {
+    var processedUrl = url.replaceAll(RegExp(r'https?://'), '');
+    processedUrl = processedUrl.split('/')[0];
+    processedUrl = processedUrl.split('?')[0].split('#')[0];
+    return processedUrl;
+  }
+
+  String _truncateUrl(String url) {
+    const maxLength = 40;
+    return url.length > maxLength ? '${url.substring(0, maxLength)}...' : url;
   }
 
   Widget _buildUserGroupCard(

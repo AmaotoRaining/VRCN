@@ -25,7 +25,7 @@ class AppDrawer extends ConsumerWidget {
     };
 
     return Drawer(
-      backgroundColor: Colors.transparent, // 透明背景でドロワー全体をカスタマイズ
+      backgroundColor: Colors.transparent,
       elevation: 0,
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -43,7 +43,7 @@ class AppDrawer extends ConsumerWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 15,
               offset: const Offset(5, 0),
             ),
@@ -58,18 +58,17 @@ class AppDrawer extends ConsumerWidget {
                       _buildEnhancedHeader(context, user, headers, isDarkMode),
               loading: () => _buildStylishLoadingHeader(context, isDarkMode),
               error:
-                  (_, __) =>
-                      _buildEnhancedErrorHeader(context, ref, isDarkMode),
+                  (_, _) => _buildEnhancedErrorHeader(context, ref, isDarkMode),
             ),
 
             // メニュー項目
             Expanded(
-              child: Container(
+              child: DecoratedBox(
                 decoration: BoxDecoration(
                   color:
                       isDarkMode
-                          ? const Color(0xFF1A1F2C).withOpacity(0.9)
-                          : Colors.white.withOpacity(0.9),
+                          ? const Color(0xFF1A1F2C).withValues(alpha: 0.9)
+                          : Colors.white.withValues(alpha: 0.9),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(32),
                     topRight: Radius.circular(0),
@@ -246,7 +245,7 @@ class AppDrawer extends ConsumerWidget {
     required VoidCallback onTap,
     required bool isDarkMode,
   }) {
-    final selectedColor = AppTheme.primaryColor;
+    const selectedColor = AppTheme.primaryColor;
     final unselectedIconColor =
         isDarkMode ? Colors.grey[400] : Colors.grey[700];
     final unselectedTextColor =
@@ -257,7 +256,7 @@ class AppDrawer extends ConsumerWidget {
       decoration: BoxDecoration(
         color:
             isSelected
-                ? selectedColor.withOpacity(isDarkMode ? 0.15 : 0.1)
+                ? selectedColor.withValues(alpha: isDarkMode ? 0.15 : 0.1)
                 : Colors.transparent,
         borderRadius: BorderRadius.circular(16),
       ),
@@ -266,8 +265,8 @@ class AppDrawer extends ConsumerWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
-          splashColor: selectedColor.withOpacity(0.1),
-          highlightColor: selectedColor.withOpacity(0.05),
+          splashColor: selectedColor.withValues(alpha: 0.1),
+          highlightColor: selectedColor.withValues(alpha: 0.05),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -289,7 +288,7 @@ class AppDrawer extends ConsumerWidget {
                         isSelected
                             ? [
                               BoxShadow(
-                                color: selectedColor.withOpacity(0.3),
+                                color: selectedColor.withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -328,7 +327,7 @@ class AppDrawer extends ConsumerWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: selectedColor.withOpacity(0.3),
+                          color: selectedColor.withValues(alpha: 0.3),
                           blurRadius: 4,
                           spreadRadius: 1,
                         ),
@@ -362,8 +361,8 @@ class AppDrawer extends ConsumerWidget {
               isDarkMode
                   ? [const Color(0xFF2A3F54), const Color(0xFF1F2A40)]
                   : [
-                    const Color(0xFF5C6BC0).withOpacity(0.15),
-                    const Color(0xFF9FA8DA).withOpacity(0.1),
+                    const Color(0xFF5C6BC0).withValues(alpha: 0.15),
+                    const Color(0xFF9FA8DA).withValues(alpha: 0.1),
                   ],
         ),
       ),
@@ -381,15 +380,15 @@ class AppDrawer extends ConsumerWidget {
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
                         colors: [
-                          AppTheme.primaryColor.withOpacity(0.7),
-                          AppTheme.primaryColor.withOpacity(0.3),
+                          AppTheme.primaryColor.withValues(alpha: 0.7),
+                          AppTheme.primaryColor.withValues(alpha: 0.3),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withOpacity(0.3),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -441,7 +440,7 @@ class AppDrawer extends ConsumerWidget {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 4,
                           ),
                         ],
@@ -500,8 +499,8 @@ class AppDrawer extends ConsumerWidget {
                     decoration: BoxDecoration(
                       color:
                           isDarkMode
-                              ? Colors.black.withOpacity(0.2)
-                              : Colors.white.withOpacity(0.6),
+                              ? Colors.black.withValues(alpha: 0.2)
+                              : Colors.white.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color:
@@ -542,8 +541,8 @@ class AppDrawer extends ConsumerWidget {
               isDarkMode
                   ? [const Color(0xFF2A3F54), const Color(0xFF1F2A40)]
                   : [
-                    AppTheme.primaryColor.withOpacity(0.15),
-                    AppTheme.primaryColor.withOpacity(0.05),
+                    AppTheme.primaryColor.withValues(alpha: 0.15),
+                    AppTheme.primaryColor.withValues(alpha: 0.05),
                   ],
         ),
       ),
@@ -562,7 +561,7 @@ class AppDrawer extends ConsumerWidget {
                   color: isDarkMode ? Colors.black12 : Colors.white38,
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryColor.withOpacity(0.2),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.2),
                       blurRadius: 10,
                       spreadRadius: 2,
                     ),
@@ -609,7 +608,7 @@ class AppDrawer extends ConsumerWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.red.withOpacity(0.3),
+            color: Colors.red.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -627,7 +626,7 @@ class AppDrawer extends ConsumerWidget {
                 height: 80,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                 ),
                 child: const Icon(
                   Icons.error_outline_rounded,
@@ -675,64 +674,17 @@ class AppDrawer extends ConsumerWidget {
       ),
     );
   }
-
-  // ドロワーフッター
-  Widget _buildDrawerFooter(bool isDarkMode) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-      child: Column(
-        children: [
-          // 区切り線
-          Container(
-            height: 1,
-            color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-            margin: const EdgeInsets.symmetric(vertical: 16),
-          ),
-
-          // バージョン情報
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'VRChat Mobile',
-                style: GoogleFonts.notoSans(
-                  fontSize: 12,
-                  color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                width: 4,
-                height: 4,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'v1.0.0',
-                style: GoogleFonts.notoSans(
-                  fontSize: 12,
-                  color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 // メニュー項目データクラス
+@immutable
 class _MenuItem {
   final IconData icon;
   final String title;
   final bool isSelected;
   final VoidCallback onTap;
 
-  _MenuItem({
+  const _MenuItem({
     required this.icon,
     required this.title,
     required this.isSelected,
