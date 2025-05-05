@@ -205,6 +205,7 @@ class FriendLocationGroup extends ConsumerWidget {
                     effectiveWorldId,
                     statusText,
                     worldPalette,
+                    ref, // ★ refパラメータを追加
                   ),
 
                   // フレンド数の表示
@@ -232,6 +233,7 @@ class FriendLocationGroup extends ConsumerWidget {
     String? effectiveWorldId,
     String statusText,
     AsyncValue<PaletteGenerator?>? worldPalette,
+    WidgetRef ref, // ★ refパラメータを追加
   ) {
     // サムネイルからカラーパレットを取得
     final dominantColor =
@@ -256,6 +258,18 @@ class FriendLocationGroup extends ConsumerWidget {
           orElse: () => accentColor,
         ) ??
         accentColor;
+
+    // ワールド情報を取得（人数表示用）
+    final worldInfoAsync =
+        (!isPrivate && !isOffline && effectiveWorldId != null)
+            ? ref.watch(worldDetailProvider(effectiveWorldId))
+            : null;
+
+    // ワールド内の総人数
+    int? occupantCount;
+    worldInfoAsync?.whenData((world) {
+      occupantCount = world.occupants;
+    });
 
     // サムネイル由来のヘッダーグラデーション
     final thumbnailHeaderGradient = LinearGradient(
@@ -329,8 +343,23 @@ class FriendLocationGroup extends ConsumerWidget {
 
                       const SizedBox(height: 4),
 
-                      // ステータステキスト
-                      _buildStatusBadge(statusText, dominantColor),
+                      // 人数情報を横並びに表示
+                      Row(
+                        children: [
+                          // ステータステキスト（友達の数）
+                          _buildStatusBadge(statusText, dominantColor),
+
+                          // 総人数を表示（非プライベート、オンラインの場合のみ）
+                          if (occupantCount != null && !isPrivate && !isOffline)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: _buildOccupantsBadge(
+                                occupantCount!,
+                                dominantColor,
+                              ),
+                            ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -339,6 +368,73 @@ class FriendLocationGroup extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  // ワールド内の総人数を表示するバッジ
+  Widget _buildOccupantsBadge(int occupantCount, Color accentColor) {
+    final badgeGradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        HSLColor.fromColor(
+          accentColor,
+        ).withLightness(0.7).toColor().withValues(alpha: 0.3),
+        HSLColor.fromColor(
+          accentColor,
+        ).withLightness(0.5).toColor().withValues(alpha: 0.2),
+      ],
+    );
+
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 800),
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      curve: Curves.elasticOut,
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: value,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              gradient: badgeGradient,
+              boxShadow: [
+                BoxShadow(
+                  color: accentColor.withValues(alpha: 0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.group,
+                  size: 10,
+                  color:
+                      HSLColor.fromColor(
+                        accentColor,
+                      ).withLightness(0.4).toColor(),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '合計 $occupantCount人',
+                  style: GoogleFonts.notoSans(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color:
+                        HSLColor.fromColor(
+                          accentColor,
+                        ).withLightness(0.35).toColor(),
+                    letterSpacing: 0.1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
