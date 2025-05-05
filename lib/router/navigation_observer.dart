@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // ナビゲーションインデックス管理用プロバイダー（まだ定義されていない場合）
 final navigationIndexProvider = StateProvider<int>((ref) => 0);
 
+@immutable
 class VRChatNavigationObserver extends NavigatorObserver {
   final StateController<int> navigationController;
 
