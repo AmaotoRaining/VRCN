@@ -59,14 +59,7 @@ class LocationInfoCard extends ConsumerWidget {
 
     final instanceDetailAsync =
         (user.worldId != null && user.instanceId != null)
-            ? ref.watch(
-              instanceDetailProvider(
-                InstanceParams(
-                  worldId: user.worldId!,
-                  instanceId: user.instanceId!,
-                ),
-              ),
-            )
+            ? ref.watch(instanceDetailProvider(user.location.toString()))
             : null;
 
     final vrchatApi = ref.watch(vrchatProvider).value;

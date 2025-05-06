@@ -7,8 +7,8 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:palette_generator/palette_generator.dart';
+import 'package:vrchat/provider/instance_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
-import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/widgets/friend_list_item.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
@@ -34,7 +34,7 @@ final worldPaletteProvider = FutureProvider.family<PaletteGenerator?, String>((
 
 class FriendLocationGroup extends ConsumerWidget {
   final String locationName;
-  final String? worldId;
+  final String? location;
   final List<LimitedUser> friends;
   final Function(LimitedUser) onTapFriend;
   final IconData locationIcon;
@@ -42,14 +42,14 @@ class FriendLocationGroup extends ConsumerWidget {
   final bool isOffline;
   final bool isPrivate;
   final bool isTraveling;
-  final String? travelingToWorldId;
+  final String? travelingToLocation;
   final bool compact;
   final bool isActive;
 
   const FriendLocationGroup({
     super.key,
     required this.locationName,
-    this.worldId,
+    this.location,
     required this.friends,
     required this.onTapFriend,
     required this.locationIcon,
@@ -57,7 +57,7 @@ class FriendLocationGroup extends ConsumerWidget {
     this.isOffline = false,
     this.isPrivate = false,
     this.isTraveling = false,
-    this.travelingToWorldId,
+    this.travelingToLocation,
     this.compact = false,
     this.isActive = false,
   });
@@ -126,21 +126,23 @@ class FriendLocationGroup extends ConsumerWidget {
     };
 
     // 使用するワールドIDを決定
-    final effectiveWorldId = isTraveling ? travelingToWorldId : worldId;
+    final effectiveInstance = isTraveling ? travelingToLocation : location;
 
     // ワールド情報を取得
-    final worldNameAsync =
-        (!isPrivate && !isOffline && effectiveWorldId != null)
-            ? ref.watch(worldDetailProvider(effectiveWorldId))
+    final instanceAsync =
+        (!isPrivate && !isOffline && effectiveInstance != null)
+            ? ref.watch(instanceDetailProvider(effectiveInstance))
             : null;
 
     // ワールド情報の展開
     var displayName = locationName;
     String? thumbnailUrl;
+    String? occupantCount;
 
-    worldNameAsync?.whenData((world) {
-      displayName = world.name;
-      thumbnailUrl = world.thumbnailImageUrl;
+    instanceAsync?.whenData((instance) {
+      displayName = instance.world.name;
+      thumbnailUrl = instance.world.thumbnailImageUrl;
+      occupantCount = instance.userCount.toString();
     });
 
     // サムネイル画像のパレットを取得
@@ -202,10 +204,11 @@ class FriendLocationGroup extends ConsumerWidget {
                     isDarkMode,
                     accentColor,
                     displayName,
-                    effectiveWorldId,
+                    effectiveInstance,
                     statusText,
                     worldPalette,
                     ref, // ★ refパラメータを追加
+                    occupantCount,
                   ),
 
                   // フレンド数の表示
@@ -234,6 +237,7 @@ class FriendLocationGroup extends ConsumerWidget {
     String statusText,
     AsyncValue<PaletteGenerator?>? worldPalette,
     WidgetRef ref, // ★ refパラメータを追加
+    String? occupantCount,
   ) {
     // サムネイルからカラーパレットを取得
     final dominantColor =
@@ -258,18 +262,6 @@ class FriendLocationGroup extends ConsumerWidget {
           orElse: () => accentColor,
         ) ??
         accentColor;
-
-    // ワールド情報を取得（人数表示用）
-    final worldInfoAsync =
-        (!isPrivate && !isOffline && effectiveWorldId != null)
-            ? ref.watch(worldDetailProvider(effectiveWorldId))
-            : null;
-
-    // ワールド内の総人数
-    int? occupantCount;
-    worldInfoAsync?.whenData((world) {
-      occupantCount = world.occupants;
-    });
 
     // サムネイル由来のヘッダーグラデーション
     final thumbnailHeaderGradient = LinearGradient(
@@ -354,7 +346,7 @@ class FriendLocationGroup extends ConsumerWidget {
                             Padding(
                               padding: const EdgeInsets.only(left: 8),
                               child: _buildOccupantsBadge(
-                                occupantCount!,
+                                occupantCount,
                                 dominantColor,
                               ),
                             ),
@@ -372,7 +364,7 @@ class FriendLocationGroup extends ConsumerWidget {
   }
 
   // ワールド内の総人数を表示するバッジ
-  Widget _buildOccupantsBadge(int occupantCount, Color accentColor) {
+  Widget _buildOccupantsBadge(String occupantCount, Color accentColor) {
     final badgeGradient = LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,

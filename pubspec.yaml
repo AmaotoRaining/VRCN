@@ -71,6 +71,7 @@ dependencies:
 
   # パレットジェネレーター
   palette_generator: ^0.3.3+6
+  local_auth: ^2.3.0
 
 dev_dependencies:
   flutter_test:

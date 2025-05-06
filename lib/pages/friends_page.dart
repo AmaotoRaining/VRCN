@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/provider/friend_sort_provider.dart';
 import 'package:vrchat/provider/friends_provider.dart';
-import 'package:vrchat/provider/world_provider.dart';
+import 'package:vrchat/provider/instance_provider.dart';
 import 'package:vrchat/widgets/app_drawer.dart';
 import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/friend_location_group.dart';
@@ -175,10 +175,7 @@ class FriendsPage extends ConsumerWidget {
 
     // ワールド情報の事前取得（同じロケーションにいるフレンドが多い場合に効率的）
     for (final location in friendGroups.keys) {
-      if (location.startsWith('wrld_')) {
-        final worldId = location.split(':').first;
-        ref.read(worldDetailProvider(worldId));
-      }
+      ref.read(instanceDetailProvider(location));
     }
 
     // 人数の多い順にグループをソート
@@ -201,11 +198,9 @@ class FriendsPage extends ConsumerWidget {
           friends: locationFriends,
           onTapFriend: (friend) => context.push('/user/${friend.id}'),
           iconColor: Colors.green,
-          // ワールド情報プロバイダーを渡す（世界名を表示するため）
-          worldId:
-              location.startsWith('wrld_') ? location.split(':').first : null,
+          location: location,
           isOffline: false,
-          compact: false, // コンパクトモードをオフに
+          compact: false,
         ),
       );
     }

@@ -76,7 +76,7 @@ class FriendDetailPage extends ConsumerWidget {
         }
         if (user.worldId != null && user.instanceId != null) {
           ref.invalidate(
-            instanceDetailProvider(
+            instanceDetailWithParamsProvider(
               InstanceParams(
                 worldId: user.worldId!,
                 instanceId: user.instanceId!,
