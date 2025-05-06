@@ -310,13 +310,14 @@ void _handleVrcEvent(vrc.VrcStreamingEvent event, ref) {
           );
 
     case vrc.VrcStreamingEventType.notificationSeen:
-      debugPrint('詳細: ${jsonEncode(event)}');
+      event as vrc.NotificationSeenEvent;
+      debugPrint('NotificationSeen : ${event.notificationId}');
 
     case vrc.VrcStreamingEventType.notificationResponse:
       debugPrint('詳細: ${jsonEncode(event)}');
 
     case vrc.VrcStreamingEventType.notificationHide:
-      debugPrint('詳細: ${jsonEncode(event)}');
+      debugPrint('${event.type.name} ${jsonEncode(event)}');
 
     case vrc.VrcStreamingEventType.notificationClear:
       debugPrint('詳細: NotificationClear');

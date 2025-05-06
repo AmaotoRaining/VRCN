@@ -231,7 +231,7 @@ class WorldDetailPage extends ConsumerWidget {
           _buildStatItem(
             context,
             Icons.public,
-            _formatNumber(world.publicOccupants),
+            _formatNumber(world.occupants),
             '現在の人数',
             Colors.green,
           ),

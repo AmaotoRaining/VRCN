@@ -276,7 +276,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                   ],
                 ),
               ),
-
               // プロフィールカード
               Positioned(
                 bottom: -60,
@@ -297,7 +296,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                   ),
                   child: Row(
                     children: [
-                      const SizedBox(width: 120), // アバター用のスペース
+                      const SizedBox(width: 120),
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
