@@ -60,7 +60,7 @@ class WorldDetailPage extends ConsumerWidget {
                 const SizedBox(height: 24),
                 _buildTags(context, world, isDarkMode),
                 const SizedBox(height: 32),
-                _buildActionButtons(context, world, isDarkMode, ref),
+                // _buildActionButtons(context, world, isDarkMode, ref),
               ],
             ),
           ),
@@ -354,7 +354,7 @@ class WorldDetailPage extends ConsumerWidget {
         Expanded(
           child: ElevatedButton.icon(
             onPressed: () {
-              // ワールドへの参加処理
+              // TODO: ワールドへの参加処理
               _joinWorld(context, world, ref);
             },
             icon: const Icon(Icons.public),
@@ -376,7 +376,7 @@ class WorldDetailPage extends ConsumerWidget {
         const SizedBox(width: 12),
         IconButton(
           onPressed: () {
-            // お気に入り登録処理
+            // TODO: お気に入り登録処理
             _toggleFavorite(context, world, ref);
           },
           icon: const Icon(Icons.favorite_border),

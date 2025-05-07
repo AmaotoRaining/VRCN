@@ -22,7 +22,7 @@ class GroupSearchTab extends ConsumerStatefulWidget {
 class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
     with AutomaticKeepAliveClientMixin {
   final _scrollController = ScrollController();
-  bool _isGridView = false; // グリッドビューとリストビューの切り替えフラグ
+  var _isGridView = false; // グリッドビューとリストビューの切り替えフラグ
 
   @override
   bool get wantKeepAlive => true; // タブ切り替え時に状態を保持
@@ -285,12 +285,12 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
   ) {
     final headers = {'User-Agent': 'VRChat/1.0'};
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha:0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -371,7 +371,7 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(0.7),
+                              Colors.black.withValues(alpha:0.7),
                             ],
                           ),
                         ),
@@ -387,7 +387,7 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6),
+                          color: Colors.black.withValues(alpha:0.6),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(

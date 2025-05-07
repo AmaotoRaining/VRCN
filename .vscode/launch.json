@@ -5,15 +5,40 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug",
+      "name": "Debug iPhoneエミュ",
       "type": "dart",
       "request": "launch",
       "program": "lib/main.dart",
       "flutterMode": "debug",
+      "deviceId": "3A0FC8E1-0BE6-4E22-95A3-817D6DEAB01",
       "args": [
         "--flavor",
         "debug",
       ],
-    }
+    },
+    {
+      "name": "Debug iPhone実機",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "flutterMode": "debug",
+      "deviceId": "00008140-001C31993ADB001C",
+      "args": [
+        "--flavor",
+        "debug",
+      ],
+    },
+    {
+      "name": "Debug Androidエミュ",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "flutterMode": "debug",
+      "deviceId": "emulator-5554",
+      "args": [
+        "--flavor",
+        "dev",
+      ],
+    },
   ]
 }

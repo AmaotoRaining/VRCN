@@ -247,20 +247,38 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
+      // foregroundColorを追加して、すべてのアイコンとテキストの色を指定
+      foregroundColor: isDarkMode ? Colors.white : Colors.black87,
       flexibleSpace: ClipRect(
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            color:
-                isDarkMode
-                    ? Colors.black.withValues(alpha: 0.6)
-                    : Colors.white.withValues(alpha: 0.8),
+            decoration: BoxDecoration(
+              color:
+                  isDarkMode
+                      ? Colors.black.withValues(alpha: 0.5)
+                      : Colors.white.withValues(alpha: 0.6),
+              border: Border(
+                bottom: BorderSide(
+                  color:
+                      isDarkMode
+                          ? Colors.white.withValues(alpha: 0.1)
+                          : Colors.black.withValues(alpha: 0.05),
+                  width: 0.5,
+                ),
+              ),
+            ),
           ),
         ),
       ),
       title: Text(
         'アバター',
-        style: GoogleFonts.notoSans(fontWeight: FontWeight.bold, fontSize: 20),
+        style: GoogleFonts.notoSans(
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
+          // タイトルの色を明示的に指定
+          color: isDarkMode ? Colors.white : Colors.black87,
+        ),
       ),
       centerTitle: true,
       actions: [

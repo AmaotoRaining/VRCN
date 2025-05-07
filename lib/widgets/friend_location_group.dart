@@ -341,7 +341,11 @@ class FriendLocationGroup extends ConsumerWidget {
                       Row(
                         children: [
                           // ステータステキスト（友達の数）
-                          _buildStatusBadge(statusText, dominantColor),
+                          _buildStatusBadge(
+                            statusText,
+                            dominantColor,
+                            isDarkMode,
+                          ),
 
                           // 総人数を表示（非プライベート、オンラインの場合のみ）
                           if (occupantCount != null && !isPrivate && !isOffline)
@@ -350,6 +354,7 @@ class FriendLocationGroup extends ConsumerWidget {
                               child: _buildOccupantsBadge(
                                 occupantCount,
                                 dominantColor,
+                                isDarkMode,
                               ),
                             ),
                         ],
@@ -366,7 +371,11 @@ class FriendLocationGroup extends ConsumerWidget {
   }
 
   // ワールド内の総人数を表示するバッジ
-  Widget _buildOccupantsBadge(String occupantCount, Color accentColor) {
+  Widget _buildOccupantsBadge(
+    String occupantCount,
+    Color accentColor,
+    bool isDarkMode,
+  ) {
     final badgeGradient = LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
@@ -409,7 +418,7 @@ class FriendLocationGroup extends ConsumerWidget {
                   color:
                       HSLColor.fromColor(
                         accentColor,
-                      ).withLightness(0.4).toColor(),
+                      ).withLightness(isDarkMode ? 0.75 : 0.35).toColor(),
                 ),
                 const SizedBox(width: 4),
                 Text(
@@ -420,7 +429,7 @@ class FriendLocationGroup extends ConsumerWidget {
                     color:
                         HSLColor.fromColor(
                           accentColor,
-                        ).withLightness(0.35).toColor(),
+                        ).withLightness(isDarkMode ? 0.75 : 0.35).toColor(),
                     letterSpacing: 0.1,
                   ),
                 ),
@@ -519,9 +528,9 @@ class FriendLocationGroup extends ConsumerWidget {
       colors: [
         HSLColor.fromColor(
           accentColor,
-        ).withLightness(0.65).withSaturation(0.9).toColor(),
+        ).withLightness(isDarkMode ? 0.8 : 0.65).withSaturation(0.9).toColor(),
         isDarkMode
-            ? Colors.white.withValues(alpha: 0.95)
+            ? Colors.white
             : HSLColor.fromColor(
               Colors.black,
             ).withLightness(0.2).toColor().withValues(alpha: 0.9),
@@ -594,7 +603,11 @@ class FriendLocationGroup extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatusBadge(String statusText, Color accentColor) {
+  Widget _buildStatusBadge(
+    String statusText,
+    Color accentColor,
+    bool isDarkMode,
+  ) {
     final badgeGradient = LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
@@ -634,7 +647,7 @@ class FriendLocationGroup extends ConsumerWidget {
                 color:
                     HSLColor.fromColor(
                       accentColor,
-                    ).withLightness(0.3).toColor(),
+                    ).withLightness(isDarkMode ? 0.7 : 0.3).toColor(),
                 letterSpacing: 0.1,
               ),
             ),

@@ -60,8 +60,8 @@ class AvatarSearchTab extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color:
                         isDarkMode
-                            ? Colors.grey[800]!.withOpacity(0.3)
-                            : Colors.grey[200]!.withOpacity(0.7),
+                            ? Colors.grey[800]!.withValues(alpha:0.3)
+                            : Colors.grey[200]!.withValues(alpha:0.7),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -143,12 +143,12 @@ class AvatarSearchTab extends ConsumerWidget {
     // ランダムな要素を追加してデザインのバリエーションを増やす
     final cardHeight = 240.0 + (avatar.name.length % 3) * 10;
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha:0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -211,7 +211,7 @@ class AvatarSearchTab extends ConsumerWidget {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(0.7),
+                              Colors.black.withValues(alpha:0.7),
                             ],
                           ),
                         ),

@@ -63,7 +63,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       appBar: AppBar(
         title: Text(
           '設定',
-          style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
+          style: GoogleFonts.notoSans(
+            fontWeight: FontWeight.bold,
+            color: isDarkMode ? Colors.white : Colors.black87, // 明示的に色を指定
+          ),
         ),
         centerTitle: true,
         elevation: 0,
@@ -71,6 +74,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             isDarkMode
                 ? const Color(0xFF1E1E1E)
                 : AppTheme.primaryColor.withAlpha(13),
+        // または全体のテキスト色を設定
+        foregroundColor: isDarkMode ? Colors.white : Colors.black87,
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
@@ -107,77 +112,77 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
               const SizedBox(height: 24),
 
-              // 通知設定
-              _buildSettingsSection(
-                title: '通知 - 実装中',
-                icon: Icons.notifications_outlined,
-                children: [
-                  _buildSwitchSetting(
-                    icon: Icons.person_add_outlined,
-                    title: 'フレンドリクエスト通知',
-                    subtitle: 'フレンドリクエストを受け取ったときに通知します',
-                    value: settings.notifyNewFriendRequests,
-                    onChanged: (value) {
-                      ref
-                          .read(settingsProvider.notifier)
-                          .setNotifyNewFriendRequests(value);
-                    },
-                    isDarkMode: isDarkMode,
-                  ),
-                  _buildSwitchSetting(
-                    icon: Icons.people_outlined,
-                    title: 'フレンドオンライン通知',
-                    subtitle: 'フレンドがオンラインになったときに通知します',
-                    value: settings.notifyFriendOnline,
-                    onChanged: (value) {
-                      ref
-                          .read(settingsProvider.notifier)
-                          .setNotifyFriendOnline(value);
-                    },
-                    isDarkMode: isDarkMode,
-                  ),
-                ],
-              ),
+              // TODO: 通知設定
+              // _buildSettingsSection(
+              //   title: '通知',
+              //   icon: Icons.notifications_outlined,
+              //   children: [
+              //     _buildSwitchSetting(
+              //       icon: Icons.person_add_outlined,
+              //       title: 'フレンドリクエスト通知',
+              //       subtitle: 'フレンドリクエストを受け取ったときに通知します',
+              //       value: settings.notifyNewFriendRequests,
+              //       onChanged: (value) {
+              //         ref
+              //             .read(settingsProvider.notifier)
+              //             .setNotifyNewFriendRequests(value);
+              //       },
+              //       isDarkMode: isDarkMode,
+              //     ),
+              //     _buildSwitchSetting(
+              //       icon: Icons.people_outlined,
+              //       title: 'フレンドオンライン通知',
+              //       subtitle: 'フレンドがオンラインになったときに通知します',
+              //       value: settings.notifyFriendOnline,
+              //       onChanged: (value) {
+              //         ref
+              //             .read(settingsProvider.notifier)
+              //             .setNotifyFriendOnline(value);
+              //       },
+              //       isDarkMode: isDarkMode,
+              //     ),
+              //   ],
+              // ),
 
-              const SizedBox(height: 24),
+              // const SizedBox(height: 24),
 
-              // データと通信設定
-              _buildSettingsSection(
-                title: 'データと通信 - 実装中',
-                icon: Icons.data_usage_outlined,
-                children: [
-                  _buildSwitchSetting(
-                    icon: Icons.wifi_outlined,
-                    title: 'Wi-Fi接続時のみ画像を読み込む',
-                    subtitle: 'モバイルデータ通信量を節約します',
-                    value: settings.loadImageOnWifi,
-                    onChanged: (value) {
-                      ref
-                          .read(settingsProvider.notifier)
-                          .setLoadImageOnWifi(value);
-                    },
-                    isDarkMode: isDarkMode,
-                  ),
-                  _buildSliderSetting(
-                    icon: Icons.storage_outlined,
-                    title: 'フレンドキャッシュ上限',
-                    subtitle: 'キャッシュするフレンド情報の最大数',
-                    value: settings.maxFriendCache.toDouble(),
-                    min: 100,
-                    max: 1000,
-                    divisions: 9,
-                    onChanged: (value) {
-                      ref
-                          .read(settingsProvider.notifier)
-                          .setMaxFriendCache(value.round());
-                    },
-                    valueDisplay: '${settings.maxFriendCache}人',
-                    isDarkMode: isDarkMode,
-                  ),
-                ],
-              ),
+              // TODO: データと通信設定
+              // _buildSettingsSection(
+              //   title: 'データと通信',
+              //   icon: Icons.data_usage_outlined,
+              //   children: [
+              //     _buildSwitchSetting(
+              //       icon: Icons.wifi_outlined,
+              //       title: 'Wi-Fi接続時のみ画像を読み込む',
+              //       subtitle: 'モバイルデータ通信量を節約します',
+              //       value: settings.loadImageOnWifi,
+              //       onChanged: (value) {
+              //         ref
+              //             .read(settingsProvider.notifier)
+              //             .setLoadImageOnWifi(value);
+              //       },
+              //       isDarkMode: isDarkMode,
+              //     ),
+              //     _buildSliderSetting(
+              //       icon: Icons.storage_outlined,
+              //       title: 'フレンドキャッシュ上限',
+              //       subtitle: 'キャッシュするフレンド情報の最大数',
+              //       value: settings.maxFriendCache.toDouble(),
+              //       min: 100,
+              //       max: 1000,
+              //       divisions: 9,
+              //       onChanged: (value) {
+              //         ref
+              //             .read(settingsProvider.notifier)
+              //             .setMaxFriendCache(value.round());
+              //       },
+              //       valueDisplay: '${settings.maxFriendCache}人',
+              //       isDarkMode: isDarkMode,
+              //     ),
+              //   ],
+              // ),
 
-              const SizedBox(height: 24),
+              // const SizedBox(height: 24),
 
               // アプリ情報
               if (_packageInfo != null)

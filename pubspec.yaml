@@ -89,6 +89,7 @@ flutter:
     - path: .env
       flavors:
       - debug
+      - dev
 
 dependency_overrides:
   vrchat_dart_generated:

@@ -62,6 +62,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     style: GoogleFonts.notoSans(
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
+                      color: isDarkMode ? Colors.white : Colors.black87,
                     ),
                   )
                   : const CircleAvatar(

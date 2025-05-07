@@ -426,7 +426,7 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
                         vertical: 5,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
+                        color: Colors.black.withValues(alpha: .6),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -517,9 +517,12 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: tagColor.withOpacity(0.15),
+                color: tagColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: tagColor.withOpacity(0.3), width: 1),
+                border: Border.all(
+                  color: tagColor.withValues(alpha: 0.3),
+                  width: 1,
+                ),
               ),
               child: Text(
                 SearchUtils.formatTag(tag),
