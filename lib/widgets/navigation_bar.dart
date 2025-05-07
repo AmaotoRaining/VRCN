@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vrchat/pages/search_page.dart';
 import 'package:vrchat/provider/navigation_provider.dart';
+import 'package:vrchat/provider/notification_provider.dart';
 import 'package:vrchat/provider/search_providers.dart';
 import 'package:vrchat/widgets/app_bar.dart';
 import 'package:vrchat/widgets/app_drawer.dart';
@@ -77,14 +78,14 @@ class Navigation extends ConsumerWidget {
           },
           searchHint: '検索',
           onAvatarPressed: () => scaffoldKey.currentState?.openDrawer(),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.filter_list),
-              tooltip: 'フィルター',
-              onPressed: () {
-                // フィルター機能
-              },
-            ),
+          actions: const [
+            // IconButton(
+            //   icon: const Icon(Icons.filter_list),
+            //   tooltip: 'フィルター',
+            //   onPressed: () {
+            //     // フィルター機能
+            //   },
+            // ),
           ],
         );
       case 2:
@@ -96,7 +97,16 @@ class Navigation extends ConsumerWidget {
               icon: const Icon(Icons.done_all),
               tooltip: 'すべて既読にする',
               onPressed: () {
-                // 全て既読にする機能
+                // 通知をすべて既読にする
+                ref.read(notificationsProvider.notifier).markAllAsRead();
+
+                // フィードバックを表示
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('すべての通知を既読にしました'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
               },
             ),
           ],

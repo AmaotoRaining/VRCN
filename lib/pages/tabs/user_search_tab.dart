@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/search_providers.dart';
-import 'package:vrchat/widgets/search_widgets.dart';
+import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
+import 'package:vrchat/widgets/search_widgets.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
 class UserSearchTab extends ConsumerStatefulWidget {
@@ -134,49 +134,115 @@ class _UserSearchTabState extends ConsumerState<UserSearchTab> {
         }
 
         final user = cachedResults[index];
-        return _buildUserListItem(user, isDarkMode);
+        return _buildUserCard(user, isDarkMode);
       },
     );
   }
 
-  Widget _buildUserListItem(LimitedUser user, bool isDarkMode) {
+  Widget _buildUserCard(LimitedUser user, bool isDarkMode) {
     final headers = {'User-Agent': 'VRChat/1.0'};
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundImage:
-            user.currentAvatarThumbnailImageUrl != null &&
-                    user.currentAvatarThumbnailImageUrl!.isNotEmpty
-                ? CachedNetworkImageProvider(
-                  user.currentAvatarThumbnailImageUrl!,
-                  headers: headers,
-                  cacheManager: JsonCacheManager(),
-                )
-                : const AssetImage('assets/images/default_avatar.png')
-                    as ImageProvider,
-        backgroundColor: Colors.grey[300],
-      ),
-      title: Text(
-        user.displayName,
-        style: GoogleFonts.notoSans(
-          fontWeight: FontWeight.w600,
-          color: isDarkMode ? Colors.white : Colors.black87,
+
+    return Card(
+      elevation: 2,
+      shadowColor: isDarkMode ? Colors.black26 : Colors.black12,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => context.push('/user/${user.id}'),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // シンプルなアバター表示
+              Hero(
+                tag: 'avatar_${user.id}',
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child:
+                        user.currentAvatarThumbnailImageUrl != null &&
+                                user.currentAvatarThumbnailImageUrl!.isNotEmpty
+                            ? CachedNetworkImage(
+                              imageUrl: user.currentAvatarThumbnailImageUrl!,
+                              fit: BoxFit.cover,
+                              httpHeaders: headers,
+                              cacheManager: JsonCacheManager(),
+                              placeholder:
+                                  (context, url) => Container(
+                                    color:
+                                        isDarkMode
+                                            ? Colors.grey[800]
+                                            : Colors.grey[200],
+                                  ),
+                              errorWidget:
+                                  (context, url, error) => const Icon(
+                                    Icons.person,
+                                    size: 30,
+                                    color: Colors.grey,
+                                  ),
+                            )
+                            : Image.asset(
+                              'assets/images/default_avatar.png',
+                              fit: BoxFit.cover,
+                            ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // ユーザー情報（名前のみ）
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      user.displayName,
+                      style: GoogleFonts.notoSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (user.statusDescription.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        user.statusDescription,
+                        style: GoogleFonts.notoSans(
+                          fontSize: 13,
+                          color:
+                              isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              // 右端のアイコン
+              Icon(
+                Icons.chevron_right,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                size: 20,
+              ),
+            ],
+          ),
         ),
       ),
-      subtitle:
-          user.statusDescription.isNotEmpty
-              ? Text(
-                user.statusDescription,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.notoSans(
-                  fontSize: 13,
-                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                ),
-              )
-              : null,
-      onTap: () {
-        context.push('/user/${user.id}');
-      },
     );
   }
 }

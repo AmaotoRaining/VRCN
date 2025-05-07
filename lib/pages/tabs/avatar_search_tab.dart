@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/models/avtrdb_search_result.dart';
@@ -44,24 +46,51 @@ class AvatarSearchTab extends ConsumerWidget {
 
   Widget _buildNoResultsFound(bool isDarkMode) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.search_off,
-            size: 48,
-            color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '検索結果が見つかりませんでした',
-            style: GoogleFonts.notoSans(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+      child: AnimationConfiguration.staggeredList(
+        position: 0,
+        duration: const Duration(milliseconds: 500),
+        child: SlideAnimation(
+          verticalOffset: 50.0,
+          child: FadeInAnimation(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color:
+                        isDarkMode
+                            ? Colors.grey[800]!.withOpacity(0.3)
+                            : Colors.grey[200]!.withOpacity(0.7),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.search_off_rounded,
+                    size: 60,
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[500],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  '検索結果が見つかりませんでした',
+                  style: GoogleFonts.notoSans(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '別のキーワードで試してみましょう',
+                  style: GoogleFonts.notoSans(
+                    fontSize: 15,
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -74,30 +103,30 @@ class AvatarSearchTab extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            '検索結果: ${avatars.length}件',
-            style: GoogleFonts.notoSans(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
+        // アバター検索結果グリッド
         Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.all(8.0),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          child: AnimationLimiter(
+            child: MasonryGridView.count(
+              padding: const EdgeInsets.all(12.0),
               crossAxisCount: 2,
-              childAspectRatio: 0.75,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              itemCount: avatars.length,
+              itemBuilder: (context, index) {
+                final avatar = avatars[index];
+                return AnimationConfiguration.staggeredGrid(
+                  position: index,
+                  duration: const Duration(milliseconds: 375),
+                  columnCount: 2,
+                  child: SlideAnimation(
+                    verticalOffset: 50.0,
+                    child: FadeInAnimation(
+                      child: _buildAvatarItem(context, avatar, isDarkMode),
+                    ),
+                  ),
+                );
+              },
             ),
-            itemCount: avatars.length,
-            itemBuilder: (context, index) {
-              final avatar = avatars[index];
-              return _buildAvatarItem(context, avatar, isDarkMode);
-            },
           ),
         ),
       ],
@@ -110,69 +139,136 @@ class AvatarSearchTab extends ConsumerWidget {
     bool isDarkMode,
   ) {
     final headers = {'User-Agent': 'VRChat/1.0'};
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 4,
-      shadowColor: Colors.black26,
-      child: InkWell(
-        onTap: () => context.push('/avatar/${avatar.id}'),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // アバター画像
-            Expanded(
-              child: CachedNetworkImage(
-                imageUrl: avatar.imageUrl,
-                fit: BoxFit.cover,
-                width: double.infinity,
 
-                httpHeaders: headers,
-                cacheManager: JsonCacheManager(),
-                placeholder:
-                    (context, url) => Container(
-                      color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
+    // ランダムな要素を追加してデザインのバリエーションを増やす
+    final cardHeight = 240.0 + (avatar.name.length % 3) * 10;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => context.push('/avatar/${avatar.id}'),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // アバター画像 (高さを若干ランダムに)
+              Hero(
+                tag: 'avatar-${avatar.id}',
+                child: Stack(
+                  children: [
+                    SizedBox(
+                      height: cardHeight,
+                      child: CachedNetworkImage(
+                        imageUrl: avatar.imageUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        httpHeaders: headers,
+                        cacheManager: JsonCacheManager(),
+                        placeholder:
+                            (context, url) => Container(
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[800]
+                                      : Colors.grey[300],
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                        errorWidget:
+                            (context, url, error) => Container(
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[800]
+                                      : Colors.grey[300],
+                              child: const Icon(Icons.broken_image),
+                            ),
                       ),
                     ),
-                errorWidget:
-                    (context, url, error) => Container(
-                      color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                      child: const Icon(Icons.broken_image),
+                    // 画像上にグラデーションオーバーレイを追加
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        height: 80,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.7),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
+                  ],
+                ),
               ),
-            ),
 
-            // アバター情報
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    avatar.name,
-                    style: GoogleFonts.notoSans(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+              // アバター情報
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      avatar.name,
+                      style: GoogleFonts.notoSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? Colors.white : Colors.grey[800],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    avatar.authorName,
-                    style: GoogleFonts.notoSans(
-                      fontSize: 12,
-                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.person_outline,
+                          size: 14,
+                          color:
+                              isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            avatar.authorName,
+                            style: GoogleFonts.notoSans(
+                              fontSize: 13,
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

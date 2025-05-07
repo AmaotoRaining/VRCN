@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vrchat/pages/notifications_page.dart';
 import 'package:vrchat/provider/friends_provider.dart';
+import 'package:vrchat/provider/instance_provider.dart';
 import 'package:vrchat/provider/notification_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
@@ -78,7 +79,7 @@ class StreamingController {
 }
 
 // ストリーミングイベントハンドラー
-void _handleVrcEvent(vrc.VrcStreamingEvent event, ref) {
+void _handleVrcEvent(vrc.VrcStreamingEvent event, ref) async {
   // イベント受信のログ
   debugPrint('======= VRC EVENT RECEIVED: ${event.type} =======');
 
@@ -108,22 +109,26 @@ void _handleVrcEvent(vrc.VrcStreamingEvent event, ref) {
       final friendOfflineEvent = event as vrc.FriendOfflineEvent;
       debugPrint('フレンドオフライン: ${friendOfflineEvent.userId}');
 
+      ref.read(friendStateUpdaterProvider)(
+        friendOfflineEvent.userId,
+        isOnline: false,
+      );
+
+      final friend = await ref.read(
+        userDetailProvider(friendOfflineEvent.userId).future,
+      );
+
       // 通知を追加
       ref
           .read(notificationsProvider.notifier)
           .addNotification(
             NotificationItem(
               type: NotificationType.friendOffline,
-              userName: friendOfflineEvent.userId,
+              userName: friend.displayName,
               timestamp: DateTime.timestamp(),
               isRead: false,
             ),
           );
-
-      ref.read(friendStateUpdaterProvider)(
-        friendOfflineEvent.userId,
-        isOnline: false,
-      );
 
     case vrc.VrcStreamingEventType.friendActive:
       final friendActiveEvent = event as vrc.FriendActiveEvent;
@@ -165,13 +170,17 @@ void _handleVrcEvent(vrc.VrcStreamingEvent event, ref) {
 
       ref.read(friendDeleteHandlerProvider)(friendDeleteEvent.userId);
 
+      final friend = await ref.read(
+        userDetailProvider(friendDeleteEvent.userId).future,
+      );
+
       //通知の追加
-      ref
+      await ref
           .read(notificationsProvider.notifier)
           .addNotification(
             NotificationItem(
               type: NotificationType.friendRemove,
-              userName: friendDeleteEvent.userId,
+              userName: friend.displayName,
               timestamp: DateTime.timestamp(),
               isRead: false,
             ),
@@ -214,25 +223,34 @@ void _handleVrcEvent(vrc.VrcStreamingEvent event, ref) {
         null,
       );
 
-      // ワールド名を抽出
-      String? worldName;
-      if (friendLocationEvent.location != null) {
-        worldName = friendLocationEvent.location;
-      } else if (friendLocationEvent.location != null) {
-        final parts = friendLocationEvent.location!.split(':');
-        if (parts.isNotEmpty) {
-          worldName = parts[0];
+      var worldName;
+
+      if (friendLocationEvent.location != null &&
+          friendLocationEvent.location != 'private' &&
+          friendLocationEvent.location != 'traveling') {
+        try {
+          final location = await ref.read(
+            instanceDetailProvider(
+              friendLocationEvent.location.toString(),
+            ).future,
+          );
+          worldName = location.world.name;
+        } catch (e) {
+          debugPrint('ワールド情報の取得に失敗: $e');
+          worldName = 'Unknown World';
         }
+      } else {
+        worldName = friendLocationEvent.location.toString();
       }
 
       // フレンド位置変更通知
-      ref
+      await ref
           .read(notificationsProvider.notifier)
           .addNotification(
             NotificationItem(
               type: NotificationType.locationChange,
               userName: friendLocationEvent.user.displayName,
-              worldName: worldName ?? '不明なワールド',
+              worldName: worldName,
               timestamp: DateTime.timestamp(),
               isRead: false,
             ),
@@ -250,7 +268,7 @@ void _handleVrcEvent(vrc.VrcStreamingEvent event, ref) {
         final status = userUpdateEvent.user.status;
         final statusDescription = userUpdateEvent.user.statusDescription;
 
-        // フレンドリストの更新（自分自身の更新も含む）
+        // フレンドリストの更新
         ref.read(friendInfoUpdaterProvider)(
           userUpdateEvent.userId,
           status: status,

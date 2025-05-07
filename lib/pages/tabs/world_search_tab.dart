@@ -1,14 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/provider/search_providers.dart';
-import 'package:vrchat/utils/search_utils.dart';
-import 'package:vrchat/widgets/search_widgets.dart';
+import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
+import 'package:vrchat/utils/search_utils.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
+import 'package:vrchat/widgets/search_widgets.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
 class WorldSearchTab extends ConsumerStatefulWidget {
@@ -18,8 +19,13 @@ class WorldSearchTab extends ConsumerStatefulWidget {
   ConsumerState<WorldSearchTab> createState() => _WorldSearchTabState();
 }
 
-class _WorldSearchTabState extends ConsumerState<WorldSearchTab> {
+class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
+    with AutomaticKeepAliveClientMixin {
   final _scrollController = ScrollController();
+  var _isGridView = false; // グリッドビューとリストビューの切り替えフラグ
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -51,11 +57,23 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab> {
     setState(() {});
   }
 
+  void _toggleViewMode() {
+    setState(() {
+      _isGridView = !_isGridView;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final query = ref.watch(searchQueryProvider);
     final offset = ref.watch(worldSearchOffsetProvider);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final size = MediaQuery.of(context).size;
+    final isMobileSize = size.width < 600;
+
+    // レスポンシブデザイン：モバイルでは常にリストビュー
+    final effectiveIsGridView = !isMobileSize && _isGridView;
 
     // 累積された結果を取得
     final cachedResults = ref.watch(worldSearchResultsProvider);
@@ -69,12 +87,11 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab> {
     // クエリが空の場合は、遅延して結果をクリア
     if (query.isEmpty) {
       if (cachedResults.isNotEmpty) {
-        // ビルド後にマイクロタスクとして実行
         Future.microtask(() {
           ref.read(worldSearchResultsProvider.notifier).state = [];
         });
       }
-      return buildEmptySearchState('ワールド', Icons.public, isDarkMode);
+      return _buildEmptySearchPrompt(isDarkMode);
     }
 
     // searchStateが変化したときの処理
@@ -106,7 +123,8 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab> {
                 }
               }
 
-              ref.read(worldSearchResultsProvider.notifier).state = combinedResults;
+              ref.read(worldSearchResultsProvider.notifier).state =
+                  combinedResults;
             }
           } else {
             ref.read(searchingProvider.notifier).state = false;
@@ -126,130 +144,333 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab> {
 
     // 空の検索結果
     if (cachedResults.isEmpty && !searchState.isLoading) {
-      return buildNoResultsState(query, isDarkMode);
+      return _buildNoResultsView(query, isDarkMode);
     }
 
+    // ビューモード切替ボタン
+    final viewToggleButton =
+        !isMobileSize
+            ? Positioned(
+              top: 16,
+              right: 16,
+              child: FloatingActionButton.small(
+                onPressed: _toggleViewMode,
+                tooltip: effectiveIsGridView ? 'リストビュー' : 'グリッドビュー',
+                elevation: 2,
+                backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
+                foregroundColor: isDarkMode ? Colors.white : Colors.grey[800],
+                child: Icon(
+                  effectiveIsGridView ? Icons.view_list : Icons.grid_view,
+                ),
+              ),
+            )
+            : const SizedBox.shrink();
+
     // キャッシュされた結果を表示
+    return Stack(
+      children: [
+        AnimationLimiter(
+          child:
+              effectiveIsGridView
+                  ? _buildWorldGrid(
+                    cachedResults,
+                    searchState.isLoading,
+                    isDarkMode,
+                  )
+                  : _buildWorldList(
+                    cachedResults,
+                    searchState.isLoading,
+                    isDarkMode,
+                  ),
+        ),
+        viewToggleButton,
+      ],
+    );
+  }
+
+  Widget _buildEmptySearchPrompt(bool isDarkMode) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.travel_explore,
+            size: 100,
+            color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'ワールドを探索',
+            style: GoogleFonts.notoSans(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'キーワードを入力して検索してください',
+            style: GoogleFonts.notoSans(
+              fontSize: 16,
+              color: isDarkMode ? Colors.grey[500] : Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 32),
+          Container(
+            width: 200,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.search,
+                  size: 20,
+                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '検索してみよう',
+                  style: GoogleFonts.notoSans(
+                    fontSize: 14,
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoResultsView(String query, bool isDarkMode) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.search_off_rounded,
+            size: 80,
+            color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
+          ),
+          const SizedBox(height: 20),
+          Text(
+            '「$query」に一致するワールドが\n見つかりませんでした',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.notoSans(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '検索キーワードを変えてみましょう',
+            style: GoogleFonts.notoSans(
+              fontSize: 14,
+              color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWorldList(
+    List<LimitedWorld> worlds,
+    bool isLoading,
+    bool isDarkMode,
+  ) {
     return ListView.builder(
       controller: _scrollController,
-      itemCount: cachedResults.length + 1,
+      padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 72),
+      itemCount: worlds.length + 1,
       itemBuilder: (context, index) {
-        if (index == cachedResults.length) {
-          // 最後の項目の場合、ローディングインジケータを表示
+        if (index == worlds.length) {
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Center(
               child:
-                  searchState.isLoading
+                  isLoading
                       ? const CircularProgressIndicator()
-                      : const SizedBox(height: 40), // スペースを確保
+                      : const SizedBox(height: 40),
             ),
           );
         }
 
-        final world = cachedResults[index];
-        return _buildWorldListItem(world, isDarkMode);
+        return AnimationConfiguration.staggeredList(
+          position: index,
+          duration: const Duration(milliseconds: 375),
+          child: SlideAnimation(
+            verticalOffset: 50.0,
+            child: FadeInAnimation(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: _buildWorldCard(worlds[index], isDarkMode, false),
+              ),
+            ),
+          ),
+        );
       },
     );
   }
 
-  // ワールドリストアイテムのウィジェト
-  Widget _buildWorldListItem(LimitedWorld world, bool isDarkMode) {
-    final headers = {'User-Agent': 'VRChat/1.0'};
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: isDarkMode ? Colors.grey[800]! : Colors.grey[200]!,
-          width: 1,
-        ),
+  Widget _buildWorldGrid(
+    List<LimitedWorld> worlds,
+    bool isLoading,
+    bool isDarkMode,
+  ) {
+    return GridView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 72),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.75,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
       ),
+      itemCount: worlds.length + 1,
+      itemBuilder: (context, index) {
+        if (index == worlds.length) {
+          return Center(
+            child:
+                isLoading
+                    ? const CircularProgressIndicator()
+                    : const SizedBox(),
+          );
+        }
+
+        return AnimationConfiguration.staggeredGrid(
+          position: index,
+          duration: const Duration(milliseconds: 375),
+          columnCount: 2,
+          child: ScaleAnimation(
+            child: FadeInAnimation(
+              child: _buildWorldCard(worlds[index], isDarkMode, true),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildWorldCard(LimitedWorld world, bool isDarkMode, bool isGrid) {
+    final headers = {'User-Agent': 'VRChat/1.0'};
+
+    return Card(
+      elevation: 3,
+      shadowColor: isDarkMode ? Colors.black38 : Colors.black12,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: isDarkMode ? const Color(0xFF1A1A1A) : Colors.white,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          context.push('/world/${world.id}');
-        },
+        onTap: () => context.push('/world/${world.id}'),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ワールドのサムネイル画像
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12),
-              ),
-              child: AspectRatio(
-                aspectRatio: 16 / 9,
-                child:
-                    world.thumbnailImageUrl.isNotEmpty
-                        ? CachedNetworkImage(
-                          imageUrl: world.thumbnailImageUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
-                            color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                            child: const Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                          ),
-                          errorWidget: (context, url, error) => Container(
-                            color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                            child: const Icon(Icons.error),
-                          ),
-                          cacheManager: JsonCacheManager(),
-                          httpHeaders: headers,
-                        )
-                        : Container(
-                          color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                          child: const Icon(Icons.image, size: 48),
-                        ),
-              ),
-            ),
-
-            // ワールド情報
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            // サムネイルイメージ
+            Hero(
+              tag: 'world_${world.id}',
+              child: Stack(
                 children: [
-                  // ワールド名とお気に入り数
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          world.name,
-                          style: GoogleFonts.notoSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: isDarkMode ? Colors.white : Colors.black87,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                  AspectRatio(
+                    aspectRatio: isGrid ? 16 / 12 : 16 / 9,
+                    child:
+                        world.thumbnailImageUrl.isNotEmpty
+                            ? CachedNetworkImage(
+                              imageUrl: world.thumbnailImageUrl,
+                              fit: BoxFit.cover,
+                              httpHeaders: headers,
+                              placeholder:
+                                  (context, url) => Container(
+                                    color:
+                                        isDarkMode
+                                            ? const Color(0xFF262626)
+                                            : Colors.grey[200],
+                                    child: const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  ),
+                              errorWidget:
+                                  (context, url, error) => Container(
+                                    color:
+                                        isDarkMode
+                                            ? const Color(0xFF262626)
+                                            : Colors.grey[200],
+                                    child: const Icon(
+                                      Icons.broken_image,
+                                      size: 40,
+                                    ),
+                                  ),
+                              cacheManager: JsonCacheManager(),
+                            )
+                            : Container(
+                              color:
+                                  isDarkMode
+                                      ? const Color(0xFF262626)
+                                      : Colors.grey[200],
+                              child: const Icon(Icons.image, size: 40),
+                            ),
+                  ),
+                  // 人気度バッジ
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
                       ),
-                      const SizedBox(width: 8),
-                      Row(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             Icons.favorite,
-                            size: 16,
                             color: Colors.red[400],
+                            size: 16,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             SearchUtils.formatNumber(world.popularity),
                             style: GoogleFonts.notoSans(
-                              fontSize: 14,
-                              color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                    ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // ワールド情報
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    world.name,
+                    style: GoogleFonts.notoSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
 
-                  // 作者名
                   if (world.authorName.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
@@ -263,32 +484,9 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab> {
                     ),
                   ],
 
-                  // タグ
                   if (world.tags.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: world.tags.take(3).map((tag) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            SearchUtils.formatTag(tag),
-                            style: GoogleFonts.notoSans(
-                              fontSize: 12,
-                              color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
+                    const SizedBox(height: 10),
+                    _buildWorldTags(world.tags, isDarkMode),
                   ],
                 ],
               ),
@@ -297,5 +495,59 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab> {
         ),
       ),
     );
+  }
+
+  Widget _buildWorldTags(List<String> tags, bool isDarkMode) {
+    // タグをフィルタリング
+    final displayTags =
+        tags
+            .where((tag) => !tag.startsWith('author_'))
+            .where((tag) => !tag.startsWith('hidden_'))
+            .take(3)
+            .toList();
+
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children:
+          displayTags.map((tag) {
+            // タグのカラーコードを取得
+            final tagColor = _getTagColor(tag, isDarkMode);
+
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: tagColor.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: tagColor.withOpacity(0.3), width: 1),
+              ),
+              child: Text(
+                SearchUtils.formatTag(tag),
+                style: GoogleFonts.notoSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: tagColor,
+                ),
+              ),
+            );
+          }).toList(),
+    );
+  }
+
+  // タグに応じた色を返す
+  Color _getTagColor(String tag, bool isDarkMode) {
+    if (tag.contains('game')) {
+      return Colors.purple[isDarkMode ? 300 : 400]!;
+    } else if (tag.contains('world')) {
+      return Colors.blue[isDarkMode ? 300 : 400]!;
+    } else if (tag.contains('avatar')) {
+      return Colors.amber[isDarkMode ? 300 : 700]!;
+    } else if (tag.contains('sdk3')) {
+      return Colors.green[isDarkMode ? 300 : 600]!;
+    } else if (tag.contains('featured') || tag.contains('system_approved')) {
+      return Colors.red[isDarkMode ? 300 : 400]!;
+    } else {
+      return isDarkMode ? Colors.grey[400]! : Colors.grey[700]!;
+    }
   }
 }

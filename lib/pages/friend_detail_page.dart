@@ -194,7 +194,9 @@ class FriendDetailPage extends ConsumerWidget {
                 ],
               ),
             ),
+            actions: const [],
           ),
+
           SliverToBoxAdapter(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20),

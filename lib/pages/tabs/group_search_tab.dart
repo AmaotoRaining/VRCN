@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/provider/group_provider.dart' as gp;
@@ -17,8 +19,13 @@ class GroupSearchTab extends ConsumerStatefulWidget {
   ConsumerState<GroupSearchTab> createState() => _GroupSearchTabState();
 }
 
-class _GroupSearchTabState extends ConsumerState<GroupSearchTab> {
+class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
+    with AutomaticKeepAliveClientMixin {
   final _scrollController = ScrollController();
+  bool _isGridView = false; // グリッドビューとリストビューの切り替えフラグ
+
+  @override
+  bool get wantKeepAlive => true; // タブ切り替え時に状態を保持
 
   @override
   void initState() {
@@ -50,11 +57,23 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab> {
     setState(() {});
   }
 
+  void _toggleViewMode() {
+    setState(() {
+      _isGridView = !_isGridView;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final query = ref.watch(searchQueryProvider);
     final offset = ref.watch(groupSearchOffsetProvider);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final size = MediaQuery.of(context).size;
+    final isMobileSize = size.width < 600;
+
+    // レスポンシブデザイン：モバイルでは常にリストビュー
+    final effectiveIsGridView = !isMobileSize && _isGridView;
 
     // 検索機能に関連するプロバイダーなので、search_providersからのものを使用
     final cachedResults = ref.watch(groupSearchResultsProvider);
@@ -110,7 +129,7 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab> {
           ref.read(groupSearchResultsProvider.notifier).state = [];
         });
       }
-      return buildEmptySearchState('グループ', Icons.group, isDarkMode);
+      return _buildEmptySearchPrompt(isDarkMode);
     }
 
     // 検索クエリが変わった場合、ローディング状態を優先表示
@@ -125,30 +144,327 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab> {
 
     // 空の検索結果
     if (cachedResults.isEmpty && !searchState.isLoading) {
-      return buildNoResultsState(query, isDarkMode);
+      return _buildNoResultsView(query, isDarkMode);
     }
 
+    // ビューモード切替ボタン
+    final viewToggleButton =
+        !isMobileSize
+            ? Positioned(
+              top: 16,
+              right: 16,
+              child: FloatingActionButton.small(
+                onPressed: _toggleViewMode,
+                tooltip: effectiveIsGridView ? 'リストビュー' : 'グリッドビュー',
+                elevation: 2,
+                backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
+                foregroundColor: isDarkMode ? Colors.white : Colors.grey[800],
+                child: Icon(
+                  effectiveIsGridView ? Icons.view_list : Icons.grid_view,
+                ),
+              ),
+            )
+            : const SizedBox.shrink();
+
     // キャッシュされた結果を表示
-    return ListView.builder(
+    return Stack(
+      children: [
+        Column(
+          children: [
+            // 検索結果表示エリア
+            Expanded(
+              child: AnimationLimiter(
+                child:
+                    effectiveIsGridView
+                        ? _buildGroupGrid(
+                          cachedResults,
+                          searchState.isLoading,
+                          isDarkMode,
+                        )
+                        : _buildGroupList(
+                          cachedResults,
+                          searchState.isLoading,
+                          isDarkMode,
+                        ),
+              ),
+            ),
+          ],
+        ),
+        viewToggleButton,
+      ],
+    );
+  }
+
+  // グリッドビュー
+  Widget _buildGroupGrid(
+    List<LimitedGroup> groups,
+    bool isLoading,
+    bool isDarkMode,
+  ) {
+    return MasonryGridView.count(
       controller: _scrollController,
-      itemCount: cachedResults.length + 1,
+      padding: const EdgeInsets.all(12.0),
+      crossAxisCount: 2,
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      itemCount: groups.length + 1,
       itemBuilder: (context, index) {
-        if (index == cachedResults.length) {
+        if (index == groups.length) {
           // 最後の項目の場合、ローディングインジケータを表示
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Center(
               child:
-                  searchState.isLoading
+                  isLoading
                       ? const CircularProgressIndicator()
-                      : const SizedBox(height: 40), // スペースを確保
+                      : const SizedBox(height: 40),
             ),
           );
         }
 
-        final group = cachedResults[index];
-        return _buildGroupListItem(group, isDarkMode);
+        final group = groups[index];
+        return AnimationConfiguration.staggeredGrid(
+          position: index,
+          duration: const Duration(milliseconds: 375),
+          columnCount: 2,
+          child: SlideAnimation(
+            verticalOffset: 50.0,
+            child: FadeInAnimation(
+              child: _buildGroupGridItem(context, group, isDarkMode),
+            ),
+          ),
+        );
       },
+    );
+  }
+
+  // リストビュー
+  Widget _buildGroupList(
+    List<LimitedGroup> groups,
+    bool isLoading,
+    bool isDarkMode,
+  ) {
+    return ListView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(12.0),
+      itemCount: groups.length + 1,
+      itemBuilder: (context, index) {
+        if (index == groups.length) {
+          // 最後の項目の場合、ローディングインジケータを表示
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child:
+                  isLoading
+                      ? const CircularProgressIndicator()
+                      : const SizedBox(height: 40),
+            ),
+          );
+        }
+
+        final group = groups[index];
+        return AnimationConfiguration.staggeredList(
+          position: index,
+          duration: const Duration(milliseconds: 375),
+          child: SlideAnimation(
+            horizontalOffset: 50.0,
+            child: FadeInAnimation(
+              child: _buildGroupListItem(group, isDarkMode),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // グリッドアイテム
+  Widget _buildGroupGridItem(
+    BuildContext context,
+    LimitedGroup group,
+    bool isDarkMode,
+  ) {
+    final headers = {'User-Agent': 'VRChat/1.0'};
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => context.push('/group/${group.id}'),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // グループアイコン
+              Hero(
+                tag: 'group-${group.id}',
+                child: Stack(
+                  children: [
+                    SizedBox(
+                      height: 180,
+                      width: double.infinity,
+                      child:
+                          group.iconUrl != null && group.iconUrl!.isNotEmpty
+                              ? CachedNetworkImage(
+                                imageUrl: group.iconUrl!,
+                                fit: BoxFit.cover,
+                                httpHeaders: headers,
+                                cacheManager: JsonCacheManager(),
+                                placeholder:
+                                    (context, url) => Container(
+                                      color:
+                                          isDarkMode
+                                              ? Colors.grey[800]
+                                              : Colors.grey[300],
+                                      child: const Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ),
+                                errorWidget:
+                                    (context, url, error) => Container(
+                                      color:
+                                          isDarkMode
+                                              ? Colors.grey[800]
+                                              : Colors.grey[300],
+                                      child: const Icon(Icons.group, size: 60),
+                                    ),
+                              )
+                              : Container(
+                                color:
+                                    isDarkMode
+                                        ? Colors.grey[800]
+                                        : Colors.grey[300],
+                                child: Center(
+                                  child: Icon(
+                                    Icons.group,
+                                    size: 60,
+                                    color:
+                                        isDarkMode
+                                            ? Colors.grey[600]
+                                            : Colors.grey[500],
+                                  ),
+                                ),
+                              ),
+                    ),
+                    // グラデーションオーバーレイ
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        height: 60,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.7),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // メンバー数
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.people,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${group.memberCount ?? "?"}',
+                              style: GoogleFonts.notoSans(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // グループ情報
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      group.name.toString(),
+                      style: GoogleFonts.notoSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (group.shortCode != null) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.tag,
+                            size: 14,
+                            color:
+                                isDarkMode
+                                    ? Colors.indigo.shade300
+                                    : Colors.indigo.shade700,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            group.shortCode!,
+                            style: GoogleFonts.notoSans(
+                              fontSize: 13,
+                              color:
+                                  isDarkMode
+                                      ? Colors.indigo.shade300
+                                      : Colors.indigo.shade700,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -157,67 +473,72 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab> {
     final headers = {'User-Agent': 'VRChat/1.0'};
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: isDarkMode ? Colors.grey[800]! : Colors.grey[200]!,
-          width: 1,
-        ),
-      ),
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      elevation: 2,
+      shadowColor: isDarkMode ? Colors.black38 : Colors.black12,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          context.push('/group/${group.id}');
-        },
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => context.push('/group/${group.id}'),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // グループアイコン
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: SizedBox(
-                  width: 60,
-                  height: 60,
-                  child:
-                      group.iconUrl != null && group.iconUrl!.isNotEmpty
-                          ? CachedNetworkImage(
-                            imageUrl: group.iconUrl!,
-                            fit: BoxFit.cover,
-                            placeholder:
-                                (context, url) => Container(
-                                  color:
-                                      isDarkMode
-                                          ? Colors.grey[800]
-                                          : Colors.grey[300],
-                                  child: const Center(
-                                    child: CircularProgressIndicator(),
+              Hero(
+                tag: 'group-${group.id}',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: SizedBox(
+                    width: 70,
+                    height: 70,
+                    child:
+                        group.iconUrl != null && group.iconUrl!.isNotEmpty
+                            ? CachedNetworkImage(
+                              imageUrl: group.iconUrl!,
+                              fit: BoxFit.cover,
+                              httpHeaders: headers,
+                              cacheManager: JsonCacheManager(),
+                              placeholder:
+                                  (context, url) => Container(
+                                    color:
+                                        isDarkMode
+                                            ? Colors.grey[800]
+                                            : Colors.grey[300],
+                                    child: const Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                            errorWidget:
-                                (context, url, error) => Container(
-                                  color:
-                                      isDarkMode
-                                          ? Colors.grey[800]
-                                          : Colors.grey[300],
-                                  child: const Icon(Icons.group),
-                                ),
-                            cacheManager: JsonCacheManager(),
-                            httpHeaders: headers,
-                          )
-                          : Container(
-                            color:
-                                isDarkMode
-                                    ? Colors.grey[800]
-                                    : Colors.grey[300],
-                            child: const Icon(Icons.group, size: 30),
-                          ),
+                              errorWidget:
+                                  (context, url, error) => Container(
+                                    color:
+                                        isDarkMode
+                                            ? Colors.grey[800]
+                                            : Colors.grey[300],
+                                    child: const Icon(Icons.group, size: 30),
+                                  ),
+                            )
+                            : Container(
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[800]
+                                      : Colors.grey[300],
+                              child: Icon(
+                                Icons.group,
+                                size: 30,
+                                color:
+                                    isDarkMode
+                                        ? Colors.grey[600]
+                                        : Colors.grey[500],
+                              ),
+                            ),
+                  ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
 
               // グループ情報
               Expanded(
@@ -229,27 +550,41 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab> {
                       group.name.toString(),
                       style: GoogleFonts.notoSans(
                         fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                         color: isDarkMode ? Colors.white : Colors.black87,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
 
-                    // グループ説明
+                    // グループコード
                     if (group.shortCode != null) ...[
-                      Text(
-                        '${group.shortCode}',
-                        style: GoogleFonts.notoSans(
-                          fontSize: 13,
-                          color:
-                              isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.tag,
+                            size: 14,
+                            color:
+                                isDarkMode
+                                    ? Colors.indigo.shade300
+                                    : Colors.indigo.shade700,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            group.shortCode!,
+                            style: GoogleFonts.notoSans(
+                              fontSize: 13,
+                              color:
+                                  isDarkMode
+                                      ? Colors.indigo.shade300
+                                      : Colors.indigo.shade700,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                     ],
 
                     // メンバー数
@@ -257,7 +592,7 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab> {
                       children: [
                         Icon(
                           Icons.people,
-                          size: 16,
+                          size: 14,
                           color:
                               isDarkMode ? Colors.grey[400] : Colors.grey[600],
                         ),
@@ -277,9 +612,109 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab> {
                   ],
                 ),
               ),
+
+              // 矢印アイコン
+              Icon(
+                Icons.chevron_right,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // 空の検索状態
+  Widget _buildEmptySearchPrompt(bool isDarkMode) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.groups,
+            size: 100,
+            color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'グループを検索',
+            style: GoogleFonts.notoSans(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'キーワードを入力して検索してください',
+            style: GoogleFonts.notoSans(
+              fontSize: 16,
+              color: isDarkMode ? Colors.grey[500] : Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 32),
+          Container(
+            width: 200,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.search,
+                  size: 20,
+                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '検索してみよう',
+                  style: GoogleFonts.notoSans(
+                    fontSize: 14,
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 検索結果なし
+  Widget _buildNoResultsView(String query, bool isDarkMode) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.search_off_rounded,
+            size: 80,
+            color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
+          ),
+          const SizedBox(height: 20),
+          Text(
+            '「$query」に一致するグループが\n見つかりませんでした',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.notoSans(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '検索キーワードを変えてみましょう',
+            style: GoogleFonts.notoSans(
+              fontSize: 14,
+              color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+            ),
+          ),
+        ],
       ),
     );
   }

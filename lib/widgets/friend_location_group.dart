@@ -138,11 +138,13 @@ class FriendLocationGroup extends ConsumerWidget {
     var displayName = locationName;
     String? thumbnailUrl;
     String? occupantCount;
+    String? effectiveWorldId;
 
     instanceAsync?.whenData((instance) {
       displayName = instance.world.name;
       thumbnailUrl = instance.world.thumbnailImageUrl;
       occupantCount = instance.userCount.toString();
+      effectiveWorldId = instance.worldId.toString();
     });
 
     // サムネイル画像のパレットを取得
@@ -154,7 +156,7 @@ class FriendLocationGroup extends ConsumerWidget {
     // ステータステキスト
     String statusText;
     if (isPrivate) {
-      statusText = '${friends.length}人がプライベート中';
+      statusText = '${friends.length}人がプライベート';
     } else if (isOffline && isActive) {
       statusText = '${friends.length}人がアクティブ';
     } else if (isOffline) {
@@ -204,7 +206,7 @@ class FriendLocationGroup extends ConsumerWidget {
                     isDarkMode,
                     accentColor,
                     displayName,
-                    effectiveInstance,
+                    effectiveWorldId,
                     statusText,
                     worldPalette,
                     ref, // ★ refパラメータを追加
@@ -403,7 +405,7 @@ class FriendLocationGroup extends ConsumerWidget {
               children: [
                 Icon(
                   Icons.group,
-                  size: 10,
+                  size: 12,
                   color:
                       HSLColor.fromColor(
                         accentColor,
@@ -411,9 +413,9 @@ class FriendLocationGroup extends ConsumerWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '合計 $occupantCount人',
+                  occupantCount,
                   style: GoogleFonts.notoSans(
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color:
                         HSLColor.fromColor(
