@@ -223,7 +223,7 @@ void _handleVrcEvent(vrc.VrcStreamingEvent event, ref) async {
         null,
       );
 
-      var worldName;
+      dynamic worldName;
 
       if (friendLocationEvent.location != null &&
           friendLocationEvent.location != 'private' &&

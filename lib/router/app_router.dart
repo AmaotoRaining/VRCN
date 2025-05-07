@@ -116,6 +116,12 @@ void _removeSplashScreen(Ref ref) async {
   }
 }
 
+// スクリーン名をFirebase Analyticsに設定するヘルパーメソッド
+void _setCurrentScreen(Ref ref, String screenName) {
+  final analytics = ref.read(analyticsRepository);
+  analytics.logScreenView(screenName: screenName);
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
   final isInitializing = ref.watch(apiInitializingProvider);
   final authState = ref.watch(authStateProvider);
@@ -124,7 +130,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   // 自動ログイン処理を開始（状態を監視）
   ref.watch(performAutoLoginProvider);
 
-  final analyticsObserver = ref.watch(analyticsObserverRepository);
+  final analyticsObserver = ref.read(analyticsObserverRepository);
 
   return GoRouter(
     refreshListenable: GoRouterRefreshStream(
@@ -134,7 +140,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     routerNeglect: true,
     observers: [
       VRChatNavigationObserver(ref.read(navigationIndexProvider.notifier)),
-      analyticsObserver,
+      analyticsObserver, // Firebase Analytics Observer
     ],
     redirect: (context, state) {
       final isLoginRoute = state.uri.toString() == '/login';
@@ -188,13 +194,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/',
-            name: 'friends',
+            name: 'home',
             pageBuilder: (context, state) {
-              // 即時遷移フラグがある場合はNoTransitionPageを使用
               final immediate =
                   (state.extra as Map<String, dynamic>?)?['immediate'] == true;
               // スクリーン名を設定
-              _setCurrentScreen(ref, 'フレンド画面');
+              _setCurrentScreen(ref, 'ホーム画面');
               if (immediate) {
                 return const NoTransitionPage(child: FriendsPage());
               }
@@ -329,12 +334,6 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
-
-// スクリーン名をFirebase Analyticsに設定するヘルパーメソッド
-void _setCurrentScreen(Ref ref, String screenName) {
-  final analytics = ref.read(analyticsRepository);
-  analytics.logScreenView(screenName: screenName);
-}
 
 // NoTransitionPageクラス - アニメーションなしの遷移ページ
 class NoTransitionPage<T> extends Page<T> {

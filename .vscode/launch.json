@@ -10,7 +10,7 @@
       "request": "launch",
       "program": "lib/main.dart",
       "flutterMode": "debug",
-      "deviceId": "3A0FC8E1-0BE6-4E22-95A3-817D6DEAB01",
+      "deviceId": "3AD88A22-CE8E-4BC8-AD27-2AE0A13FF9C6",
       "args": [
         "--flavor",
         "debug",

@@ -1,20 +1,41 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// FirebaseAnalyticsのインスタンス
-final analyticsRepository = Provider((ref) => FirebaseAnalytics.instance);
+final analyticsRepository = Provider((ref) => AnalyticsService());
 
 /// FirebaseAnalyticsObserverのインスタンス
 final analyticsObserverRepository = Provider(
-  (ref) => FirebaseAnalyticsObserver(analytics: ref.watch(analyticsRepository)),
+  (ref) => FirebaseAnalyticsObserver(
+    analytics: FirebaseAnalytics.instance,
+    nameExtractor: (settings) {
+      return settings.name;
+    },
+  ),
 );
 
-/// setCurrentScreenメソッドの追加
-void setCurrentScreen({required String screenName}) {
-  if (kDebugMode) {
-    print('Screen view: $screenName');
-    return;
+/// Analyticsサービスクラス
+class AnalyticsService {
+  final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
+
+  // 画面表示のログ記録
+  void logScreenView({required String screenName}) {
+    debugPrint('Screen view: $screenName');
+    _analytics.logScreenView(screenName: screenName);
   }
-  FirebaseAnalytics.instance.logScreenView(screenName: screenName);
+
+  // アプリ開始ログ
+  void logAppOpen() {
+    _analytics.logAppOpen();
+  }
+
+  // カスタムイベント記録
+  Future<void> logEvent({
+    required String name,
+    Map<String, Object>? parameters,
+  }) async {
+    await _analytics.logEvent(name: name, parameters: parameters);
+  }
 }

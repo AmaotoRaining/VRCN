@@ -536,22 +536,17 @@ class FriendDetailPage extends ConsumerWidget {
             Favicon? favicon;
             try {
               favicon = await FaviconFinder.getBest(link);
-              debugPrint('ファビコンを取得: ${favicon?.url}');
-            } catch (e) {
-              debugPrint('FaviconFinder.getBestでエラー: $e');
-            }
+            } catch (e) {}
 
             String? faviconUrl;
             if (favicon != null && favicon.url.isNotEmpty) {
               faviconUrl = favicon.url;
             } else {
               faviconUrl = '${uri.scheme}://${uri.host}/favicon.ico';
-              debugPrint('代替ファビコンURLを使用: $faviconUrl');
             }
 
             return {'url': link, 'favicon': faviconUrl, 'domain': uri.host};
           } catch (e) {
-            debugPrint('ファビコン取得エラー: $e');
             return {
               'url': link,
               'favicon': null,

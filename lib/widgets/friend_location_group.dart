@@ -772,6 +772,7 @@ class FriendLocationGroup extends ConsumerWidget {
     bool isDarkMode,
     Color accentColor,
   ) {
+    // サムネイルURLがあり、プライベートでなく、オフラインでもない場合
     if (thumbnailUrl != null && !isPrivate && !isOffline) {
       return Container(
         width: 60,
@@ -814,15 +815,22 @@ class FriendLocationGroup extends ConsumerWidget {
                 return Transform.scale(
                   scale: value,
                   child: CachedNetworkImage(
+                    key: ValueKey(thumbnailUrl), // キーを追加して強制的に再描画
                     imageUrl: thumbnailUrl,
                     httpHeaders: headers,
                     cacheManager: JsonCacheManager(),
                     fit: BoxFit.cover,
                     placeholder:
                         (context, url) => _buildImagePlaceholder(isDarkMode),
-                    errorWidget:
-                        (context, url, error) =>
-                            _buildImageError(isDarkMode, accentColor),
+                    errorWidget: (context, url, error) {
+                      // エラー時のログ追加
+                      debugPrint('画像読み込みエラー: $url - $error');
+                      return _buildImageError(isDarkMode, accentColor);
+                    },
+                    // キャッシュポリシーを調整
+                    cacheKey: '$thumbnailUrl-${DateTime.now().day}',
+                    memCacheHeight: 120,
+                    memCacheWidth: 120,
                   ),
                 );
               },
@@ -832,6 +840,7 @@ class FriendLocationGroup extends ConsumerWidget {
         ),
       );
     } else {
+      // アイコン表示部分は変更なし
       return TweenAnimationBuilder<double>(
         duration: const Duration(milliseconds: 1500),
         tween: Tween<double>(begin: 0.5, end: 1.0),

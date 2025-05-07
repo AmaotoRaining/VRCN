@@ -86,6 +86,7 @@ flutter:
 
   assets:
     - path: assets/images/
+    - path: .env.demeo
     - path: .env
       flavors:
       - debug

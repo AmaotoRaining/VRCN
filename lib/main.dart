@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vrchat/analytics_repository.dart';
 import 'package:vrchat/firebase_options.dart';
@@ -60,7 +62,9 @@ Future<void> main() async {
 
   // デバッグ用.envファイルの読み込み
   if (kDebugMode) {
-    await dotenv.load();
+    await dotenv.load(fileName: '.env');
+  } else {
+    await dotenv.load(fileName: '.env.demeo');
   }
 
   runApp(
@@ -81,10 +85,18 @@ class VRChatApp extends ConsumerWidget {
 
     final analytics = ref.watch(analyticsRepository);
 
+    // アプリ起動時の分析記録
     if (!kDebugMode) {
-      // Firebase Analysis
       // アプリ開いたとき
       analytics.logAppOpen();
+
+      // アプリバージョンをUserPropertyとして設定
+      PackageInfo.fromPlatform().then((packageInfo) {
+        FirebaseAnalytics.instance.setUserProperty(
+          name: 'app_version',
+          value: packageInfo.version,
+        );
+      });
     }
 
     // APIの初期化を開始
