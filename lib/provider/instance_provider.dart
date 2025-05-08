@@ -1,9 +1,14 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:meta/meta.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
-// インスタンス情報のリクエストパラメータ用クラス
+final vrchatInstanceProvider = FutureProvider((ref) async {
+  final rawApi = await ref.watch(vrchatRawApiProvider);
+  return rawApi.getInstancesApi();
+});
+
+// インスタンスのパラメータを格納するクラス
 @immutable
 class InstanceParams {
   final String worldId;
@@ -11,35 +16,64 @@ class InstanceParams {
 
   const InstanceParams({required this.worldId, required this.instanceId});
 
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is InstanceParams &&
-        other.worldId == worldId &&
-        other.instanceId == instanceId;
+  // インスタンス文字列（location）をパースするファクトリメソッド
+  factory InstanceParams.fromLocation(String location) {
+    final parts = location.split(':');
+    if (parts.length < 2) {
+      throw Exception('無効なインスタンス文字列です: $location');
+    }
+
+    final worldId = parts[0];
+    // コロン以降をすべてinstanceIdとして扱う（複数のコロンがある場合に対応）
+    final instanceId = parts.sublist(1).join(':');
+
+    return InstanceParams(worldId: worldId, instanceId: instanceId);
   }
 
   @override
-  int get hashCode => worldId.hashCode ^ instanceId.hashCode;
+  String toString() {
+    return '$worldId:$instanceId';
+  }
 }
 
-final vrchatInstanceProvider = FutureProvider((ref) async {
-  final rawApi = await ref.watch(vrchatRawApiProvider);
-  return rawApi.getInstancesApi();
+// インスタンス情報 - 文字列から直接パース
+final instanceDetailProvider = FutureProvider.family<Instance, String>((
+  ref,
+  location,
+) async {
+  try {
+    final instanceApi = ref.watch(vrchatInstanceProvider).value;
+    if (instanceApi == null) {
+      throw Exception('インスタンス情報を取得できませんでした');
+    }
+
+    // インスタンス文字列をパース
+    final params = InstanceParams.fromLocation(location);
+
+    // APIを使用してインスタンス情報を取得
+    final response = await instanceApi.getInstance(
+      worldId: params.worldId,
+      instanceId: params.instanceId,
+    );
+
+    return response.data!;
+  } catch (e) {
+    throw Exception('インスタンス情報の取得中にエラーが発生しました: $e');
+  }
 });
 
-// インスタンス情報 - パラメータクラスを使用
-final instanceDetailProvider = FutureProvider.family<Instance, InstanceParams>((
-  ref,
-  params,
-) async {
-  final instanceApi = ref.watch(vrchatInstanceProvider).value;
-  if (instanceApi == null) {
-    throw Exception('インスタンス情報を取得できませんでした');
-  }
-  final response = await instanceApi.getInstance(
-    worldId: params.worldId,
-    instanceId: params.instanceId,
-  );
-  return response.data!;
-});
+// パラメータクラスを直接使用するバージョン
+final instanceDetailWithParamsProvider =
+    FutureProvider.family<Instance, InstanceParams>((ref, params) async {
+      final instanceApi = ref.watch(vrchatInstanceProvider).value;
+      if (instanceApi == null) {
+        throw Exception('インスタンス情報を取得できませんでした');
+      }
+
+      final response = await instanceApi.getInstance(
+        worldId: params.worldId,
+        instanceId: params.instanceId,
+      );
+
+      return response.data!;
+    });

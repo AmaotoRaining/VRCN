@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
@@ -62,7 +63,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       appBar: AppBar(
         title: Text(
           '設定',
-          style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
+          style: GoogleFonts.notoSans(
+            fontWeight: FontWeight.bold,
+            color: isDarkMode ? Colors.white : Colors.black87, // 明示的に色を指定
+          ),
         ),
         centerTitle: true,
         elevation: 0,
@@ -70,6 +74,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             isDarkMode
                 ? const Color(0xFF1E1E1E)
                 : AppTheme.primaryColor.withAlpha(13),
+        // または全体のテキスト色を設定
+        foregroundColor: isDarkMode ? Colors.white : Colors.black87,
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
@@ -106,77 +112,77 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
               const SizedBox(height: 24),
 
-              // 通知設定
-              _buildSettingsSection(
-                title: '通知',
-                icon: Icons.notifications_outlined,
-                children: [
-                  _buildSwitchSetting(
-                    icon: Icons.person_add_outlined,
-                    title: 'フレンドリクエスト通知',
-                    subtitle: 'フレンドリクエストを受け取ったときに通知します',
-                    value: settings.notifyNewFriendRequests,
-                    onChanged: (value) {
-                      ref
-                          .read(settingsProvider.notifier)
-                          .setNotifyNewFriendRequests(value);
-                    },
-                    isDarkMode: isDarkMode,
-                  ),
-                  _buildSwitchSetting(
-                    icon: Icons.people_outlined,
-                    title: 'フレンドオンライン通知',
-                    subtitle: 'フレンドがオンラインになったときに通知します',
-                    value: settings.notifyFriendOnline,
-                    onChanged: (value) {
-                      ref
-                          .read(settingsProvider.notifier)
-                          .setNotifyFriendOnline(value);
-                    },
-                    isDarkMode: isDarkMode,
-                  ),
-                ],
-              ),
+              // TODO: 通知設定
+              // _buildSettingsSection(
+              //   title: '通知',
+              //   icon: Icons.notifications_outlined,
+              //   children: [
+              //     _buildSwitchSetting(
+              //       icon: Icons.person_add_outlined,
+              //       title: 'フレンドリクエスト通知',
+              //       subtitle: 'フレンドリクエストを受け取ったときに通知します',
+              //       value: settings.notifyNewFriendRequests,
+              //       onChanged: (value) {
+              //         ref
+              //             .read(settingsProvider.notifier)
+              //             .setNotifyNewFriendRequests(value);
+              //       },
+              //       isDarkMode: isDarkMode,
+              //     ),
+              //     _buildSwitchSetting(
+              //       icon: Icons.people_outlined,
+              //       title: 'フレンドオンライン通知',
+              //       subtitle: 'フレンドがオンラインになったときに通知します',
+              //       value: settings.notifyFriendOnline,
+              //       onChanged: (value) {
+              //         ref
+              //             .read(settingsProvider.notifier)
+              //             .setNotifyFriendOnline(value);
+              //       },
+              //       isDarkMode: isDarkMode,
+              //     ),
+              //   ],
+              // ),
 
-              const SizedBox(height: 24),
+              // const SizedBox(height: 24),
 
-              // データと通信設定
-              _buildSettingsSection(
-                title: 'データと通信',
-                icon: Icons.data_usage_outlined,
-                children: [
-                  _buildSwitchSetting(
-                    icon: Icons.wifi_outlined,
-                    title: 'Wi-Fi接続時のみ画像を読み込む',
-                    subtitle: 'モバイルデータ通信量を節約します',
-                    value: settings.loadImageOnWifi,
-                    onChanged: (value) {
-                      ref
-                          .read(settingsProvider.notifier)
-                          .setLoadImageOnWifi(value);
-                    },
-                    isDarkMode: isDarkMode,
-                  ),
-                  _buildSliderSetting(
-                    icon: Icons.storage_outlined,
-                    title: 'フレンドキャッシュ上限',
-                    subtitle: 'キャッシュするフレンド情報の最大数',
-                    value: settings.maxFriendCache.toDouble(),
-                    min: 100,
-                    max: 1000,
-                    divisions: 9,
-                    onChanged: (value) {
-                      ref
-                          .read(settingsProvider.notifier)
-                          .setMaxFriendCache(value.round());
-                    },
-                    valueDisplay: '${settings.maxFriendCache}人',
-                    isDarkMode: isDarkMode,
-                  ),
-                ],
-              ),
+              // TODO: データと通信設定
+              // _buildSettingsSection(
+              //   title: 'データと通信',
+              //   icon: Icons.data_usage_outlined,
+              //   children: [
+              //     _buildSwitchSetting(
+              //       icon: Icons.wifi_outlined,
+              //       title: 'Wi-Fi接続時のみ画像を読み込む',
+              //       subtitle: 'モバイルデータ通信量を節約します',
+              //       value: settings.loadImageOnWifi,
+              //       onChanged: (value) {
+              //         ref
+              //             .read(settingsProvider.notifier)
+              //             .setLoadImageOnWifi(value);
+              //       },
+              //       isDarkMode: isDarkMode,
+              //     ),
+              //     _buildSliderSetting(
+              //       icon: Icons.storage_outlined,
+              //       title: 'フレンドキャッシュ上限',
+              //       subtitle: 'キャッシュするフレンド情報の最大数',
+              //       value: settings.maxFriendCache.toDouble(),
+              //       min: 100,
+              //       max: 1000,
+              //       divisions: 9,
+              //       onChanged: (value) {
+              //         ref
+              //             .read(settingsProvider.notifier)
+              //             .setMaxFriendCache(value.round());
+              //       },
+              //       valueDisplay: '${settings.maxFriendCache}人',
+              //       isDarkMode: isDarkMode,
+              //     ),
+              //   ],
+              // ),
 
-              const SizedBox(height: 24),
+              // const SizedBox(height: 24),
 
               // アプリ情報
               if (_packageInfo != null)
@@ -195,6 +201,48 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                       icon: Icons.code,
                       title: 'パッケージ名',
                       value: _packageInfo!.packageName,
+                      isDarkMode: isDarkMode,
+                    ),
+                    const Divider(height: 1),
+                    _buildLinkInfoItem(
+                      icon: Icons.person,
+                      title: 'クレジット',
+                      subtitle: '開発者・貢献者情報',
+                      onTap: () => context.push('/credits'),
+                      isDarkMode: isDarkMode,
+                    ),
+                    _buildLinkInfoItem(
+                      icon: Icons.email_outlined,
+                      title: 'お問い合わせ',
+                      subtitle: '不具合報告・ご意見はこちら',
+                      onTap: () => _launchURL('https://discord.gg/xAcm4KBZGk'),
+                      isDarkMode: isDarkMode,
+                    ),
+                    _buildLinkInfoItem(
+                      icon: Icons.security_outlined,
+                      title: 'プライバシーポリシー',
+                      subtitle: '個人情報の取り扱いについて',
+                      onTap:
+                          () => _launchURL(
+                            'https://null-base.com/vrcn/privacy-policy/',
+                          ),
+                      isDarkMode: isDarkMode,
+                    ),
+                    _buildLinkInfoItem(
+                      icon: Icons.description_outlined,
+                      title: '利用規約',
+                      subtitle: 'アプリのご利用条件',
+                      onTap:
+                          () => _launchURL(
+                            'https://null-base.com/vrcn/terms-of-service',
+                          ),
+                      isDarkMode: isDarkMode,
+                    ),
+                    _buildLinkInfoItem(
+                      icon: Icons.code_outlined,
+                      title: 'オープンソース情報',
+                      subtitle: '使用しているライブラリ等のライセンス',
+                      onTap: _showLicenses,
                       isDarkMode: isDarkMode,
                     ),
                   ],
@@ -628,6 +676,60 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     );
   }
 
+  // リンク付き情報アイテム
+  Widget _buildLinkInfoItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    required bool isDarkMode,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 22,
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.notoSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.notoSans(
+                      fontSize: 14,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // アプリアイコンセクション
   Widget _buildAppIconSection(
     BuildContext context,
@@ -892,5 +994,32 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
         }
       }
     }
+  }
+
+  Future<void> _launchURL(String urlString) async {
+    final url = Uri.parse(urlString);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('URLを開けませんでした')));
+      }
+    }
+  }
+
+  // ライセンス表示メソッド
+  void _showLicenses() {
+    showLicensePage(
+      context: context,
+      applicationName: 'VRCN',
+      applicationVersion: _packageInfo?.version ?? '',
+      applicationIcon: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Image.asset('assets/images/default.png', width: 64, height: 64),
+      ),
+      applicationLegalese: '© 2025 null_base',
+    );
   }
 }

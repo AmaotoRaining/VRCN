@@ -1,22 +1,76 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:favicon/favicon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:vrchat/provider/friends_provider.dart';
-import 'package:vrchat/provider/group_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:vrchat/provider/avatar_provider.dart';
+import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
+import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/utils/status_helpers.dart';
 import 'package:vrchat/utils/user_type_helpers.dart';
 import 'package:vrchat/widgets/error_container.dart';
+import 'package:vrchat/widgets/info_card.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
+import 'package:vrchat/widgets/profile_edit_sheet.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
-class ProfilePage extends ConsumerWidget {
+class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends ConsumerState<ProfilePage>
+    with SingleTickerProviderStateMixin {
+  // リロードトリガー用のキー
+  Key _refreshKey = UniqueKey();
+  late AnimationController _animationController;
+  late Animation<double> _fadeInAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _fadeInAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _refreshProfile() async {
+    setState(() {
+      // キーを更新することでウィジェットツリーの再構築を強制
+      _refreshKey = UniqueKey();
+    });
+
+    // プロバイダの再取得を実行
+    ref.invalidate(currentUserProvider);
+
+    // アニメーションをリセットして再生
+    _animationController.reset();
+    await _animationController.forward();
+
+    // 明示的に新しいデータを待機
+    await ref.read(currentUserProvider.future);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final currentUserAsync = ref.watch(currentUserProvider);
     final vrchatApi = ref.watch(vrchatProvider).value;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -26,32 +80,95 @@ class ProfilePage extends ConsumerWidget {
     };
 
     return Scaffold(
+      key: _refreshKey, // リフレッシュキーを設定
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: () {
-              // TODO: プロフィール編集機能の実装
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('この機能は準備中です')));
-            },
+          currentUserAsync.when(
+            data:
+                (user) => IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () async {
+                    // 編集前に最新情報を取得
+                    ref.invalidate(currentUserProvider);
+
+                    // ローディングインジケータを表示
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('最新のユーザー情報を取得中...'),
+                          duration: Duration(milliseconds: 1000),
+                        ),
+                      );
+                    }
+
+                    // 最新のユーザー情報を待機
+                    final updatedUser = await ref.read(
+                      currentUserProvider.future,
+                    );
+
+                    if (!context.mounted) return;
+
+                    // 最新の情報で編集シートを表示
+                    final result = await showModalBottomSheet<bool>(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      enableDrag: true,
+                      isDismissible: true,
+                      builder: (context) {
+                        return ProfileEditSheet(user: updatedUser);
+                      },
+                    );
+
+                    // プロフィールが更新されたら、情報を再取得
+                    if (result == true) {
+                      // ローディングインジケータを表示
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('プロフィール情報を更新中...'),
+                            duration: Duration(milliseconds: 1000),
+                          ),
+                        );
+                      }
+
+                      // 更新処理を待機
+                      await _refreshProfile();
+
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('プロフィールを更新しました')),
+                        );
+                      }
+                    }
+                  },
+                ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
         ],
       ),
       body: currentUserAsync.when(
         data:
-            (user) =>
-                _buildProfileContent(context, ref, user, headers, isDarkMode),
+            (user) => FadeTransition(
+              opacity: _fadeInAnimation,
+              child: _buildProfileContent(
+                context,
+                ref,
+                user,
+                headers,
+                isDarkMode,
+              ),
+            ),
         loading: () => const LoadingIndicator(message: 'プロフィール情報を読み込み中...'),
         error:
             (error, stackTrace) => ErrorContainer(
               message: 'プロフィール情報の取得に失敗しました: ${error.toString()}',
-              onRetry: () => ref.refresh(currentUserProvider),
+              onRetry: _refreshProfile,
             ),
       ),
     );
@@ -69,6 +186,16 @@ class ProfilePage extends ConsumerWidget {
       userRepresentedGroupProvider(user.id),
     );
 
+    // 現在使用中のアバター情報を取得
+    final ownAvatarAsync = ref.watch(ownAvatarProvider(user.id));
+
+    // アクセントカラーの設定
+    const accentColor = AppTheme.primaryColor;
+    final secondaryColor =
+        isDarkMode
+            ? HSLColor.fromColor(accentColor).withLightness(0.4).toColor()
+            : HSLColor.fromColor(accentColor).withLightness(0.6).toColor();
+
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
@@ -78,12 +205,17 @@ class ProfilePage extends ConsumerWidget {
             clipBehavior: Clip.none,
             alignment: Alignment.bottomCenter,
             children: [
+              // ヘッダー背景
               Container(
                 height: 260,
                 decoration: BoxDecoration(
-                  color:
+                  gradient:
                       userRepresentedGroupAsync.valueOrNull?.bannerUrl == null
-                          ? AppTheme.primaryColor
+                          ? LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [accentColor, secondaryColor],
+                          )
                           : null,
                 ),
                 child: Stack(
@@ -91,30 +223,59 @@ class ProfilePage extends ConsumerWidget {
                     if (userRepresentedGroupAsync.valueOrNull?.bannerUrl !=
                         null)
                       Positioned.fill(
-                        child: CachedNetworkImage(
-                          imageUrl:
-                              userRepresentedGroupAsync.valueOrNull!.bannerUrl!,
-                          httpHeaders: headers,
-                          fit: BoxFit.cover,
-                          placeholder:
-                              (context, url) =>
-                                  Container(color: AppTheme.primaryColor),
-                          errorWidget:
-                              (context, url, error) =>
-                                  Container(color: AppTheme.primaryColor),
+                        child: Hero(
+                          tag:
+                              'banner-${userRepresentedGroupAsync.valueOrNull?.groupId ?? ""}',
+                          child: CachedNetworkImage(
+                            imageUrl:
+                                userRepresentedGroupAsync
+                                    .valueOrNull!
+                                    .bannerUrl!,
+                            httpHeaders: headers,
+                            cacheManager: JsonCacheManager(),
+                            fit: BoxFit.cover,
+                            placeholder:
+                                (context, url) => Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [accentColor, secondaryColor],
+                                    ),
+                                  ),
+                                ),
+                            errorWidget:
+                                (context, url, error) => Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [accentColor, secondaryColor],
+                                    ),
+                                  ),
+                                ),
+                          ),
                         ),
                       ),
-                    if (userRepresentedGroupAsync.valueOrNull?.bannerUrl !=
-                        null)
-                      Positioned.fill(
-                        child: Container(
-                          color: Colors.black.withValues(alpha: 0.3),
+
+                    // オーバーレイグラデーション
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.1),
+                              Colors.black.withValues(alpha: 0.5),
+                            ],
+                          ),
                         ),
                       ),
+                    ),
                   ],
                 ),
               ),
-
               // プロフィールカード
               Positioned(
                 bottom: -60,
@@ -123,19 +284,19 @@ class ProfilePage extends ConsumerWidget {
                 child: Container(
                   height: 125,
                   decoration: BoxDecoration(
-                    color: isDarkMode ? const Color(0xFF262626) : Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+                    borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
                   child: Row(
                     children: [
-                      const SizedBox(width: 120), // アバター用のスペース
+                      const SizedBox(width: 120),
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
@@ -149,8 +310,10 @@ class ProfilePage extends ConsumerWidget {
                               Text(
                                 user.displayName,
                                 style: GoogleFonts.poppins(
-                                  fontSize: 21,
+                                  fontSize: 22,
                                   fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.2,
+                                  height: 1.1,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -164,11 +327,12 @@ class ProfilePage extends ConsumerWidget {
                                       isDarkMode
                                           ? Colors.grey[400]
                                           : Colors.grey[600],
+                                  letterSpacing: 0.5,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 8),
                               Row(
                                 children: [
                                   Container(
@@ -177,13 +341,22 @@ class ProfilePage extends ConsumerWidget {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: statusColor.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: statusColor.withValues(
-                                          alpha: 0.3,
-                                        ),
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          statusColor.withValues(alpha: 0.2),
+                                          statusColor.withValues(alpha: 0.1),
+                                        ],
                                       ),
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: statusColor.withValues(
+                                            alpha: 0.2,
+                                          ),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
                                     child: Row(
                                       children: [
@@ -193,9 +366,18 @@ class ProfilePage extends ConsumerWidget {
                                           decoration: BoxDecoration(
                                             color: statusColor,
                                             shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: statusColor.withValues(
+                                                  alpha: 0.5,
+                                                ),
+                                                blurRadius: 6,
+                                                spreadRadius: 1,
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                        const SizedBox(width: 5),
+                                        const SizedBox(width: 6),
                                         Text(
                                           StatusHelper.getStatusText(
                                             user.status,
@@ -203,7 +385,8 @@ class ProfilePage extends ConsumerWidget {
                                           style: GoogleFonts.notoSans(
                                             fontSize: 12,
                                             color: statusColor,
-                                            fontWeight: FontWeight.w500,
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 0.3,
                                           ),
                                         ),
                                       ],
@@ -224,41 +407,118 @@ class ProfilePage extends ConsumerWidget {
               Positioned(
                 bottom: 0,
                 left: 40,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color:
-                          isDarkMode ? const Color(0xFF262626) : Colors.white,
-                      width: 5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
+                child: TweenAnimationBuilder<double>(
+                  duration: const Duration(milliseconds: 600),
+                  tween: Tween<double>(begin: 0.8, end: 1.0),
+                  curve: Curves.easeOutBack,
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: value,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color:
+                                isDarkMode
+                                    ? const Color(0xFF1E1E1E)
+                                    : Colors.white,
+                            width: 5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 15,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: ownAvatarAsync.when(
+                          data:
+                              (avatar) => GestureDetector(
+                                onTap: () {
+                                  // アバター詳細ページに遷移
+                                  if (avatar.id.isNotEmpty) {
+                                    context.push('/avatar/${avatar.id}');
+                                  }
+                                },
+                                child: Hero(
+                                  tag: 'avatar-${user.id}',
+                                  child: CircleAvatar(
+                                    radius: 50,
+                                    backgroundColor: Colors.grey[300],
+                                    backgroundImage:
+                                        user.userIcon.isNotEmpty
+                                            ? CachedNetworkImageProvider(
+                                              user.userIcon,
+                                              headers: headers,
+                                              cacheManager: JsonCacheManager(),
+                                            )
+                                            : user
+                                                .currentAvatarThumbnailImageUrl
+                                                .isNotEmpty
+                                            ? CachedNetworkImageProvider(
+                                              user.currentAvatarThumbnailImageUrl,
+                                              headers: headers,
+                                              cacheManager: JsonCacheManager(),
+                                            )
+                                            : const AssetImage(
+                                                  'assets/images/default.png',
+                                                )
+                                                as ImageProvider,
+                                    child:
+                                        user
+                                                .currentAvatarThumbnailImageUrl
+                                                .isEmpty
+                                            ? const Icon(
+                                              Icons.person,
+                                              size: 30,
+                                              color: Colors.white70,
+                                            )
+                                            : null,
+                                  ),
+                                ),
+                              ),
+                          loading:
+                              () => CircleAvatar(
+                                radius: 50,
+                                backgroundColor: Colors.grey[300],
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppTheme.primaryColor,
+                                  ),
+                                ),
+                              ),
+                          error:
+                              (_, _) => CircleAvatar(
+                                radius: 50,
+                                backgroundColor: Colors.grey[300],
+                                backgroundImage:
+                                    user
+                                            .currentAvatarThumbnailImageUrl
+                                            .isNotEmpty
+                                        ? CachedNetworkImageProvider(
+                                          user.currentAvatarThumbnailImageUrl,
+                                          headers: headers,
+                                          cacheManager: JsonCacheManager(),
+                                        )
+                                        : const AssetImage(
+                                              'assets/images/default.png',
+                                            )
+                                            as ImageProvider,
+                                child:
+                                    user.currentAvatarThumbnailImageUrl.isEmpty
+                                        ? const Icon(
+                                          Icons.person,
+                                          size: 30,
+                                          color: Colors.white70,
+                                        )
+                                        : null,
+                              ),
+                        ),
                       ),
-                    ],
-                  ),
-                  child: CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Colors.grey[300],
-                    backgroundImage:
-                        user.currentAvatarThumbnailImageUrl.isNotEmpty
-                            ? CachedNetworkImageProvider(
-                              user.currentAvatarThumbnailImageUrl,
-                              headers: headers,
-                            )
-                            : null,
-                    child:
-                        user.currentAvatarThumbnailImageUrl.isEmpty
-                            ? const Icon(
-                              Icons.person,
-                              size: 50,
-                              color: Colors.white70,
-                            )
-                            : null,
-                  ),
+                    );
+                  },
                 ),
               ),
             ],
@@ -278,19 +538,29 @@ class ProfilePage extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 // 基本情報セクション
-                _buildInfoCard(
+                _buildModernInfoCard(
                   context: context,
                   title: '基本情報',
                   icon: Icons.person_outline,
+                  backgroundColor:
+                      isDarkMode
+                          ? HSLColor.fromColor(
+                            accentColor,
+                          ).withLightness(0.15).toColor()
+                          : HSLColor.fromColor(
+                            accentColor,
+                          ).withLightness(0.95).toColor(),
+                  iconColor: accentColor,
                   isDarkMode: isDarkMode,
                   children: [
-                    _buildInfoRow(
+                    _buildModernInfoRow(
                       icon: Icons.badge,
                       label: 'ユーザーID',
                       value: user.id,
                       isDarkMode: isDarkMode,
+                      iconColor: accentColor,
                     ),
-                    _buildInfoRow(
+                    _buildModernInfoRow(
                       icon: Icons.calendar_today,
                       label: '登録日',
                       value:
@@ -299,37 +569,72 @@ class ProfilePage extends ConsumerWidget {
                               ? _formatDate(user.dateJoined)
                               : '不明',
                       isDarkMode: isDarkMode,
+                      iconColor: accentColor,
                     ),
-                    _buildInfoRow(
+                    _buildModernInfoRow(
                       icon: Icons.verified_user,
                       label: 'ユーザータイプ',
                       value: UserTypeHelper.getUserTypeText(user.tags),
                       isDarkMode: isDarkMode,
+                      iconColor: accentColor,
+                      isLast: true,
                     ),
                   ],
                 ),
 
+                // 現在のアバター情報セクション（新規追加）
+                const SizedBox(height: 24),
+                ownAvatarAsync.when(
+                  data:
+                      (avatar) => _buildAvatarCard(
+                        context: context,
+                        avatar: avatar,
+                        headers: headers,
+                        isDarkMode: isDarkMode,
+                        accentColor: Colors.purple,
+                      ),
+                  loading:
+                      () => const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                  error: (_, _) => const SizedBox.shrink(),
+                ),
+
                 // ステータスメッセージ（存在する場合）
                 if (user.statusDescription.isNotEmpty) ...[
-                  const SizedBox(height: 20),
-                  _buildInfoCard(
+                  const SizedBox(height: 24),
+                  _buildModernInfoCard(
                     context: context,
                     title: 'ステータスメッセージ',
                     icon: Icons.message_outlined,
+                    backgroundColor:
+                        isDarkMode
+                            ? HSLColor.fromColor(
+                              Colors.teal,
+                            ).withLightness(0.15).toColor()
+                            : HSLColor.fromColor(
+                              Colors.teal,
+                            ).withLightness(0.95).toColor(),
+                    iconColor: Colors.teal,
                     isDarkMode: isDarkMode,
                     children: [
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color:
-                              isDarkMode ? Colors.grey[850] : Colors.grey[100],
-                          borderRadius: BorderRadius.circular(12),
+                              isDarkMode
+                                  ? Colors.teal.withValues(alpha: 0.1)
+                                  : Colors.teal.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color:
-                                isDarkMode
-                                    ? Colors.grey[700]!
-                                    : Colors.grey[300]!,
+                            color: Colors.teal.withValues(
+                              alpha: isDarkMode ? 0.2 : 0.1,
+                            ),
+                            width: 1,
                           ),
                         ),
                         child: Text(
@@ -337,10 +642,11 @@ class ProfilePage extends ConsumerWidget {
                           style: GoogleFonts.notoSans(
                             fontSize: 16,
                             fontStyle: FontStyle.italic,
+                            height: 1.5,
                             color:
                                 isDarkMode
-                                    ? Colors.grey[300]
-                                    : Colors.grey[800],
+                                    ? Colors.teal.withValues(alpha: 0.9)
+                                    : Colors.teal.withValues(alpha: 0.8),
                           ),
                         ),
                       ),
@@ -350,35 +656,47 @@ class ProfilePage extends ConsumerWidget {
 
                 // 自己紹介（存在する場合）
                 if (user.bio.isNotEmpty) ...[
-                  const SizedBox(height: 20),
-                  _buildInfoCard(
+                  const SizedBox(height: 24),
+                  _buildModernInfoCard(
                     context: context,
                     title: '自己紹介',
                     icon: Icons.info_outline,
+                    backgroundColor:
+                        isDarkMode
+                            ? HSLColor.fromColor(
+                              Colors.blue,
+                            ).withLightness(0.15).toColor()
+                            : HSLColor.fromColor(
+                              Colors.blue,
+                            ).withLightness(0.95).toColor(),
+                    iconColor: Colors.blue,
                     isDarkMode: isDarkMode,
                     children: [
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color:
-                              isDarkMode ? Colors.grey[850] : Colors.grey[100],
-                          borderRadius: BorderRadius.circular(12),
+                              isDarkMode
+                                  ? Colors.blue.withValues(alpha: 0.1)
+                                  : Colors.blue.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color:
-                                isDarkMode
-                                    ? Colors.grey[700]!
-                                    : Colors.grey[300]!,
+                            color: Colors.blue.withValues(
+                              alpha: isDarkMode ? 0.2 : 0.1,
+                            ),
+                            width: 1,
                           ),
                         ),
                         child: Text(
                           user.bio,
                           style: GoogleFonts.notoSans(
                             fontSize: 16,
+                            height: 1.5,
                             color:
                                 isDarkMode
-                                    ? Colors.grey[300]
-                                    : Colors.grey[800],
+                                    ? Colors.blue.withValues(alpha: 0.9)
+                                    : Colors.blue.withValues(alpha: .8),
                           ),
                         ),
                       ),
@@ -386,159 +704,25 @@ class ProfilePage extends ConsumerWidget {
                   ),
                 ],
 
-                // グループ情報（新規追加）
+                // リンク
+                if (user.bioLinks.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  _buildBioLinksCard(context, user.bioLinks, isDarkMode),
+                ],
+
+                // グループ情報
                 userRepresentedGroupAsync.when(
                   data: (group) {
                     if (group != null) {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 20),
-                          _buildInfoCard(
-                            context: context,
-                            title: '所属グループ',
-                            icon: Icons.group_outlined,
-                            isDarkMode: isDarkMode,
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // グループアイコン（ある場合）
-                                  if (group.iconUrl != null)
-                                    Container(
-                                      width: 60,
-                                      height: 60,
-                                      margin: const EdgeInsets.only(right: 16),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color:
-                                              isDarkMode
-                                                  ? Colors.grey[700]!
-                                                  : Colors.grey[300]!,
-                                        ),
-                                      ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: CachedNetworkImage(
-                                          imageUrl: group.iconUrl!,
-                                          httpHeaders: headers,
-                                          fit: BoxFit.cover,
-                                          placeholder:
-                                              (context, url) => Container(
-                                                color:
-                                                    isDarkMode
-                                                        ? Colors.grey[800]
-                                                        : Colors.grey[200],
-                                                child: Icon(
-                                                  Icons.group,
-                                                  color:
-                                                      isDarkMode
-                                                          ? Colors.grey[600]
-                                                          : Colors.grey[400],
-                                                  size: 30,
-                                                ),
-                                              ),
-                                          errorWidget:
-                                              (context, url, error) =>
-                                                  Container(
-                                                    color:
-                                                        isDarkMode
-                                                            ? Colors.grey[800]
-                                                            : Colors.grey[200],
-                                                    child: Icon(
-                                                      Icons.group,
-                                                      color:
-                                                          isDarkMode
-                                                              ? Colors.grey[600]
-                                                              : Colors
-                                                                  .grey[400],
-                                                      size: 30,
-                                                    ),
-                                                  ),
-                                        ),
-                                      ),
-                                    ),
-
-                                  // グループ詳細情報
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        // グループ名
-                                        Text(
-                                          group.name ?? 'Unknown Group',
-                                          style: GoogleFonts.notoSans(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color:
-                                                isDarkMode
-                                                    ? Colors.white
-                                                    : Colors.black87,
-                                          ),
-                                        ),
-
-                                        const SizedBox(height: 8),
-
-                                        // グループコード（短縮コード）
-                                        if (group.shortCode != null) ...[
-                                          Text(
-                                            'グループコード: ${group.shortCode}',
-                                            style: GoogleFonts.notoSans(
-                                              fontSize: 14,
-                                              color:
-                                                  isDarkMode
-                                                      ? Colors.grey[300]
-                                                      : Colors.grey[700],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                        ],
-
-                                        // メンバー数（APIが提供していれば）
-                                        if (group.memberCount != null)
-                                          Text(
-                                            'メンバー数: ${group.memberCount}人',
-                                            style: GoogleFonts.notoSans(
-                                              fontSize: 14,
-                                              color:
-                                                  isDarkMode
-                                                      ? Colors.grey[300]
-                                                      : Colors.grey[700],
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              // グループ詳細ボタン
-                              const SizedBox(height: 16),
-                              OutlinedButton.icon(
-                                onPressed: () {
-                                  // TODO: グループ詳細画面への遷移
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('グループ詳細機能は準備中です'),
-                                    ),
-                                  );
-                                },
-                                icon: const Icon(Icons.visibility_outlined),
-                                label: Text(
-                                  'グループ詳細を表示',
-                                  style: GoogleFonts.notoSans(),
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.indigo,
-                                  side: const BorderSide(color: Colors.indigo),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                              ),
-                            ],
+                          const SizedBox(height: 24),
+                          _buildModernGroupCard(
+                            context,
+                            group,
+                            headers,
+                            isDarkMode,
                           ),
                         ],
                       );
@@ -565,36 +749,539 @@ class ProfilePage extends ConsumerWidget {
     );
   }
 
+  // モダンなグループカード
+  Widget _buildModernGroupCard(
+    BuildContext context,
+    RepresentedGroup group,
+    Map<String, String> headers,
+    bool isDarkMode,
+  ) {
+    const accentColor = Colors.indigo;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+        border: Border.all(
+          color: accentColor.withValues(alpha: isDarkMode ? 0.2 : 0.1),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        children: [
+          // ヘッダー
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  accentColor.withValues(alpha: isDarkMode ? 0.15 : 0.1),
+                  accentColor.withValues(alpha: isDarkMode ? 0.05 : 0.05),
+                ],
+              ),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(22),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: accentColor.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.group_outlined,
+                    color: accentColor,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    '所属グループ',
+                    style: GoogleFonts.notoSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: accentColor,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // コンテンツ
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // グループアイコン（ある場合）
+                if (group.iconUrl != null)
+                  Container(
+                    width: 70,
+                    height: 70,
+                    margin: const EdgeInsets.only(right: 16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: accentColor.withValues(alpha: 0.15),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: CachedNetworkImage(
+                        imageUrl: group.iconUrl!,
+                        httpHeaders: headers,
+                        cacheManager: JsonCacheManager(),
+                        fit: BoxFit.cover,
+                        placeholder:
+                            (context, url) => Container(
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[800]
+                                      : Colors.grey[200],
+                              child: Center(
+                                child: Icon(
+                                  Icons.group,
+                                  color:
+                                      isDarkMode
+                                          ? Colors.grey[600]
+                                          : Colors.grey[400],
+                                  size: 30,
+                                ),
+                              ),
+                            ),
+                        errorWidget:
+                            (context, url, error) => Container(
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[800]
+                                      : Colors.grey[200],
+                              child: Center(
+                                child: Icon(
+                                  Icons.group,
+                                  color:
+                                      isDarkMode
+                                          ? Colors.grey[600]
+                                          : Colors.grey[400],
+                                  size: 30,
+                                ),
+                              ),
+                            ),
+                      ),
+                    ),
+                  ),
+
+                // グループ詳細情報
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // グループ名
+                      Text(
+                        group.name ?? 'Unknown Group',
+                        style: GoogleFonts.notoSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? Colors.white : Colors.black87,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      // グループコード（短縮コード）
+                      if (group.shortCode != null) ...[
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.tag,
+                              size: 14,
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600],
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              group.shortCode!,
+                              style: GoogleFonts.notoSans(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color:
+                                    isDarkMode
+                                        ? Colors.grey[300]
+                                        : Colors.grey[700],
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                      ],
+
+                      // メンバー数（APIが提供していれば）
+                      if (group.memberCount != null)
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.people,
+                              size: 14,
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600],
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${group.memberCount}人のメンバー',
+                              style: GoogleFonts.notoSans(
+                                fontSize: 14,
+                                color:
+                                    isDarkMode
+                                        ? Colors.grey[300]
+                                        : Colors.grey[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // グループ詳細ボタン
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: ElevatedButton.icon(
+              onPressed: () {
+                context.push('/group/${group.groupId}');
+              },
+              icon: const Icon(Icons.visibility_outlined, size: 18),
+              label: const Text('グループ詳細を表示'),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: accentColor,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 2,
+                shadowColor: accentColor.withValues(alpha: 0.4),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 現在のアバターカード
+  Widget _buildAvatarCard({
+    required BuildContext context,
+    required Avatar avatar,
+    required Map<String, String> headers,
+    required bool isDarkMode,
+    required Color accentColor,
+  }) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+        border: Border.all(
+          color: accentColor.withValues(alpha: isDarkMode ? 0.2 : 0.1),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        children: [
+          // ヘッダー
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  accentColor.withValues(alpha: isDarkMode ? 0.15 : 0.1),
+                  accentColor.withValues(alpha: isDarkMode ? 0.05 : 0.05),
+                ],
+              ),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(22),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: accentColor.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Icon(Icons.face, color: accentColor, size: 22),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    '現在のアバター',
+                    style: GoogleFonts.notoSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: accentColor,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // コンテンツ
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // アバターサムネイル
+                Container(
+                  width: 90,
+                  height: 90,
+                  margin: const EdgeInsets.only(right: 16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: accentColor.withValues(alpha: 0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Hero(
+                      tag: 'avatar-thumbnail-${avatar.id}',
+                      child: CachedNetworkImage(
+                        imageUrl: avatar.imageUrl,
+                        httpHeaders: headers,
+                        cacheManager: JsonCacheManager(),
+                        fit: BoxFit.cover,
+                        placeholder:
+                            (context, url) => Container(
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[800]
+                                      : Colors.grey[200],
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                        errorWidget:
+                            (context, url, error) => Container(
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[800]
+                                      : Colors.grey[200],
+                              child: Icon(
+                                Icons.broken_image,
+                                color:
+                                    isDarkMode
+                                        ? Colors.grey[600]
+                                        : Colors.grey[400],
+                              ),
+                            ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // アバター情報
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        avatar.name,
+                        style: GoogleFonts.notoSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.person_outline,
+                            size: 14,
+                            color:
+                                isDarkMode
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            avatar.authorName,
+                            style: GoogleFonts.notoSans(
+                              fontSize: 14,
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[300]
+                                      : Colors.grey[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              _getReleaseStatusColor(avatar.releaseStatus),
+                              _getReleaseStatusColor(
+                                avatar.releaseStatus,
+                              ).withValues(alpha: 0.7),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          _getReleaseStatusText(avatar.releaseStatus),
+                          style: GoogleFonts.notoSans(
+                            fontSize: 12,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // アバター詳細ボタン
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: ElevatedButton.icon(
+              onPressed: () {
+                context.push('/avatar/${avatar.id}');
+              },
+              icon: const Icon(Icons.visibility_outlined, size: 18),
+              label: const Text('アバター詳細を表示'),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: accentColor,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 2,
+                shadowColor: accentColor.withValues(alpha: 0.4),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // 統計情報カード
   Widget _buildStatsCard(
     BuildContext context,
     CurrentUser user,
     bool isDarkMode,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDarkMode ? const Color(0xFF262626) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 800),
+      tween: Tween<double>(begin: 0.95, end: 1.0),
+      curve: Curves.elasticOut,
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: value,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+              border: Border.all(
+                color: AppTheme.primaryColor.withValues(
+                  alpha: isDarkMode ? 0.2 : 0.1,
+                ),
+                width: 1.5,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildStatItem(
+                  icon: Icons.people_alt_rounded,
+                  value: user.friends.length.toString(),
+                  label: 'フレンド',
+                  isDarkMode: isDarkMode,
+                ),
+                // 追加の統計情報をここに追加可能
+              ],
+            ),
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildStatItem(
-            icon: Icons.people_alt_rounded,
-            value: user.friends.length.toString(),
-            label: 'フレンド',
-            isDarkMode: isDarkMode,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -605,75 +1292,124 @@ class ProfilePage extends ConsumerWidget {
     required String label,
     required bool isDarkMode,
   }) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: AppTheme.primaryColor, size: 20),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        Text(
-          label,
-          style: GoogleFonts.notoSans(
-            fontSize: 12,
-            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-          ),
-        ),
-      ],
+    return TweenAnimationBuilder<int>(
+      duration: const Duration(milliseconds: 1500),
+      tween: IntTween(begin: 0, end: int.parse(value)),
+      builder: (context, animatedValue, child) {
+        return Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppTheme.primaryColor.withValues(alpha: 0.2),
+                    AppTheme.primaryColor.withValues(alpha: 0.1),
+                  ],
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                    blurRadius: 8,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Icon(icon, color: AppTheme.primaryColor, size: 24),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              animatedValue.toString(),
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.white : Colors.black87,
+              ),
+            ),
+            Text(
+              label,
+              style: GoogleFonts.notoSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  // 情報カード
-  Widget _buildInfoCard({
+  // モダンな情報カード
+  Widget _buildModernInfoCard({
     required BuildContext context,
     required String title,
     required IconData icon,
     required List<Widget> children,
     required bool isDarkMode,
+    required Color iconColor,
+    required Color backgroundColor,
   }) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: isDarkMode ? const Color(0xFF262626) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
+        border: Border.all(
+          color: iconColor.withValues(alpha: isDarkMode ? 0.2 : 0.1),
+          width: 1.5,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // カードヘッダー
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+              color: backgroundColor,
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
+                top: Radius.circular(22),
               ),
             ),
             child: Row(
               children: [
-                Icon(icon, color: AppTheme.primaryColor, size: 22),
-                const SizedBox(width: 12),
-                Text(
-                  title,
-                  style: GoogleFonts.notoSans(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryColor,
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: iconColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: iconColor.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Icon(icon, color: iconColor, size: 22),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.notoSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: iconColor,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ),
               ],
@@ -682,7 +1418,7 @@ class ProfilePage extends ConsumerWidget {
 
           // カードコンテンツ
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: children,
@@ -693,28 +1429,30 @@ class ProfilePage extends ConsumerWidget {
     );
   }
 
-  // 情報行アイテム
-  Widget _buildInfoRow({
+  // モダンな情報行アイテム
+  Widget _buildModernInfoRow({
     required IconData icon,
     required String label,
     required String value,
     required bool isDarkMode,
+    required Color iconColor,
+    bool isLast = false,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
+      padding: EdgeInsets.only(bottom: isLast ? 0.0 : 16.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-              borderRadius: BorderRadius.circular(8),
+              color: iconColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               icon,
-              size: 18,
-              color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+              size: 20,
+              color: iconColor.withValues(alpha: 0.8),
             ),
           ),
           const SizedBox(width: 16),
@@ -728,6 +1466,7 @@ class ProfilePage extends ConsumerWidget {
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    letterSpacing: 0.3,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -736,6 +1475,7 @@ class ProfilePage extends ConsumerWidget {
                   style: GoogleFonts.notoSans(
                     fontSize: 16,
                     color: isDarkMode ? Colors.grey[200] : Colors.grey[800],
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -751,4 +1491,222 @@ class ProfilePage extends ConsumerWidget {
     if (date == null) return '不明';
     return '${date.year}/${date.month}/${date.day}';
   }
+
+  // リリースステータスの色
+  Color _getReleaseStatusColor(ReleaseStatus status) {
+    switch (status) {
+      case ReleaseStatus.public:
+        return Colors.green;
+      case ReleaseStatus.private:
+        return Colors.orange;
+      case ReleaseStatus.hidden:
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  // リリースステータスのテキスト
+  String _getReleaseStatusText(ReleaseStatus status) {
+    switch (status) {
+      case ReleaseStatus.public:
+        return '公開';
+      case ReleaseStatus.private:
+        return '非公開';
+      case ReleaseStatus.hidden:
+        return '非表示';
+      default:
+        return '不明';
+    }
+  }
+}
+
+Widget _buildBioLinksCard(
+  BuildContext context,
+  List<String> bioLinks,
+  bool isDarkMode,
+) {
+  return FutureBuilder(
+    future: Future.wait(
+      bioLinks.map((link) async {
+        try {
+          final uri = Uri.parse(_ensureHttpPrefix(link));
+
+          // ファビコン取得を強化
+          Favicon? favicon;
+          try {
+            favicon = await FaviconFinder.getBest(link);
+          } catch (e) {}
+
+          String? faviconUrl;
+          if (favicon != null && favicon.url.isNotEmpty) {
+            faviconUrl = favicon.url;
+          } else {
+            faviconUrl = '${uri.scheme}://${uri.host}/favicon.ico';
+          }
+
+          return {'url': link, 'favicon': faviconUrl, 'domain': uri.host};
+        } catch (e) {
+          return {'url': link, 'favicon': null, 'domain': _extractDomain(link)};
+        }
+      }).toList(),
+    ),
+    builder: (context, snapshot) {
+      final linkData = snapshot.data as List<Map<String, dynamic>>? ?? [];
+
+      return InfoCard(
+        title: 'リンク',
+        icon: Icons.link,
+        isDarkMode: isDarkMode,
+        customColor: Colors.teal,
+        children:
+            linkData.isEmpty
+                ? [_buildLoadingLinksIndicator(isDarkMode)]
+                : linkData
+                    .map((data) => _buildLinkItem(context, data, isDarkMode))
+                    .toList(),
+      );
+    },
+  );
+}
+
+Widget _buildLinkItem(
+  BuildContext context,
+  Map<String, dynamic> linkData,
+  bool isDarkMode,
+) {
+  final url = linkData['url'] as String;
+  final faviconUrl = linkData['favicon'] as String?;
+  final domain = linkData['domain'] as String;
+
+  return InkWell(
+    onTap: () => _launchURL(url),
+    borderRadius: BorderRadius.circular(12),
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: isDarkMode ? Colors.grey[850] : Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child:
+                faviconUrl != null
+                    ? ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Image.network(
+                        faviconUrl,
+                        width: 16,
+                        height: 16,
+                        errorBuilder:
+                            (context, error, stackTrace) => Icon(
+                              Icons.language,
+                              size: 16,
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600],
+                            ),
+                      ),
+                    )
+                    : Icon(
+                      Icons.language,
+                      size: 16,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  domain,
+                  style: GoogleFonts.notoSans(
+                    fontWeight: FontWeight.w500,
+                    color: Colors.teal,
+                  ),
+                ),
+                Text(
+                  _truncateUrl(url),
+                  style: GoogleFonts.notoSans(
+                    fontSize: 14,
+                    color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.open_in_new,
+            size: 18,
+            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildLoadingLinksIndicator(bool isDarkMode) {
+  return Container(
+    padding: const EdgeInsets.all(16),
+    alignment: Alignment.center,
+    child: Column(
+      children: [
+        CircularProgressIndicator(
+          strokeWidth: 2,
+          color: isDarkMode ? Colors.teal[300] : Colors.teal,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'リンク情報を読み込み中...',
+          style: GoogleFonts.notoSans(
+            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Future<void> _launchURL(String urlString) async {
+  final url = Uri.parse(_ensureHttpPrefix(urlString));
+  if (await canLaunchUrl(url)) {
+    await launchUrl(url);
+  } else {
+    debugPrint('URLを開けませんでした: $urlString');
+  }
+}
+
+String _ensureHttpPrefix(String url) {
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  return 'https://$url';
+}
+
+String _extractDomain(String url) {
+  var processedUrl = url.replaceAll(RegExp(r'https?://'), '');
+  processedUrl = processedUrl.split('/')[0];
+  processedUrl = processedUrl.split('?')[0].split('#')[0];
+  return processedUrl;
+}
+
+String _truncateUrl(String url) {
+  const maxLength = 40;
+  return url.length > maxLength ? '${url.substring(0, maxLength)}...' : url;
 }

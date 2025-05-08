@@ -215,7 +215,7 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
   // フレンド情報（ステータスなど）を更新
   void updateFriendInfo(
     String userId, {
-    String? status,
+    UserStatus? status,
     String? statusDescription,
   }) {
     state.whenData((friends) {
@@ -234,7 +234,7 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
               isFriend: friend.isFriend,
               lastPlatform: friend.lastPlatform,
               profilePicOverride: friend.profilePicOverride,
-              status: (status as UserStatus?) ?? friend.status,
+              status: status ?? friend.status,
               statusDescription: statusDescription ?? friend.statusDescription,
               tags: friend.tags,
               userIcon: friend.userIcon,
@@ -265,26 +265,6 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
   }
 }
 
-// 特定のフレンドの詳細情報を取得するプロバイダー
-final friendDetailProvider = FutureProvider.family<User, String>((
-  ref,
-  userId,
-) async {
-  final rawApi = await ref.watch(vrchatRawApiProvider);
-  final response = await rawApi.getUsersApi().getUser(userId: userId);
-  return response.data!;
-});
-
-// 現在のユーザー（自分自身）の情報を取得するプロバイダー
-final currentUserProvider = FutureProvider<CurrentUser>((ref) async {
-  final auth = await ref.watch(vrchatAuthProvider.future);
-  final currentUser = auth.currentUser;
-  if (currentUser == null) {
-    throw Exception('ユーザー情報を取得できませんでした');
-  }
-  return currentUser;
-});
-
 // フレンドの状態を更新するハンドラー
 final friendStateUpdaterProvider =
     Provider<void Function(String, {required bool isOnline})>((ref) {
@@ -307,9 +287,9 @@ final friendLocationUpdaterProvider =
 
 // フレンド情報を更新するハンドラー
 final friendInfoUpdaterProvider = Provider<
-  void Function(String, {String? status, String? statusDescription})
+  void Function(String, {UserStatus? status, String? statusDescription})
 >((ref) {
-  return (String userId, {String? status, String? statusDescription}) {
+  return (String userId, {UserStatus? status, String? statusDescription}) {
     ref
         .read(friendsProvider.notifier)
         .updateFriendInfo(

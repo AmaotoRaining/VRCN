@@ -4,17 +4,20 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vrchat/analytics_repository.dart';
 import 'package:vrchat/firebase_options.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/provider/streaming_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
 import 'package:vrchat/theme/app_theme.dart';
-import 'package:vrchat/widgets/custom_loading.dart';
+import 'package:vrchat/widgets/loading_indicator.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,11 +28,6 @@ Future<void> main() async {
 
   // Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  if (!kDebugMode) {
-    // Firebase Analysis
-    await FirebaseAnalytics.instance.logAppOpen();
-  }
 
   // システムUIの設定
   SystemChrome.setSystemUIOverlayStyle(
@@ -45,8 +43,29 @@ Future<void> main() async {
   // SharedPreferencesの初期化
   final prefs = await SharedPreferences.getInstance();
 
-  // .envファイルの読み込み
-  await dotenv.load();
+  final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  // Android通知権限のリクエスト
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >()
+      ?.requestNotificationsPermission();
+
+  // 通知の初期化
+  await flutterLocalNotificationsPlugin.initialize(
+    const InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      iOS: DarwinInitializationSettings(),
+    ),
+  );
+
+  // デバッグ用.envファイルの読み込み
+  if (kDebugMode) {
+    await dotenv.load(fileName: '.env');
+  } else {
+    await dotenv.load(fileName: '.env.demeo');
+  }
 
   runApp(
     ProviderScope(
@@ -64,6 +83,22 @@ class VRChatApp extends ConsumerWidget {
     final isInitializing = ref.watch(apiInitializingProvider);
     final themeMode = ref.watch(themeModeProvider);
 
+    final analytics = ref.watch(analyticsRepository);
+
+    // アプリ起動時の分析記録
+    if (!kDebugMode) {
+      // アプリ開いたとき
+      analytics.logAppOpen();
+
+      // アプリバージョンをUserPropertyとして設定
+      PackageInfo.fromPlatform().then((packageInfo) {
+        FirebaseAnalytics.instance.setUserProperty(
+          name: 'app_version',
+          value: packageInfo.version,
+        );
+      });
+    }
+
     // APIの初期化を開始
     ref.watch(vrchatProvider);
 
@@ -72,7 +107,6 @@ class VRChatApp extends ConsumerWidget {
     authState.whenData((isLoggedIn) {
       if (isLoggedIn) {
         // ログイン済みならストリーミングコントローラーを使用して接続を開始
-        // Future.microtaskを使用して初期化後に接続開始
         Future.microtask(
           () => ref.read(streamingControllerProvider).startConnection(),
         );
@@ -81,7 +115,7 @@ class VRChatApp extends ConsumerWidget {
 
     // 初期化中はローディング画面、完了後は通常のルーターを使用
     if (isInitializing) {
-      return _buildApp(themeMode: themeMode, home: const CustomLoading());
+      return _buildApp(themeMode: themeMode, home: const LoadingIndicator());
     }
 
     // 自動ログイン試行

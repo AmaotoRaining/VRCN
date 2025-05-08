@@ -10,10 +10,10 @@ class AutoOtpHelper {
   /// 指定されたユーザー名がOTP自動入力対象かどうかを判断
   static bool isEligibleForAutoOtp(String username) {
     // .envファイルから開発者アカウント名を取得
-    final devUsername = dotenv.env['VRCHAT_USERNAME_DEV'];
+    final demoUsername = dotenv.env['VRCHAT_USERNAME_DEMO'];
 
     // ユーザー名が開発者アカウントと一致するか確認
-    return username == devUsername;
+    return username == demoUsername;
   }
 
   /// OTPコードを生成
@@ -27,7 +27,7 @@ class AutoOtpHelper {
     }
 
     // .envファイルからOTPシークレットを取得
-    final secretKey = dotenv.env['OTP_SECRET'];
+    final secretKey = dotenv.env['DEMO_OTP_SECRET'];
     if (secretKey == null || secretKey.isEmpty) {
       debugPrint('OTP生成エラー: シークレットキーが設定されていません');
       return null;

@@ -1,12 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/provider/friend_sort_provider.dart';
 import 'package:vrchat/provider/friends_provider.dart';
-import 'package:vrchat/provider/vrchat_api_provider.dart';
-import 'package:vrchat/provider/world_provider.dart';
+import 'package:vrchat/provider/instance_provider.dart';
 import 'package:vrchat/widgets/app_drawer.dart';
 import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/friend_location_group.dart';
@@ -24,85 +22,7 @@ class FriendsPage extends ConsumerWidget {
     final sortType = ref.watch(friendSortTypeProvider);
     final sortDirection = ref.watch(friendSortDirectionProvider);
 
-    final currentUserAsync = ref.watch(currentUserProvider);
-
-    final vrchatApi = ref.watch(vrchatProvider).value;
-    final headers = {
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
-
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
-        centerTitle: true,
-        title: const CircleAvatar(
-          backgroundImage: AssetImage('assets/images/default.png'),
-        ),
-        iconTheme: IconThemeData(
-          color: Theme.of(context).colorScheme.onSurface,
-        ),
-        actions: [
-          // 並び替えボタン
-          IconButton(
-            icon: const Icon(Icons.sort),
-            tooltip: '並び替え',
-            onPressed: () => _showSortOptions(context, ref),
-          ),
-        ],
-        leading: Builder(
-          builder:
-              (context) => currentUserAsync.when(
-                data:
-                    (currentUser) => IconButton(
-                      icon: CircleAvatar(
-                        radius: 16,
-                        backgroundColor: Colors.grey[300],
-                        backgroundImage:
-                            currentUser
-                                    .currentAvatarThumbnailImageUrl
-                                    .isNotEmpty
-                                ? CachedNetworkImageProvider(
-                                  currentUser.currentAvatarThumbnailImageUrl,
-                                  headers: headers,
-                                )
-                                : const AssetImage('assets/images/default.png')
-                                    as ImageProvider,
-                      ),
-                      onPressed: () => Scaffold.of(context).openDrawer(),
-                      tooltip:
-                          MaterialLocalizations.of(
-                            context,
-                          ).openAppDrawerTooltip,
-                    ),
-                loading:
-                    () => IconButton(
-                      icon: const CircleAvatar(
-                        radius: 16,
-                        backgroundColor: Colors.grey,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
-                          ),
-                        ),
-                      ),
-                      onPressed: () => Scaffold.of(context).openDrawer(),
-                    ),
-                error:
-                    (_, _) => IconButton(
-                      icon: const CircleAvatar(
-                        radius: 16,
-                        backgroundColor: Colors.grey,
-                        backgroundImage: AssetImage(
-                          'assets/images/default.png',
-                        ),
-                      ),
-                      onPressed: () => Scaffold.of(context).openDrawer(),
-                    ),
-              ),
-        ),
-      ),
       drawer: const AppDrawer(),
       body: friendsAsync.when(
         data: (friends) {
@@ -120,133 +40,7 @@ class FriendsPage extends ConsumerWidget {
     );
   }
 
-  // 並び替えオプションを表示するダイアログ
-  void _showSortOptions(BuildContext context, WidgetRef ref) {
-    // ローカル変数を用意して即時の状態更新を可能にする
-    var localSortType = ref.read(friendSortTypeProvider);
-    var localDirection = ref.read(friendSortDirectionProvider);
-
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return SafeArea(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      '並び替え',
-                      style: GoogleFonts.notoSans(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-
-                  // 並び替え種類
-                  ListTile(
-                    leading: const Icon(Icons.circle),
-                    title: Text('オンライン状態順', style: GoogleFonts.notoSans()),
-                    trailing:
-                        localSortType == FriendSortType.status
-                            ? const Icon(Icons.check)
-                            : null,
-                    onTap: () {
-                      // プロバイダーを更新
-                      ref
-                          .read(friendSortTypeProvider.notifier)
-                          .setSortType(FriendSortType.status);
-                      // ローカル変数も更新
-                      setState(() {
-                        localSortType = FriendSortType.status;
-                      });
-                    },
-                  ),
-
-                  ListTile(
-                    leading: const Icon(Icons.sort_by_alpha),
-                    title: Text('名前順', style: GoogleFonts.notoSans()),
-                    trailing:
-                        localSortType == FriendSortType.name
-                            ? const Icon(Icons.check)
-                            : null,
-                    onTap: () {
-                      ref
-                          .read(friendSortTypeProvider.notifier)
-                          .setSortType(FriendSortType.name);
-                      setState(() {
-                        localSortType = FriendSortType.name;
-                      });
-                    },
-                  ),
-
-                  ListTile(
-                    leading: const Icon(Icons.access_time),
-                    title: Text('最終ログイン順', style: GoogleFonts.notoSans()),
-                    trailing:
-                        localSortType == FriendSortType.lastLogin
-                            ? const Icon(Icons.check)
-                            : null,
-                    onTap: () {
-                      ref
-                          .read(friendSortTypeProvider.notifier)
-                          .setSortType(FriendSortType.lastLogin);
-                      setState(() {
-                        localSortType = FriendSortType.lastLogin;
-                      });
-                    },
-                  ),
-
-                  const Divider(),
-
-                  // 昇順・降順
-                  ListTile(
-                    leading: Icon(
-                      localDirection == SortDirection.ascending
-                          ? Icons.arrow_upward
-                          : Icons.arrow_downward,
-                    ),
-                    title: Text(
-                      localDirection == SortDirection.ascending ? '昇順' : '降順',
-                      style: GoogleFonts.notoSans(),
-                    ),
-                    onTap: () {
-                      final newDirection =
-                          localDirection == SortDirection.ascending
-                              ? SortDirection.descending
-                              : SortDirection.ascending;
-                      ref
-                          .read(friendSortDirectionProvider.notifier)
-                          .setDirection(newDirection);
-                      setState(() {
-                        localDirection = newDirection;
-                      });
-                    },
-                  ),
-
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(50),
-                      ),
-                      child: Text('閉じる', style: GoogleFonts.notoSans()),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  /// ローカルでフレンドリストを並び替える
+  /// フレンドリストを並び替える
   List<LimitedUser> _sortFriends(
     List<LimitedUser> friends,
     FriendSortType sortType,
@@ -340,7 +134,7 @@ class FriendsPage extends ConsumerWidget {
     );
   }
 
-  // ロケーションでグループ化したリスト表示（新機能）
+  // ロケーションでグループ化したリスト表示
   Widget _buildGroupedFriendsList(
     BuildContext context,
     List<LimitedUser> friends,
@@ -349,13 +143,19 @@ class FriendsPage extends ConsumerWidget {
     // フレンドをロケーションごとにグループ化
     final friendGroups = <String, List<LimitedUser>>{};
 
-    // オンライン/オフラインでまず大きく分ける
+    // オンライン/オフライン/アクティブオフラインでまず大きく分ける
     final offlineFriends = <LimitedUser>[];
+    final activeOfflineFriends = <LimitedUser>[]; // アクティブオフライン用のリスト追加
     final privateFriends = <LimitedUser>[];
     final onlineFriends = <LimitedUser>[];
 
     for (final friend in friends) {
-      if (friend.location == null || friend.location == 'offline') {
+      // locationがofflineでもstatusが設定されている場合はアクティブグループに
+      if (friend.location == 'offline' &&
+          friend.status != UserStatus.offline &&
+          friend.status.toString().isNotEmpty) {
+        activeOfflineFriends.add(friend);
+      } else if (friend.location == null || friend.location == 'offline') {
         offlineFriends.add(friend);
       } else if (friend.location == 'private') {
         privateFriends.add(friend);
@@ -375,10 +175,7 @@ class FriendsPage extends ConsumerWidget {
 
     // ワールド情報の事前取得（同じロケーションにいるフレンドが多い場合に効率的）
     for (final location in friendGroups.keys) {
-      if (location.startsWith('wrld_')) {
-        final worldId = location.split(':').first;
-        ref.read(worldDetailProvider(worldId));
-      }
+      ref.read(instanceDetailProvider(location));
     }
 
     // 人数の多い順にグループをソート
@@ -399,13 +196,11 @@ class FriendsPage extends ConsumerWidget {
           locationName: location,
           locationIcon: Icons.public,
           friends: locationFriends,
-          onTapFriend: (friend) => context.push('/friends/${friend.id}'),
+          onTapFriend: (friend) => context.push('/user/${friend.id}'),
           iconColor: Colors.green,
-          // ワールド情報プロバイダーを渡す（世界名を表示するため）
-          worldId:
-              location.startsWith('wrld_') ? location.split(':').first : null,
+          location: location,
           isOffline: false,
-          compact: false, // コンパクトモードをオフに
+          compact: false,
         ),
       );
     }
@@ -417,9 +212,25 @@ class FriendsPage extends ConsumerWidget {
           locationName: 'プライベート',
           locationIcon: Icons.lock_outline,
           friends: privateFriends,
-          onTapFriend: (friend) => context.push('/friends/${friend.id}'),
+          onTapFriend: (friend) => context.push('/user/${friend.id}'),
           iconColor: Colors.redAccent,
           isPrivate: true,
+          compact: false, // コンパクトモードをオフに
+        ),
+      );
+    }
+
+    // アクティブなオフラインフレンドが存在する場合はプライベートの後に表示（新規追加）
+    if (activeOfflineFriends.isNotEmpty) {
+      groupWidgets.add(
+        FriendLocationGroup(
+          locationName: 'アクティブ',
+          locationIcon: Icons.circle,
+          friends: activeOfflineFriends,
+          onTapFriend: (friend) => context.push('/user/${friend.id}'),
+          iconColor: Colors.green,
+          isOffline: true,
+          isActive: true, // アクティブフラグをオンに
           compact: false, // コンパクトモードをオフに
         ),
       );
@@ -432,7 +243,7 @@ class FriendsPage extends ConsumerWidget {
           locationName: 'オフライン',
           locationIcon: Icons.offline_bolt,
           friends: offlineFriends,
-          onTapFriend: (friend) => context.push('/friends/${friend.id}'),
+          onTapFriend: (friend) => context.push('/user/${friend.id}'),
           iconColor: Colors.grey,
           isOffline: true,
           compact: false, // コンパクトモードをオフに

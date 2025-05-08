@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
 import 'package:vrchat/utils/auto_otp_helper.dart';
@@ -134,9 +137,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
         // 自動OTP入力を試行
         _tryAutoOtpInput();
       } else {
-        // 認証状態を更新
-        ref.read(authRefreshProvider.notifier).state++;
-        context.go('/');
+        await _handleLoginSuccess();
       }
     } catch (e) {
       if (!mounted) return;
@@ -176,10 +177,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
           _errorMessage = '二段階認証に失敗しました。コードが正しいか確認してください。';
         });
       } else {
-        // 認証状態を更新
-        ref.read(authRefreshProvider.notifier).state++;
-        // ホーム画面に遷移
-        context.go('/');
+        await _handleLoginSuccess();
       }
     } catch (e) {
       if (!mounted) return;
@@ -192,6 +190,25 @@ class _LoginPageState extends ConsumerState<LoginPage>
           _isLoading = false;
         });
       }
+    }
+  }
+
+  // ログイン成功時の処理
+  Future<void> _handleLoginSuccess() async {
+    // 認証状態を更新
+    ref.read(authRefreshProvider.notifier).state++;
+
+    try {
+      // ユーザー情報を先に取得してキャッシュしておく
+      await ref.read(currentUserProvider.future);
+    } catch (e) {
+      debugPrint('ログイン後のユーザー情報取得でエラー: $e');
+      // エラーがあっても続行（後でリトライする）
+    }
+
+    // ホーム画面に遷移
+    if (mounted) {
+      context.go('/');
     }
   }
 
@@ -229,302 +246,334 @@ class _LoginPageState extends ConsumerState<LoginPage>
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = Theme.of(context).colorScheme.primary;
     final secondaryColor = Theme.of(context).colorScheme.secondary;
+    final size = MediaQuery.of(context).size;
 
     // テキストカラーをモードに応じて設定
     final subtitleColor = isDarkMode ? Colors.grey[300] : Colors.grey[600];
 
     return Scaffold(
-      body: DecoratedBox(
-        // グラデーション背景
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors:
-                isDarkMode
-                    ? [Colors.grey[900]!, Colors.black, Colors.grey[850]!]
-                    : [
-                      Colors.blue[50]!,
-                      Colors.indigo[50]!,
-                      Colors.purple[50]!,
-                    ],
+      body: Stack(
+        children: [
+          // グラデーション背景
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors:
+                    isDarkMode
+                        ? [Colors.grey[900]!, Colors.black, Colors.grey[850]!]
+                        : [
+                          Colors.blue[50]!,
+                          Colors.indigo[50]!,
+                          Colors.purple[50]!,
+                        ],
+              ),
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0),
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: Form(
-                    key: _formKey,
-                    child: AutofillGroup(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // ロゴとタイトル
-                          Center(
-                            child: Column(
-                              children: [
-                                SizedBox(
-                                  width: 120,
-                                  height: 120,
-                                  child: Image.asset(
-                                    'assets/images/splash.png',
-                                    fit: BoxFit.contain,
+
+          // あのめあ
+          Center(
+            child: Image.asset(
+              'assets/images/立ち絵.png',
+              height: size.height * 0.85,
+              fit: BoxFit.contain,
+            ),
+          ),
+
+          // ログインフォーム
+          SafeArea(
+            child: Align(
+              // 中央から少し下に配置（0.0が最上部、1.0が最下部）
+              alignment: const Alignment(0.0, 0.3),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32.0,
+                  vertical: 24.0,
+                ),
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: Container(
+                      width: min(450, size.width * 0.85),
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color:
+                            isDarkMode
+                                ? Colors.black.withValues(alpha: 0.75)
+                                : Colors.white.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 20,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                        border: Border.all(
+                          color:
+                              isDarkMode
+                                  ? Colors.white.withValues(alpha: 0.1)
+                                  : Colors.black.withValues(alpha: 0.05),
+                          width: 1,
+                        ),
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: AutofillGroup(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // タイトル
+                              Text(
+                                _showTwoFactorAuth ? '二段階認証' : 'VRCN',
+                                style: GoogleFonts.notoSans(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      isDarkMode
+                                          ? Colors.white
+                                          : secondaryColor,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _showTwoFactorAuth
+                                    ? '認証コードを入力してください'
+                                    : 'VRChatのアカウント情報でログイン',
+                                style: GoogleFonts.notoSans(
+                                  fontSize: 16,
+                                  color: subtitleColor,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+
+                              const SizedBox(height: 32),
+
+                              // ログインフォーム または 2FA フォーム（既存のコードをそのまま使用）
+                              if (!_showTwoFactorAuth) ...[
+                                _buildTextField(
+                                  controller: _usernameController,
+                                  labelText: 'メールアドレス',
+                                  hintText: 'メールまたはユーザー名を入力',
+                                  prefixIcon: Icons.person_outline_rounded,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'ユーザー名またはメールアドレスを入力してください';
+                                    }
+                                    return null;
+                                  },
+                                  autofillHints: const [
+                                    AutofillHints.username,
+                                    AutofillHints.email,
+                                  ],
+                                  textInputAction: TextInputAction.next,
+                                ),
+                                const SizedBox(height: 20),
+
+                                // パスワードフィールド（既存のまま）
+                                _buildTextField(
+                                  controller: _passwordController,
+                                  labelText: 'パスワード',
+                                  hintText: 'パスワードを入力',
+                                  prefixIcon: Icons.lock_outline_rounded,
+                                  obscureText: _obscurePassword,
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_rounded
+                                          : Icons.visibility_off_rounded,
+                                      color: primaryColor,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'パスワードを入力してください';
+                                    }
+                                    return null;
+                                  },
+                                  autofillHints: const [AutofillHints.password],
+                                  textInputAction: TextInputAction.done,
+                                  onFieldSubmitted: (_) {
+                                    if (!_isLoading) _login();
+                                  },
+                                ),
+
+                                const SizedBox(height: 16),
+
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed: () {
+                                      final url = Uri.parse(
+                                        'https://vrchat.com/home/password',
+                                      );
+                                      launchUrl(url);
+                                    },
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: primaryColor,
+                                      padding: EdgeInsets.zero,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child: Text(
+                                      'パスワードをお忘れですか？',
+                                      style: GoogleFonts.notoSans(fontSize: 14),
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(height: 24),
-                                Text(
-                                  _showTwoFactorAuth ? '二段階認証' : 'VRCN',
-                                  style: GoogleFonts.notoSans(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        isDarkMode
-                                            ? Colors.white
-                                            : secondaryColor,
-                                  ),
+
+                                const SizedBox(height: 40),
+
+                                // ログインボタン
+                                _buildGradientButton(
+                                  onPressed: _isLoading ? null : _login,
+                                  text: 'ログイン',
+                                  isLoading: _isLoading,
                                 ),
-                                const SizedBox(height: 8),
+                              ] else ...[
+                                // 二段階認証のUI（既存のコード）
                                 Text(
-                                  _showTwoFactorAuth
-                                      ? '認証コードを入力してください'
-                                      : 'VRChatのアカウント情報でログイン',
+                                  '認証アプリに表示されている\n6桁のコードを入力してください',
                                   style: GoogleFonts.notoSans(
                                     fontSize: 16,
                                     color: subtitleColor,
                                   ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 36),
+
+                                // OTP入力フィールド
+                                _buildOtpInputField(),
+                                const SizedBox(height: 40),
+
+                                // 認証ボタン
+                                _buildGradientButton(
+                                  onPressed:
+                                      _isLoading ? null : _verifyTwoFactorCode,
+                                  text: '認証',
+                                  isLoading: _isLoading,
+                                ),
+
+                                const SizedBox(height: 16),
+
+                                // ログイン画面に戻るボタン
+                                Center(
+                                  child: TextButton.icon(
+                                    onPressed:
+                                        !_isLoading
+                                            ? () {
+                                              setState(() {
+                                                _showTwoFactorAuth = false;
+                                                _errorMessage = null;
+                                              });
+
+                                              // アニメーションをリセットして再生
+                                              _animationController.reset();
+                                              _animationController.forward();
+                                            }
+                                            : null,
+                                    icon: const Icon(Icons.arrow_back_rounded),
+                                    label: Text(
+                                      'ログイン画面に戻る',
+                                      style: GoogleFonts.notoSans(),
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: primaryColor,
+                                    ),
+                                  ),
                                 ),
                               ],
-                            ),
-                          ),
 
-                          const SizedBox(height: 48),
-
-                          // ログインフォーム または 2FA フォーム
-                          if (!_showTwoFactorAuth) ...[
-                            // ユーザー名フィールド
-                            _buildTextField(
-                              controller: _usernameController,
-                              labelText: 'メールアドレス',
-                              hintText: 'メールまたはユーザー名を入力',
-                              prefixIcon: Icons.person_outline_rounded,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'ユーザー名またはメールアドレスを入力してください';
-                                }
-                                return null;
-                              },
-                              autofillHints: const [
-                                AutofillHints.username,
-                                AutofillHints.email,
-                              ],
-                              textInputAction: TextInputAction.next,
-                            ),
-                            const SizedBox(height: 20),
-
-                            // パスワードフィールド
-                            _buildTextField(
-                              controller: _passwordController,
-                              labelText: 'パスワード',
-                              hintText: 'パスワードを入力',
-                              prefixIcon: Icons.lock_outline_rounded,
-                              obscureText: _obscurePassword,
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility_rounded
-                                      : Icons.visibility_off_rounded,
-                                  color: primaryColor,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _obscurePassword = !_obscurePassword;
-                                  });
-                                },
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'パスワードを入力してください';
-                                }
-                                return null;
-                              },
-                              autofillHints: const [AutofillHints.password],
-                              textInputAction: TextInputAction.done,
-                              onFieldSubmitted: (_) {
-                                if (!_isLoading) _login();
-                              },
-                            ),
-
-                            const SizedBox(height: 16),
-
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
-                                onPressed: () {
-                                  final url = Uri.parse(
-                                    'https://vrchat.com/home/password',
-                                  );
-                                  launchUrl(url);
-                                },
-                                style: TextButton.styleFrom(
-                                  foregroundColor: primaryColor,
-                                  padding: EdgeInsets.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                child: Text(
-                                  'パスワードをお忘れですか？',
-                                  style: GoogleFonts.notoSans(fontSize: 14),
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 40),
-
-                            // ログインボタン
-                            _buildGradientButton(
-                              onPressed: _isLoading ? null : _login,
-                              text: 'ログイン',
-                              isLoading: _isLoading,
-                            ),
-                          ] else ...[
-                            // 二段階認証画面
-                            Text(
-                              '認証アプリに表示されている\n6桁のコードを入力してください',
-                              style: GoogleFonts.notoSans(
-                                fontSize: 16,
-                                color: subtitleColor,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 36),
-
-                            // OTP入力フィールド
-                            _buildOtpInputField(),
-                            const SizedBox(height: 40),
-
-                            // 認証ボタン
-                            _buildGradientButton(
-                              onPressed:
-                                  _isLoading ? null : _verifyTwoFactorCode,
-                              text: '認証',
-                              isLoading: _isLoading,
-                            ),
-
-                            const SizedBox(height: 16),
-
-                            // ログイン画面に戻るボタン
-                            Center(
-                              child: TextButton.icon(
-                                onPressed:
-                                    !_isLoading
-                                        ? () {
-                                          setState(() {
-                                            _showTwoFactorAuth = false;
-                                            _errorMessage = null;
-                                          });
-
-                                          // アニメーションをリセットして再生
-                                          _animationController.reset();
-                                          _animationController.forward();
-                                        }
-                                        : null,
-                                icon: const Icon(Icons.arrow_back_rounded),
-                                label: Text(
-                                  'ログイン画面に戻る',
-                                  style: GoogleFonts.notoSans(),
-                                ),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: primaryColor,
-                                ),
-                              ),
-                            ),
-                          ],
-
-                          // エラーメッセージ
-                          if (_errorMessage != null) ...[
-                            const SizedBox(height: 24),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color:
-                                    isDarkMode
-                                        ? Colors.red.shade900.withAlpha(50)
-                                        : Colors.red.withAlpha(25),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color:
-                                      isDarkMode
-                                          ? Colors.red.shade800
-                                          : Colors.red.withAlpha(75),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.error_outline_rounded,
+                              // エラーメッセージ
+                              if (_errorMessage != null) ...[
+                                const SizedBox(height: 24),
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
                                     color:
                                         isDarkMode
-                                            ? Colors.red.shade300
-                                            : Colors.red,
+                                            ? Colors.red.shade900.withAlpha(50)
+                                            : Colors.red.withAlpha(25),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color:
+                                          isDarkMode
+                                              ? Colors.red.shade800
+                                              : Colors.red.withAlpha(75),
+                                    ),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      _errorMessage!,
-                                      style: GoogleFonts.notoSans(
-                                        fontSize: 14,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.error_outline_rounded,
                                         color:
                                             isDarkMode
-                                                ? Colors.red.shade200
+                                                ? Colors.red.shade300
                                                 : Colors.red,
                                       ),
-                                    ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          _errorMessage!,
+                                          style: GoogleFonts.notoSans(
+                                            fontSize: 14,
+                                            color:
+                                                isDarkMode
+                                                    ? Colors.red.shade200
+                                                    : Colors.red,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                            ),
-                          ],
-
-                          // デバッグ情報
-                          if (kDebugMode && !_showTwoFactorAuth) ...[
-                            const SizedBox(height: 32),
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withAlpha(5),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Colors.black.withAlpha(10),
                                 ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.bug_report_rounded,
-                                    size: 16,
-                                    color: Colors.grey,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'デバッグモード：.env認証情報を使用',
-                                    style: GoogleFonts.notoSans(
-                                      fontSize: 12,
-                                      color: Colors.grey,
+                              ],
+
+                              // デバッグ情報
+                              if (kDebugMode && !_showTwoFactorAuth) ...[
+                                const SizedBox(height: 32),
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withAlpha(5),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: Colors.black.withAlpha(10),
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ],
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.bug_report_rounded,
+                                        size: 16,
+                                        color: Colors.grey,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'デバッグモード：.env認証情報を使用',
+                                        style: GoogleFonts.notoSans(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -532,7 +581,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -611,7 +660,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
             child: TextButton.icon(
               onPressed: _pasteFromClipboard,
               icon: const Icon(Icons.content_paste_rounded),
-              label: Text('コードをペースト', style: GoogleFonts.notoSans()),
+              label: Text('ペースト', style: GoogleFonts.notoSans()),
               style: TextButton.styleFrom(
                 foregroundColor: primaryColor,
                 padding: const EdgeInsets.symmetric(
