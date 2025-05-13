@@ -1536,7 +1536,9 @@ Widget _buildBioLinksCard(
           Favicon? favicon;
           try {
             favicon = await FaviconFinder.getBest(link);
-          } catch (e) {}
+          } catch (e) {
+            // ファビコンが取得できなくても代替手段があるので無視
+          }
 
           String? faviconUrl;
           if (favicon != null && favicon.url.isNotEmpty) {

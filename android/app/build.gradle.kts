@@ -58,7 +58,6 @@ android {
         flavorDimensions += "default"
         productFlavors{
           create("dev"){
-            isDefault = true
             dimension = "default"
             // applicationIdSuffix = ".debug"
           }

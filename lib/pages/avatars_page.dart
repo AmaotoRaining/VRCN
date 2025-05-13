@@ -28,6 +28,12 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
   final _pageSize = 100;
   var _isLoadingMore = false;
 
+  // 検索関連の状態変数
+  final _searchController = TextEditingController();
+  var _isSearching = false;
+  var _searchQuery = '';
+  List<Avatar> _filteredAvatarList = [];
+
   AvatarViewMode _viewMode = AvatarViewMode.grid;
 
   SortOption _sortOption = SortOption.updated;
@@ -49,6 +55,9 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
       duration: const Duration(milliseconds: 800),
     );
 
+    // 検索コントローラーのリスナー設定
+    _searchController.addListener(_onSearchChanged);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refreshAvatars();
     });
@@ -59,6 +68,8 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     _animationController.dispose();
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -93,6 +104,7 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
         setState(() {
           _avatarList.addAll(newAvatars);
           _isLoadingMore = false;
+          _filterAvatars(); // 検索結果も更新
         });
       }
     } catch (e) {
@@ -142,6 +154,7 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
         setState(() {
           _avatarList = avatars;
           _isInitialized = true;
+          _filterAvatars(); // 検索結果も更新
         });
         await _animationController.forward();
       }
@@ -160,6 +173,42 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
     final sortedList = List<Avatar>.from(avatars);
     sortedList.sort((a, b) => a.name.compareTo(b.name));
     return sortedList;
+  }
+
+  // 検索クエリが変わったときの処理
+  void _onSearchChanged() {
+    setState(() {
+      _searchQuery = _searchController.text.toLowerCase();
+      _filterAvatars();
+    });
+  }
+
+  // 検索クエリに基づいてアバターをフィルタリング
+  void _filterAvatars() {
+    if (_searchQuery.isEmpty) {
+      _filteredAvatarList = _avatarList;
+      return;
+    }
+
+    _filteredAvatarList =
+        _avatarList.where((avatar) {
+          return avatar.name.toLowerCase().contains(_searchQuery) ||
+              avatar.authorName.toLowerCase().contains(_searchQuery) ||
+              (avatar.description.toLowerCase().contains(_searchQuery));
+        }).toList();
+  }
+
+  // 検索モードの切り替え
+  void _toggleSearch() {
+    setState(() {
+      _isSearching = !_isSearching;
+      if (!_isSearching) {
+        _searchController.clear();
+      } else {
+        // 検索モードに入ったらフォーカスする
+        FocusScope.of(context).requestFocus();
+      }
+    });
   }
 
   @override
@@ -184,6 +233,8 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
       body: SafeArea(
         child: Column(
           children: [
+            // 検索バーを追加
+            if (_isSearching) _buildSearchBar(isDarkMode),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _refreshAvatars,
@@ -202,6 +253,7 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               setState(() {
                                 _avatarList = avatars;
+                                _filteredAvatarList = avatars; // 検索結果初期化
                                 _isInitialized = true;
                               });
                               _animationController.forward();
@@ -225,13 +277,18 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
                     }
 
                     // 初期化後は内部状態を使用
-                    if (_avatarList.isEmpty) {
-                      return _buildEmptyState(isDarkMode);
+                    final displayList =
+                        _isSearching ? _filteredAvatarList : _avatarList;
+
+                    if (displayList.isEmpty) {
+                      return _isSearching
+                          ? _buildSearchEmptyState(isDarkMode)
+                          : _buildEmptyState(isDarkMode);
                     }
 
                     return _viewMode == AvatarViewMode.grid
-                        ? _buildMasonryGrid(isDarkMode, headers)
-                        : _buildListView(isDarkMode, headers);
+                        ? _buildMasonryGrid(isDarkMode, headers, displayList)
+                        : _buildListView(isDarkMode, headers, displayList);
                   },
                 ),
               ),
@@ -242,12 +299,92 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
     );
   }
 
-  // AppBarの並び替えメニューを修正
+  // 検索バーウィジェット
+  Widget _buildSearchBar(bool isDarkMode) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color:
+                isDarkMode
+                    ? Colors.black12
+                    : Colors.black.withValues(alpha: .05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: _searchController,
+        autofocus: true,
+        decoration: InputDecoration(
+          hintText: 'アバター名などで検索',
+          hintStyle: TextStyle(
+            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            fontSize: 14,
+          ),
+          prefixIcon: Icon(
+            Icons.search,
+            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+          ),
+          suffixIcon: IconButton(
+            icon: Icon(
+              Icons.clear,
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            ),
+            onPressed: _searchController.clear,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(50),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: isDarkMode ? const Color(0xFF2A2A2A) : Colors.grey[100],
+          contentPadding: const EdgeInsets.symmetric(vertical: 8),
+        ),
+      ),
+    );
+  }
+
+  // 検索結果が空の場合の表示
+  Widget _buildSearchEmptyState(bool isDarkMode) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.search_off,
+            size: 80,
+            color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
+          ),
+          const SizedBox(height: 24),
+          Text(
+            '検索結果が見つかりませんでした',
+            style: GoogleFonts.notoSans(
+              fontSize: 18,
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '別の検索ワードをお試しください',
+            style: GoogleFonts.notoSans(
+              fontSize: 14,
+              color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // AppBar修正 - 検索アイコン追加
   PreferredSizeWidget _buildAppBar(bool isDarkMode) {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      // foregroundColorを追加して、すべてのアイコンとテキストの色を指定
       foregroundColor: isDarkMode ? Colors.white : Colors.black87,
       flexibleSpace: ClipRect(
         child: BackdropFilter(
@@ -276,12 +413,20 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
         style: GoogleFonts.notoSans(
           fontWeight: FontWeight.bold,
           fontSize: 20,
-          // タイトルの色を明示的に指定
           color: isDarkMode ? Colors.white : Colors.black87,
         ),
       ),
       centerTitle: true,
       actions: [
+        // 検索アイコンを追加
+        IconButton(
+          icon: Icon(
+            _isSearching ? Icons.search_off : Icons.search,
+            color: AppTheme.primaryColor,
+          ),
+          onPressed: _toggleSearch,
+          tooltip: '検索',
+        ),
         IconButton(
           icon: Icon(
             _viewMode == AvatarViewMode.grid
@@ -325,30 +470,14 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
     );
   }
 
-  Widget _buildEmptyState(bool isDarkMode) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.person_outline,
-            size: 80,
-            color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'アップロードしたアバターがありません',
-            style: GoogleFonts.notoSans(
-              fontSize: 18,
-              color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // グリッドビューのビルド - リスト引数を追加
+  Widget _buildMasonryGrid(
+    bool isDarkMode,
+    Map<String, String> headers, [
+    List<Avatar>? displayList,
+  ]) {
+    final avatars = displayList ?? _avatarList;
 
-  Widget _buildMasonryGrid(bool isDarkMode, Map<String, String> headers) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: MasonryGridView.count(
@@ -356,9 +485,9 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
         crossAxisCount: 2,
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
-        itemCount: _avatarList.length + (_isLoadingMore ? 1 : 0),
+        itemCount: avatars.length + (_isLoadingMore && !_isSearching ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index == _avatarList.length) {
+          if (index == avatars.length) {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.all(16),
@@ -367,7 +496,7 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
             );
           }
 
-          final avatar = _avatarList[index];
+          final avatar = avatars[index];
 
           final animation = CurvedAnimation(
             parent: _animationController,
@@ -397,13 +526,20 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
     );
   }
 
-  Widget _buildListView(bool isDarkMode, Map<String, String> headers) {
+  // リストビューのビルド - リスト引数を追加
+  Widget _buildListView(
+    bool isDarkMode,
+    Map<String, String> headers, [
+    List<Avatar>? displayList,
+  ]) {
+    final avatars = displayList ?? _avatarList;
+
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.all(12),
-      itemCount: _avatarList.length + (_isLoadingMore ? 1 : 0),
+      itemCount: avatars.length + (_isLoadingMore && !_isSearching ? 1 : 0),
       itemBuilder: (context, index) {
-        if (index == _avatarList.length) {
+        if (index == avatars.length) {
           return const Center(
             child: Padding(
               padding: EdgeInsets.all(16),
@@ -412,7 +548,7 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
           );
         }
 
-        final avatar = _avatarList[index];
+        final avatar = avatars[index];
 
         final animation = CurvedAnimation(
           parent: _animationController,
@@ -828,6 +964,52 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
       default:
         return status.toString();
     }
+  }
+
+  // アバターリストが空の場合の表示
+  Widget _buildEmptyState(bool isDarkMode) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.sentiment_dissatisfied,
+            size: 80,
+            color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'アバターがありません',
+            style: GoogleFonts.notoSans(
+              fontSize: 18,
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'アバターを追加するか、後でもう一度お試しください',
+            style: GoogleFonts.notoSans(
+              fontSize: 14,
+              color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: _refreshAvatars,
+            icon: const Icon(Icons.refresh),
+            label: const Text('更新する'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

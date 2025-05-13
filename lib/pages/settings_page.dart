@@ -112,77 +112,66 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
               const SizedBox(height: 24),
 
-              // TODO: 通知設定
-              // _buildSettingsSection(
-              //   title: '通知',
-              //   icon: Icons.notifications_outlined,
-              //   children: [
-              //     _buildSwitchSetting(
-              //       icon: Icons.person_add_outlined,
-              //       title: 'フレンドリクエスト通知',
-              //       subtitle: 'フレンドリクエストを受け取ったときに通知します',
-              //       value: settings.notifyNewFriendRequests,
-              //       onChanged: (value) {
-              //         ref
-              //             .read(settingsProvider.notifier)
-              //             .setNotifyNewFriendRequests(value);
-              //       },
-              //       isDarkMode: isDarkMode,
-              //     ),
-              //     _buildSwitchSetting(
-              //       icon: Icons.people_outlined,
-              //       title: 'フレンドオンライン通知',
-              //       subtitle: 'フレンドがオンラインになったときに通知します',
-              //       value: settings.notifyFriendOnline,
-              //       onChanged: (value) {
-              //         ref
-              //             .read(settingsProvider.notifier)
-              //             .setNotifyFriendOnline(value);
-              //       },
-              //       isDarkMode: isDarkMode,
-              //     ),
-              //   ],
-              // ),
+              // アバター検索 API URL 設定
+              _buildSettingsSection(
+                title: 'アバター検索 API URL',
+                icon: Icons.api_outlined,
+                children: [
+                  ListTile(
+                    title: const Text('アバター検索 API URL'),
+                    subtitle: Text(
+                      ref.watch(settingsProvider).avatarSearchApiUrl.isEmpty
+                          ? '未設定 (検索機能が使用できません)'
+                          : ref.watch(settingsProvider).avatarSearchApiUrl,
+                    ),
+                    trailing: const Icon(Icons.edit),
+                    onTap: () {
+                      final controller = TextEditingController(
+                        text: ref.read(settingsProvider).avatarSearchApiUrl,
+                      );
 
-              // const SizedBox(height: 24),
+                      showDialog(
+                        context: context,
+                        builder:
+                            (context) => AlertDialog(
+                              title: const Text('アバター検索 API URL'),
+                              content: TextField(
+                                controller: controller,
+                                decoration: const InputDecoration(
+                                  hintText:
+                                      'https://api.example.com/avatar/search',
+                                ),
+                                autofocus: true,
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('キャンセル'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    final url = controller.text.trim();
+                                    ref
+                                        .read(settingsProvider.notifier)
+                                        .setAvatarSearchApiUrl(url);
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('URLを保存しました'),
+                                      ),
+                                    );
+                                  },
+                                  child: const Text('保存'),
+                                ),
+                              ],
+                            ),
+                      );
+                    },
+                  ),
+                ],
+              ),
 
-              // TODO: データと通信設定
-              // _buildSettingsSection(
-              //   title: 'データと通信',
-              //   icon: Icons.data_usage_outlined,
-              //   children: [
-              //     _buildSwitchSetting(
-              //       icon: Icons.wifi_outlined,
-              //       title: 'Wi-Fi接続時のみ画像を読み込む',
-              //       subtitle: 'モバイルデータ通信量を節約します',
-              //       value: settings.loadImageOnWifi,
-              //       onChanged: (value) {
-              //         ref
-              //             .read(settingsProvider.notifier)
-              //             .setLoadImageOnWifi(value);
-              //       },
-              //       isDarkMode: isDarkMode,
-              //     ),
-              //     _buildSliderSetting(
-              //       icon: Icons.storage_outlined,
-              //       title: 'フレンドキャッシュ上限',
-              //       subtitle: 'キャッシュするフレンド情報の最大数',
-              //       value: settings.maxFriendCache.toDouble(),
-              //       min: 100,
-              //       max: 1000,
-              //       divisions: 9,
-              //       onChanged: (value) {
-              //         ref
-              //             .read(settingsProvider.notifier)
-              //             .setMaxFriendCache(value.round());
-              //       },
-              //       valueDisplay: '${settings.maxFriendCache}人',
-              //       isDarkMode: isDarkMode,
-              //     ),
-              //   ],
-              // ),
-
-              // const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
               // アプリ情報
               if (_packageInfo != null)
@@ -839,7 +828,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   context: context,
                   ref: ref,
                   iconType: AppIconType.kazkiller,
-                  label: 'キチ顔',
+                  label: 'KAZkiller',
                   assetPath: 'assets/images/kazkiller@3x.png',
                   isSelected: settings.appIcon == AppIconType.kazkiller,
                   isDarkMode: isDarkMode,

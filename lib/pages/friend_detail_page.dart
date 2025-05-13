@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/provider/instance_provider.dart';
+import 'package:vrchat/provider/playermoderation_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
@@ -194,7 +195,7 @@ class FriendDetailPage extends ConsumerWidget {
                 ],
               ),
             ),
-            actions: const [],
+            actions: [_buildModerationMenu(context, ref, user, isDarkMode)],
           ),
 
           SliverToBoxAdapter(
@@ -536,7 +537,9 @@ class FriendDetailPage extends ConsumerWidget {
             Favicon? favicon;
             try {
               favicon = await FaviconFinder.getBest(link);
-            } catch (e) {}
+            } catch (e) {
+              // ファビコンが取得できなくても代替手段があるので無視
+            }
 
             String? faviconUrl;
             if (favicon != null && favicon.url.isNotEmpty) {
@@ -875,5 +878,185 @@ class FriendDetailPage extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  // モデレーションメニューを構築するメソッド
+  Widget _buildModerationMenu(
+    BuildContext context,
+    WidgetRef ref,
+    User user,
+    bool isDarkMode,
+  ) {
+    return PopupMenuButton<String>(
+      icon: const Icon(Icons.more_vert, color: Colors.white),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: isDarkMode ? Colors.grey[850] : Colors.white,
+      onSelected: (value) async {
+        switch (value) {
+          case 'block':
+            _showModerationConfirmDialog(
+              context,
+              ref,
+              '${user.displayName}をブロックしますか？',
+              'ブロックすると、このユーザーからのフレンド申請やメッセージを受け取らなくなります。',
+              () => _moderateUser(
+                ref,
+                PlayerModerationUtil.blockUser(user.id),
+                'ブロックしました',
+              ),
+              isDarkMode,
+            );
+          case 'mute':
+            _showModerationConfirmDialog(
+              context,
+              ref,
+              '${user.displayName}をミュートしますか？',
+              'ミュートすると、このユーザーの音声が聞こえなくなります。',
+              () => _moderateUser(
+                ref,
+                PlayerModerationUtil.muteUser(user.id),
+                'ミュートしました',
+              ),
+              isDarkMode,
+            );
+          case 'website':
+            // VRChatウェブサイトでユーザーページを開く
+            await _openUserWebsite(user.id);
+        }
+      },
+      itemBuilder:
+          (context) => [
+            _buildPopupMenuItem('block', 'ブロック', Icons.block, isDarkMode),
+            _buildPopupMenuItem('mute', 'ミュート', Icons.volume_off, isDarkMode),
+            _buildPopupMenuItem(
+              'website',
+              'ウェブサイトで開く',
+              Icons.public,
+              isDarkMode,
+            ),
+          ],
+    );
+  }
+
+  // ポップアップメニュー項目を構築するヘルパーメソッド
+  PopupMenuItem<String> _buildPopupMenuItem(
+    String value,
+    String text,
+    IconData icon,
+    bool isDarkMode,
+  ) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 20,
+            color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+          ),
+          const SizedBox(width: 12),
+          Text(
+            text,
+            style: GoogleFonts.notoSans(
+              color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // モデレーション確認ダイアログを表示するメソッド
+  void _showModerationConfirmDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String title,
+    String message,
+    Function() onConfirm,
+    bool isDarkMode,
+  ) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text(title, style: GoogleFonts.notoSans()),
+            content: Text(message, style: GoogleFonts.notoSans()),
+            backgroundColor: isDarkMode ? Colors.grey[850] : Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'キャンセル',
+                  style: GoogleFonts.notoSans(
+                    color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  onConfirm();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text('確定', style: GoogleFonts.notoSans()),
+              ),
+            ],
+          ),
+    );
+  }
+
+  // ユーザーモデレーションを実行するメソッド
+  Future<void> _moderateUser(
+    WidgetRef ref,
+    ModerateUserRequest request,
+    String successMessage,
+  ) async {
+    try {
+      // モデレーションを実行
+      await ref.read(moderateUserProvider(request).future);
+
+      // 成功メッセージを表示
+      if (ref.context.mounted) {
+        ScaffoldMessenger.of(ref.context).showSnackBar(
+          SnackBar(
+            content: Text(successMessage),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.green[700],
+          ),
+        );
+      }
+    } catch (e) {
+      // エラーメッセージを表示
+      if (ref.context.mounted) {
+        ScaffoldMessenger.of(ref.context).showSnackBar(
+          SnackBar(
+            content: Text('操作に失敗しました: $e'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red[700],
+          ),
+        );
+      }
+    }
+  }
+
+  // ユーザーのVRChatウェブサイトページを開くメソッド
+  Future<void> _openUserWebsite(String userId) async {
+    final url = Uri.parse('https://vrchat.com/home/user/$userId');
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      debugPrint('URLを開けませんでした: $url');
+      // refコンテキストの代わりに現在のBuildContextを使用
+    }
   }
 }

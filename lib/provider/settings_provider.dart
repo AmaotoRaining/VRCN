@@ -30,6 +30,7 @@ class AppSettings {
   final bool notifyFriendOnline;
   final int maxFriendCache;
   final AppIconType appIcon;
+  final String avatarSearchApiUrl; // 追加：アバター検索APIのURL
 
   const AppSettings({
     this.themeMode = AppThemeMode.system,
@@ -38,6 +39,7 @@ class AppSettings {
     this.notifyFriendOnline = true,
     this.maxFriendCache = 500,
     this.appIcon = AppIconType.nullbase,
+    this.avatarSearchApiUrl = '', // デフォルト値なし
   });
 
   // コピーと一部更新のためのメソッド
@@ -48,6 +50,7 @@ class AppSettings {
     bool? notifyFriendOnline,
     int? maxFriendCache,
     AppIconType? appIcon,
+    String? avatarSearchApiUrl, // 追加
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -57,6 +60,7 @@ class AppSettings {
       notifyFriendOnline: notifyFriendOnline ?? this.notifyFriendOnline,
       maxFriendCache: maxFriendCache ?? this.maxFriendCache,
       appIcon: appIcon ?? this.appIcon,
+      avatarSearchApiUrl: avatarSearchApiUrl ?? this.avatarSearchApiUrl, // 追加
     );
   }
 
@@ -69,6 +73,7 @@ class AppSettings {
       'notifyFriendOnline': notifyFriendOnline,
       'maxFriendCache': maxFriendCache,
       'appIcon': appIcon.index,
+      'avatarSearchApiUrl': avatarSearchApiUrl, // 追加
     };
   }
 
@@ -84,6 +89,7 @@ class AppSettings {
           json['appIcon'] != null
               ? AppIconType.values[json['appIcon']]
               : AppIconType.nullbase,
+      avatarSearchApiUrl: json['avatarSearchApiUrl'] ?? '', // 追加
     );
   }
 }
@@ -106,6 +112,9 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       final notifyFriendOnline = prefs.getBool('notifyFriendOnline') ?? true;
       final maxFriendCache = prefs.getInt('maxFriendCache') ?? 500;
 
+      // アバター検索APIのURLを取得
+      final avatarSearchApiUrl = prefs.getString('avatarSearchApiUrl') ?? '';
+
       // 現在のアプリアイコン名を取得
       final appIconIndex = prefs.getInt('appIcon') ?? 0;
       final appIcon =
@@ -120,6 +129,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
         notifyFriendOnline: notifyFriendOnline,
         maxFriendCache: maxFriendCache,
         appIcon: appIcon,
+        avatarSearchApiUrl: avatarSearchApiUrl, // 追加
       );
     } catch (e) {
       // エラー時はデフォルト設定を使用
@@ -197,6 +207,12 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       // エラー発生時
       return false;
     }
+  }
+
+  // アバター検索APIのURL変更
+  Future<void> setAvatarSearchApiUrl(String url) async {
+    await prefs.setString('avatarSearchApiUrl', url);
+    state = state.copyWith(avatarSearchApiUrl: url);
   }
 
   // アイコン変更がサポートされているか確認

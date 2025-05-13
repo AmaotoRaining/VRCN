@@ -406,32 +406,33 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
             ),
           ),
         const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('この機能は現在開発中です')));
-            },
-            icon: const Icon(Icons.favorite_border),
-            label: Text(
-              'お気に入りに追加',
-              style: GoogleFonts.notoSans(
-                fontWeight: FontWeight.w500,
-                fontSize: 16,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppTheme.primaryColor,
-              side: const BorderSide(color: AppTheme.primaryColor),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-        ),
+        // TODO: お気に入り追加
+        // SizedBox(
+        //   width: double.infinity,
+        //   child: OutlinedButton.icon(
+        //     onPressed: () {
+        //       ScaffoldMessenger.of(
+        //         context,
+        //       ).showSnackBar(const SnackBar(content: Text('この機能は現在開発中です')));
+        //     },
+        //     icon: const Icon(Icons.favorite_border),
+        //     label: Text(
+        //       'お気に入りに追加',
+        //       style: GoogleFonts.notoSans(
+        //         fontWeight: FontWeight.w500,
+        //         fontSize: 16,
+        //       ),
+        //     ),
+        //     style: OutlinedButton.styleFrom(
+        //       foregroundColor: AppTheme.primaryColor,
+        //       side: const BorderSide(color: AppTheme.primaryColor),
+        //       padding: const EdgeInsets.symmetric(vertical: 12),
+        //       shape: RoundedRectangleBorder(
+        //         borderRadius: BorderRadius.circular(12),
+        //       ),
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }

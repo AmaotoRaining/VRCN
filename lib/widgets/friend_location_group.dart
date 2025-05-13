@@ -828,7 +828,7 @@ class FriendLocationGroup extends ConsumerWidget {
                       return _buildImageError(isDarkMode, accentColor);
                     },
                     // キャッシュポリシーを調整
-                    cacheKey: '$thumbnailUrl-${DateTime.now().day}',
+                    cacheKey: '$thumbnailUrl-${DateTime.timestamp().day}',
                     memCacheHeight: 120,
                     memCacheWidth: 120,
                   ),
