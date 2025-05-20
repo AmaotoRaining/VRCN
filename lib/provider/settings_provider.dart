@@ -31,6 +31,7 @@ class AppSettings {
   final int maxFriendCache;
   final AppIconType appIcon;
   final String avatarSearchApiUrl; // 追加：アバター検索APIのURL
+  final bool allowNsfw; // 追加: 不快なコンテンツ表示の同意
 
   const AppSettings({
     this.themeMode = AppThemeMode.system,
@@ -40,6 +41,7 @@ class AppSettings {
     this.maxFriendCache = 500,
     this.appIcon = AppIconType.nullbase,
     this.avatarSearchApiUrl = '', // デフォルト値なし
+    this.allowNsfw = false, // デフォルトは非表示
   });
 
   // コピーと一部更新のためのメソッド
@@ -51,6 +53,7 @@ class AppSettings {
     int? maxFriendCache,
     AppIconType? appIcon,
     String? avatarSearchApiUrl, // 追加
+    bool? allowNsfw,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -61,6 +64,7 @@ class AppSettings {
       maxFriendCache: maxFriendCache ?? this.maxFriendCache,
       appIcon: appIcon ?? this.appIcon,
       avatarSearchApiUrl: avatarSearchApiUrl ?? this.avatarSearchApiUrl, // 追加
+      allowNsfw: allowNsfw ?? this.allowNsfw,
     );
   }
 
@@ -74,6 +78,7 @@ class AppSettings {
       'maxFriendCache': maxFriendCache,
       'appIcon': appIcon.index,
       'avatarSearchApiUrl': avatarSearchApiUrl, // 追加
+      'allowNsfw': allowNsfw,
     };
   }
 
@@ -90,6 +95,7 @@ class AppSettings {
               ? AppIconType.values[json['appIcon']]
               : AppIconType.nullbase,
       avatarSearchApiUrl: json['avatarSearchApiUrl'] ?? '', // 追加
+      allowNsfw: json['allowNsfw'] ?? false,
     );
   }
 }
@@ -122,6 +128,9 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
               ? AppIconType.values[appIconIndex]
               : AppIconType.nullbase;
 
+      // 不快なコンテンツ表示の同意を取得
+      final allowNsfw = prefs.getBool('allowNsfw') ?? false;
+
       state = AppSettings(
         themeMode: AppThemeMode.values[themeMode],
         loadImageOnWifi: loadImageOnWifi,
@@ -130,6 +139,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
         maxFriendCache: maxFriendCache,
         appIcon: appIcon,
         avatarSearchApiUrl: avatarSearchApiUrl, // 追加
+        allowNsfw: allowNsfw,
       );
     } catch (e) {
       // エラー時はデフォルト設定を使用
@@ -213,6 +223,12 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> setAvatarSearchApiUrl(String url) async {
     await prefs.setString('avatarSearchApiUrl', url);
     state = state.copyWith(avatarSearchApiUrl: url);
+  }
+
+  // 不快なコンテンツ表示の同意設定変更
+  Future<void> setAllowNsfw(bool allow) async {
+    await prefs.setBool('allowNsfw', allow);
+    state = state.copyWith(allowNsfw: allow);
   }
 
   // アイコン変更がサポートされているか確認

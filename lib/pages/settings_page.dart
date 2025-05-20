@@ -171,6 +171,53 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 ],
               ),
 
+              // アプリ外観設定
+              _buildSettingsSection(
+                title: '外観',
+                icon: Icons.palette_outlined,
+                children: [_buildThemeModeSetting(isDarkMode)],
+              ),
+
+              const SizedBox(height: 24),
+
+              // コンテンツ設定
+              _buildSettingsSection(
+                title: 'コンテンツ設定',
+                icon: Icons.content_paste_outlined,
+                children: [
+                  _buildSwitchSetting(
+                    icon: Icons.warning_amber_outlined,
+                    title: '不快なコンテンツを表示',
+                    subtitle:
+                        '検索機能を使用するには同意が必要です。性的なコンテンツや暴力的なコンテンツが表示される可能性があります。',
+                    value: settings.allowNsfw,
+                    onChanged: (value) {
+                      ref.read(settingsProvider.notifier).setAllowNsfw(value);
+
+                      // 確認メッセージを表示
+                      if (value) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('検索機能が有効になりました'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('検索機能が無効になりました'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                    isDarkMode: isDarkMode,
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
               const SizedBox(height: 24),
 
               // アプリ情報

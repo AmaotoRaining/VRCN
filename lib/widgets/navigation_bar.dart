@@ -5,6 +5,7 @@ import 'package:vrchat/pages/search_page.dart';
 import 'package:vrchat/provider/navigation_provider.dart';
 import 'package:vrchat/provider/notification_provider.dart';
 import 'package:vrchat/provider/search_providers.dart';
+import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/widgets/app_bar.dart';
 import 'package:vrchat/widgets/app_drawer.dart';
 import 'package:vrchat/widgets/friend_sort_dialog.dart';
@@ -126,6 +127,28 @@ class Navigation extends ConsumerWidget {
   ) {
     final backgroundColor = isDarkMode ? Colors.black : Colors.white;
     final borderColor = isDarkMode ? Colors.grey[900] : Colors.grey[200];
+    final allowNsfw = ref.watch(settingsProvider).allowNsfw;
+
+    // 表示するタブのインデックスと設定
+    final tabs = <NavigationTabInfo>[
+      NavigationTabInfo(
+        index: 0,
+        icon: Icons.home_outlined,
+        activeIcon: Icons.home,
+      ),
+      // 不快なコンテンツの同意がある場合のみ検索タブを含める
+      if (allowNsfw)
+        NavigationTabInfo(
+          index: 1,
+          icon: Icons.search_outlined,
+          activeIcon: Icons.search,
+        ),
+      NavigationTabInfo(
+        index: 2,
+        icon: Icons.notifications_none_outlined,
+        activeIcon: Icons.notifications,
+      ),
+    ];
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -138,32 +161,19 @@ class Navigation extends ConsumerWidget {
           height: 56,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(
-                context,
-                0,
-                Icons.home_outlined,
-                Icons.home,
-                isDarkMode,
-                ref,
-              ),
-              _buildNavItem(
-                context,
-                1,
-                Icons.search_outlined,
-                Icons.search,
-                isDarkMode,
-                ref,
-              ),
-              _buildNavItem(
-                context,
-                2,
-                Icons.notifications_none_outlined,
-                Icons.notifications,
-                isDarkMode,
-                ref,
-              ),
-            ],
+            children:
+                tabs
+                    .map(
+                      (tab) => _buildNavItem(
+                        context,
+                        tab.index,
+                        tab.icon,
+                        tab.activeIcon,
+                        isDarkMode,
+                        ref,
+                      ),
+                    )
+                    .toList(),
           ),
         ),
       ),
@@ -179,6 +189,7 @@ class Navigation extends ConsumerWidget {
     WidgetRef ref,
   ) {
     final isActive = currentIndex == index;
+    final allowNsfw = ref.watch(settingsProvider).allowNsfw;
 
     const twitterBlue = Color(0xFF1DA1F2);
     const activeColor = twitterBlue;
@@ -192,16 +203,17 @@ class Navigation extends ConsumerWidget {
         ref.read(navigationIndexProvider.notifier).state = index;
 
         final router = GoRouter.of(context);
-        final String destination;
 
         // 遷移先の設定
+        final String destination;
         switch (index) {
           case 0:
             destination = '/';
           case 1:
             destination = '/search';
           case 2:
-            destination = '/notifications';
+            // allowNsfwがfalseの場合、タブ2は通知画面になる
+            destination = allowNsfw ? '/notifications' : '/notifications';
           default:
             destination = '/';
         }
@@ -224,4 +236,17 @@ class Navigation extends ConsumerWidget {
       ),
     );
   }
+}
+
+// NavigationTabInfoクラスを追加
+class NavigationTabInfo {
+  final int index;
+  final IconData icon;
+  final IconData activeIcon;
+
+  NavigationTabInfo({
+    required this.index,
+    required this.icon,
+    required this.activeIcon,
+  });
 }
