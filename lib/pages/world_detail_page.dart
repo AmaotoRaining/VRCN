@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
@@ -146,6 +147,13 @@ class WorldDetailPage extends ConsumerWidget {
           ),
         ),
       ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.public, color: Colors.white),
+          tooltip: 'VRChat公式サイトで開く',
+          onPressed: () => _launchVRChatWebsite(world.id),
+        ),
+      ],
     );
   }
 
@@ -425,5 +433,19 @@ class WorldDetailPage extends ConsumerWidget {
       return '${(number / 1000).toStringAsFixed(1)}K';
     }
     return number.toString();
+  }
+}
+
+// ブラウザでVRChatウェブサイトを開くメソッド
+Future<void> _launchVRChatWebsite(String worldId) async {
+  final url = Uri.parse('https://vrchat.com/home/world/$worldId');
+  try {
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not launch $url';
+    }
+  } catch (e) {
+    debugPrint('Error launching URL: $e');
   }
 }
