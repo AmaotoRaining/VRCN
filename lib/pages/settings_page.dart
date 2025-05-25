@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -112,16 +113,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
               const SizedBox(height: 24),
 
-              // アバター検索 API URL 設定
+              // コンテンツ設定
               _buildSettingsSection(
-                title: 'アバター検索 API URL',
-                icon: Icons.api_outlined,
+                title: 'コンテンツ設定',
+                icon: Icons.content_paste_outlined,
                 children: [
                   ListTile(
                     title: const Text('アバター検索 API URL'),
                     subtitle: Text(
                       ref.watch(settingsProvider).avatarSearchApiUrl.isEmpty
-                          ? '未設定 (検索機能が使用できません)'
+                          ? '未設定 (アバター検索機能が使用できません)'
                           : ref.watch(settingsProvider).avatarSearchApiUrl,
                     ),
                     trailing: const Icon(Icons.edit),
@@ -168,28 +169,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                       );
                     },
                   ),
-                ],
-              ),
-
-              // アプリ外観設定
-              _buildSettingsSection(
-                title: '外観',
-                icon: Icons.palette_outlined,
-                children: [_buildThemeModeSetting(isDarkMode)],
-              ),
-
-              const SizedBox(height: 24),
-
-              // コンテンツ設定
-              _buildSettingsSection(
-                title: 'コンテンツ設定',
-                icon: Icons.content_paste_outlined,
-                children: [
                   _buildSwitchSetting(
                     icon: Icons.warning_amber_outlined,
                     title: '不快なコンテンツを表示',
-                    subtitle:
-                        '検索機能を使用するには同意が必要です。性的なコンテンツや暴力的なコンテンツが表示される可能性があります。',
+                    subtitle: '検索結果に性的なコンテンツや暴力的なコンテンツが表示される可能性があります。',
                     value: settings.allowNsfw,
                     onChanged: (value) {
                       ref.read(settingsProvider.notifier).setAllowNsfw(value);
@@ -233,12 +216,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                           '${_packageInfo!.version} (${_packageInfo!.buildNumber})',
                       isDarkMode: isDarkMode,
                     ),
-                    _buildInfoItem(
-                      icon: Icons.code,
-                      title: 'パッケージ名',
-                      value: _packageInfo!.packageName,
-                      isDarkMode: isDarkMode,
-                    ),
+                    if (kDebugMode) ...[
+                      _buildInfoItem(
+                        icon: Icons.code,
+                        title: 'パッケージ名',
+                        value: _packageInfo!.packageName,
+                        isDarkMode: isDarkMode,
+                      ),
+                    ],
                     const Divider(height: 1),
                     _buildLinkInfoItem(
                       icon: Icons.person,
@@ -557,115 +542,115 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
   }
 
   // スライダー設定
-  Widget _buildSliderSetting({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required double value,
-    required double min,
-    required double max,
-    required int divisions,
-    required Function(double) onChanged,
-    required String valueDisplay,
-    required bool isDarkMode,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                icon,
-                size: 22,
-                color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.notoSans(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: GoogleFonts.notoSans(
-                        fontSize: 14,
-                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withAlpha(25),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  valueDisplay,
-                  style: GoogleFonts.notoSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppTheme.primaryColor,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SliderTheme(
-            data: SliderThemeData(
-              activeTrackColor: AppTheme.primaryColor,
-              inactiveTrackColor: AppTheme.primaryColor.withAlpha(77),
-              thumbColor: AppTheme.primaryColor,
-              overlayColor: AppTheme.primaryColor.withAlpha(51),
-              trackHeight: 4,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
-            ),
-            child: Slider(
-              value: value,
-              min: min,
-              max: max,
-              divisions: divisions,
-              onChanged: onChanged,
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                min.toInt().toString(),
-                style: GoogleFonts.notoSans(
-                  fontSize: 12,
-                  color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
-                ),
-              ),
-              Text(
-                max.toInt().toString(),
-                style: GoogleFonts.notoSans(
-                  fontSize: 12,
-                  color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildSliderSetting({
+  //   required IconData icon,
+  //   required String title,
+  //   required String subtitle,
+  //   required double value,
+  //   required double min,
+  //   required double max,
+  //   required int divisions,
+  //   required Function(double) onChanged,
+  //   required String valueDisplay,
+  //   required bool isDarkMode,
+  // }) {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           children: [
+  //             Icon(
+  //               icon,
+  //               size: 22,
+  //               color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+  //             ),
+  //             const SizedBox(width: 16),
+  //             Expanded(
+  //               child: Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   Text(
+  //                     title,
+  //                     style: GoogleFonts.notoSans(
+  //                       fontSize: 16,
+  //                       fontWeight: FontWeight.w500,
+  //                     ),
+  //                   ),
+  //                   const SizedBox(height: 4),
+  //                   Text(
+  //                     subtitle,
+  //                     style: GoogleFonts.notoSans(
+  //                       fontSize: 14,
+  //                       color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //             Container(
+  //               padding: const EdgeInsets.symmetric(
+  //                 horizontal: 10,
+  //                 vertical: 4,
+  //               ),
+  //               decoration: BoxDecoration(
+  //                 color: AppTheme.primaryColor.withAlpha(25),
+  //                 borderRadius: BorderRadius.circular(12),
+  //               ),
+  //               child: Text(
+  //                 valueDisplay,
+  //                 style: GoogleFonts.notoSans(
+  //                   fontSize: 14,
+  //                   fontWeight: FontWeight.w500,
+  //                   color: AppTheme.primaryColor,
+  //                 ),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 16),
+  //         SliderTheme(
+  //           data: SliderThemeData(
+  //             activeTrackColor: AppTheme.primaryColor,
+  //             inactiveTrackColor: AppTheme.primaryColor.withAlpha(77),
+  //             thumbColor: AppTheme.primaryColor,
+  //             overlayColor: AppTheme.primaryColor.withAlpha(51),
+  //             trackHeight: 4,
+  //             thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+  //             overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+  //           ),
+  //           child: Slider(
+  //             value: value,
+  //             min: min,
+  //             max: max,
+  //             divisions: divisions,
+  //             onChanged: onChanged,
+  //           ),
+  //         ),
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             Text(
+  //               min.toInt().toString(),
+  //               style: GoogleFonts.notoSans(
+  //                 fontSize: 12,
+  //                 color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+  //               ),
+  //             ),
+  //             Text(
+  //               max.toInt().toString(),
+  //               style: GoogleFonts.notoSans(
+  //                 fontSize: 12,
+  //                 color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   // 情報アイテム
   Widget _buildInfoItem({

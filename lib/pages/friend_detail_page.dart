@@ -377,7 +377,7 @@ class FriendDetailPage extends ConsumerWidget {
     switch (platform) {
       case 'PC':
         return Colors.blue;
-      case 'android':
+      case 'Android':
         return Colors.green;
       case 'iOS':
         return Colors.grey;
@@ -531,7 +531,6 @@ class FriendDetailPage extends ConsumerWidget {
         bioLinks.map((link) async {
           try {
             final uri = Uri.parse(_ensureHttpPrefix(link));
-            debugPrint('ファビコン取得開始: ${uri.host}');
 
             // ファビコン取得を強化
             Favicon? favicon;

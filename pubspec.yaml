@@ -89,7 +89,9 @@ flutter:
     - path: .env.demeo
     - path: .env
       flavors:
+      # iOS
       - debug
+      # Android
       - dev
 
 dependency_overrides:

@@ -147,11 +147,45 @@ class WorldDetailPage extends ConsumerWidget {
           ),
         ),
       ),
+      // _buildAppBar メソッド内の actions 部分を修正
       actions: [
-        IconButton(
-          icon: const Icon(Icons.public, color: Colors.white),
-          tooltip: 'VRChat公式サイトで開く',
-          onPressed: () => _launchVRChatWebsite(world.id),
+        PopupMenuButton<String>(
+          icon: const Icon(Icons.more_vert, color: Colors.white),
+          tooltip: 'アクション',
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          onSelected: (value) {
+            switch (value) {
+              case 'website':
+                _launchVRChatWebsite(world.id);
+              case 'report':
+                _launchVRChatWebsite(world.id);
+            }
+          },
+          itemBuilder:
+              (context) => [
+                const PopupMenuItem<String>(
+                  value: 'website',
+                  child: Row(
+                    children: [
+                      Icon(Icons.public, size: 20),
+                      SizedBox(width: 12),
+                      Text('VRChat公式サイトで開く'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'report',
+                  child: Row(
+                    children: [
+                      Icon(Icons.report_problem, size: 20),
+                      SizedBox(width: 12),
+                      Text('このワールドを通報'),
+                    ],
+                  ),
+                ),
+              ],
         ),
       ],
     );
