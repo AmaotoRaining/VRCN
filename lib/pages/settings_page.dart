@@ -874,7 +874,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   isSelected: settings.appIcon == AppIconType.miyamoto,
                   isDarkMode: isDarkMode,
                 ),
-                                _buildAppIconOption(
+                _buildAppIconOption(
                   context: context,
                   ref: ref,
                   iconType: AppIconType.le0yuki,
@@ -883,7 +883,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   isSelected: settings.appIcon == AppIconType.le0yuki,
                   isDarkMode: isDarkMode,
                 ),
-                                _buildAppIconOption(
+                _buildAppIconOption(
                   context: context,
                   ref: ref,
                   iconType: AppIconType.ray,

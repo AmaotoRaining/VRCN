@@ -1,7 +1,7 @@
 name: vrchat
 description: "VRChat Tracker Application"
 publish_to: "none"
-version: 0.1.0+35
+version: 1.0.0
 
 environment:
   sdk: ^3.7.2
@@ -73,6 +73,9 @@ dependencies:
   palette_generator: ^0.3.3+6
   local_auth: ^2.3.0
 
+  # OSC
+  osc: ^1.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -86,7 +89,7 @@ flutter:
 
   assets:
     - path: assets/images/
-    - path: .env.demeo
+    - path: .env.demo
     - path: .env
       flavors:
       # iOS

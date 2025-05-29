@@ -42,8 +42,8 @@ class AppSettings {
     this.notifyFriendOnline = true,
     this.maxFriendCache = 500,
     this.appIcon = AppIconType.nullbase,
-    this.avatarSearchApiUrl = '', // デフォルト値なし
-    this.allowNsfw = false, // デフォルトは非表示
+    this.avatarSearchApiUrl = '',
+    this.allowNsfw = false,
   });
 
   // コピーと一部更新のためのメソッド
@@ -54,7 +54,7 @@ class AppSettings {
     bool? notifyFriendOnline,
     int? maxFriendCache,
     AppIconType? appIcon,
-    String? avatarSearchApiUrl, // 追加
+    String? avatarSearchApiUrl,
     bool? allowNsfw,
   }) {
     return AppSettings(
@@ -65,7 +65,7 @@ class AppSettings {
       notifyFriendOnline: notifyFriendOnline ?? this.notifyFriendOnline,
       maxFriendCache: maxFriendCache ?? this.maxFriendCache,
       appIcon: appIcon ?? this.appIcon,
-      avatarSearchApiUrl: avatarSearchApiUrl ?? this.avatarSearchApiUrl, // 追加
+      avatarSearchApiUrl: avatarSearchApiUrl ?? this.avatarSearchApiUrl,
       allowNsfw: allowNsfw ?? this.allowNsfw,
     );
   }
@@ -79,7 +79,7 @@ class AppSettings {
       'notifyFriendOnline': notifyFriendOnline,
       'maxFriendCache': maxFriendCache,
       'appIcon': appIcon.index,
-      'avatarSearchApiUrl': avatarSearchApiUrl, // 追加
+      'avatarSearchApiUrl': avatarSearchApiUrl,
       'allowNsfw': allowNsfw,
     };
   }
@@ -96,7 +96,7 @@ class AppSettings {
           json['appIcon'] != null
               ? AppIconType.values[json['appIcon']]
               : AppIconType.nullbase,
-      avatarSearchApiUrl: json['avatarSearchApiUrl'] ?? '', // 追加
+      avatarSearchApiUrl: json['avatarSearchApiUrl'] ?? '',
       allowNsfw: json['allowNsfw'] ?? false,
     );
   }

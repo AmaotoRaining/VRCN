@@ -4,18 +4,14 @@
   // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-
     {
       "name": "Debug iPhoneエミュ",
       "type": "dart",
       "request": "launch",
       "program": "lib/main.dart",
       "flutterMode": "debug",
-      "deviceId": "3AD88A22-CE8E-4BC8-AD27-2AE0A13FF9C6",
-      "args": [
-        "--flavor",
-        "debug",
-      ],
+      "deviceId": "67D5ED83-5A6A-4366-9147-AFB46035D253",
+      "args": ["--flavor", "debug"]
     },
     {
       "name": "Debug iPhone実機",
@@ -24,10 +20,7 @@
       "program": "lib/main.dart",
       "flutterMode": "debug",
       "deviceId": "00008140-001C31993ADB001C",
-      "args": [
-        "--flavor",
-        "debug",
-      ],
+      "args": ["--flavor", "debug"]
     },
     {
       "name": "Debug Androidエミュ",
@@ -36,10 +29,7 @@
       "program": "lib/main.dart",
       "flutterMode": "debug",
       "deviceId": "emulator-5554",
-      "args": [
-        "--flavor",
-        "dev",
-      ],
-    },
+      "args": ["--flavor", "dev"]
+    }
   ]
 }

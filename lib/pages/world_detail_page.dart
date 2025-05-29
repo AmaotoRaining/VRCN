@@ -385,74 +385,74 @@ class WorldDetailPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionButtons(
-    BuildContext context,
-    World world,
-    bool isDarkMode,
-    WidgetRef ref,
-  ) {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () {
-              // TODO: ワールドへの参加処理
-              _joinWorld(context, world, ref);
-            },
-            icon: const Icon(Icons.public),
-            label: Text(
-              'パブリックで招待を送信',
-              style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              elevation: 2,
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        IconButton(
-          onPressed: () {
-            // TODO: お気に入り登録処理
-            _toggleFavorite(context, world, ref);
-          },
-          icon: const Icon(Icons.favorite_border),
-          style: IconButton.styleFrom(
-            backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
-            foregroundColor: Colors.red,
-            padding: const EdgeInsets.all(12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-              side: BorderSide(color: Colors.red.withValues(alpha: 0.5)),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  // Widget _buildActionButtons(
+  //   BuildContext context,
+  //   World world,
+  //   bool isDarkMode,
+  //   WidgetRef ref,
+  // ) {
+  //   return Row(
+  //     children: [
+  //       Expanded(
+  //         child: ElevatedButton.icon(
+  //           onPressed: () {
+  //             // TODO: ワールドへの参加処理
+  //             _joinWorld(context, world, ref);
+  //           },
+  //           icon: const Icon(Icons.public),
+  //           label: Text(
+  //             'パブリックで招待を送信',
+  //             style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
+  //           ),
+  //           style: ElevatedButton.styleFrom(
+  //             backgroundColor: Colors.green,
+  //             foregroundColor: Colors.white,
+  //             padding: const EdgeInsets.symmetric(vertical: 12),
+  //             shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.circular(8),
+  //             ),
+  //             elevation: 2,
+  //           ),
+  //         ),
+  //       ),
+  //       const SizedBox(width: 12),
+  //       IconButton(
+  //         onPressed: () {
+  //           // TODO: お気に入り登録処理
+  //           _toggleFavorite(context, world, ref);
+  //         },
+  //         icon: const Icon(Icons.favorite_border),
+  //         style: IconButton.styleFrom(
+  //           backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
+  //           foregroundColor: Colors.red,
+  //           padding: const EdgeInsets.all(12),
+  //           shape: RoundedRectangleBorder(
+  //             borderRadius: BorderRadius.circular(8),
+  //             side: BorderSide(color: Colors.red.withValues(alpha: 0.5)),
+  //           ),
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
-  void _joinWorld(BuildContext context, World world, WidgetRef ref) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('${world.name}へ参加しようとしています...実装中')));
+  // void _joinWorld(BuildContext context, World world, WidgetRef ref) {
+  //   ScaffoldMessenger.of(
+  //     context,
+  //   ).showSnackBar(SnackBar(content: Text('${world.name}へ参加しようとしています...実装中')));
 
-    // TODO:ここに実際のワールド参加ロジックを実装
-    // 例: ref.read(joinWorldProvider)(world.id);
-  }
+  //   // TODO:ここに実際のワールド参加ロジックを実装
+  //   // 例: ref.read(joinWorldProvider)(world.id);
+  // }
 
-  void _toggleFavorite(BuildContext context, World world, WidgetRef ref) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('${world.name}をお気に入りに追加しました。実装中')));
+  // void _toggleFavorite(BuildContext context, World world, WidgetRef ref) {
+  //   ScaffoldMessenger.of(
+  //     context,
+  //   ).showSnackBar(SnackBar(content: Text('${world.name}をお気に入りに追加しました。実装中')));
 
-    // TODO:ここに実際のお気に入り登録/解除ロジックを実装
-    // 例: ref.read(favoriteWorldProvider)(world.id);
-  }
+  //   // TODO:ここに実際のお気に入り登録/解除ロジックを実装
+  //   // 例: ref.read(favoriteWorldProvider)(world.id);
+  // }
 
   String _formatDate(DateTime? date) {
     if (date == null) return '不明';

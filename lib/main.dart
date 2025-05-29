@@ -91,12 +91,7 @@ class VRChatApp extends ConsumerWidget {
       analytics.logAppOpen();
 
       // アプリバージョンをUserPropertyとして設定
-      PackageInfo.fromPlatform().then((packageInfo) {
-        FirebaseAnalytics.instance.setUserProperty(
-          name: 'app_version',
-          value: packageInfo.version,
-        );
-      });
+      _setAppVersionProperty();
     }
 
     // APIの初期化を開始
@@ -164,4 +159,13 @@ class VRChatApp extends ConsumerWidget {
       builder: appBuilder,
     );
   }
+}
+
+// アプリバージョンをユーザープロパティとして設定する関数
+Future<void> _setAppVersionProperty() async {
+  final packageInfo = await PackageInfo.fromPlatform();
+  await FirebaseAnalytics.instance.setUserProperty(
+    name: 'app_version',
+    value: packageInfo.version,
+  );
 }

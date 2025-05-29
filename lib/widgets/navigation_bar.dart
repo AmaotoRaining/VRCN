@@ -131,19 +131,19 @@ class Navigation extends ConsumerWidget {
 
     // 表示するタブのインデックスと設定
     final tabs = <NavigationTabInfo>[
-      NavigationTabInfo(
+      const NavigationTabInfo(
         index: 0,
         icon: Icons.home_outlined,
         activeIcon: Icons.home,
       ),
       // 不快なコンテンツの同意がある場合のみ検索タブを含める
       if (allowNsfw)
-        NavigationTabInfo(
+        const NavigationTabInfo(
           index: 1,
           icon: Icons.search_outlined,
           activeIcon: Icons.search,
         ),
-      NavigationTabInfo(
+      const NavigationTabInfo(
         index: 2,
         icon: Icons.notifications_none_outlined,
         activeIcon: Icons.notifications,
@@ -239,12 +239,13 @@ class Navigation extends ConsumerWidget {
 }
 
 // NavigationTabInfoクラスを追加
+@immutable
 class NavigationTabInfo {
   final int index;
   final IconData icon;
   final IconData activeIcon;
 
-  NavigationTabInfo({
+  const NavigationTabInfo({
     required this.index,
     required this.icon,
     required this.activeIcon,

@@ -2,7 +2,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
-// 検索クエリを管理するためのプロバイダー
+// 入力中の検索クエリを管理するプロバイダー
+final inputSearchQueryProvider = StateProvider<String>((ref) => '');
+
+// 実際に検索に使用するクエリを管理するプロバイダー
 final searchQueryProvider = StateProvider<String>((ref) => '');
 
 // 検索中状態を管理するプロバイダー
