@@ -38,7 +38,7 @@ class AvatarSearchTab extends ConsumerWidget {
       loading: () => const LoadingIndicator(message: 'アバターを検索中...'),
       error:
           (error, stack) => ErrorContainer(
-            message: '検索エラー: ${error.toString()}',
+            message: error.toString(),
             onRetry: () => ref.refresh(avtrDbSearchProvider(query)),
           ),
     );
