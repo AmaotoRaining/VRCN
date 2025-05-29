@@ -10,15 +10,17 @@ enum AppThemeMode {
   system, // システム設定に従う
 }
 
-// アプリアイコンタイプの列挙型
-enum AppIconType { nullbase, annobu, kazkiller, miyamoto }
+// アプリアイコンタイプ
+enum AppIconType { nullbase, annobu, kazkiller, miyamoto, le0yuki, ray }
 
-// アイコン名のマッピング (iOS/Androidプラットフォーム用)
+// アイコン名のマッピング
 Map<AppIconType, String> appIconNameMap = {
   AppIconType.nullbase: 'default',
   AppIconType.annobu: 'annobu',
   AppIconType.kazkiller: 'kazkiller',
   AppIconType.miyamoto: 'miyamoto',
+  AppIconType.le0yuki: 'le0yuki',
+  AppIconType.ray: 'ray',
 };
 
 // 設定データモデル
@@ -30,8 +32,8 @@ class AppSettings {
   final bool notifyFriendOnline;
   final int maxFriendCache;
   final AppIconType appIcon;
-  final String avatarSearchApiUrl; // 追加：アバター検索APIのURL
-  final bool allowNsfw; // 追加: 不快なコンテンツ表示の同意
+  final String avatarSearchApiUrl;
+  final bool allowNsfw;
 
   const AppSettings({
     this.themeMode = AppThemeMode.system,
