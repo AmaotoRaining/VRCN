@@ -64,7 +64,7 @@ Future<void> main() async {
   if (kDebugMode) {
     await dotenv.load(fileName: '.env');
   } else {
-    await dotenv.load(fileName: '.env.demeo');
+    await dotenv.load(fileName: '.env.demo');
   }
 
   runApp(
@@ -96,7 +96,6 @@ class VRChatApp extends ConsumerWidget {
           value: packageInfo.version,
         );
       });
-
     }
 
     // APIの初期化を開始
