@@ -22,6 +22,7 @@ enum AppIconType {
   aihuru,
   rea,
   masukawa,
+  abuki,
 }
 
 // アイコン名のマッピング
@@ -36,6 +37,7 @@ Map<AppIconType, String> appIconNameMap = {
   AppIconType.aihuru: 'aihuru',
   AppIconType.rea: 'rea',
   AppIconType.masukawa: 'masukawa',
+  AppIconType.abuki: 'abuki',
 };
 
 // 設定データモデル
@@ -49,6 +51,7 @@ class AppSettings {
   final AppIconType appIcon;
   final String avatarSearchApiUrl;
   final bool allowNsfw;
+  final bool enableEventReminders; // 追加
 
   const AppSettings({
     this.themeMode = AppThemeMode.system,
@@ -59,6 +62,7 @@ class AppSettings {
     this.appIcon = AppIconType.nullbase,
     this.avatarSearchApiUrl = '',
     this.allowNsfw = false,
+    this.enableEventReminders = true, // デフォルトで有効
   });
 
   // コピーと一部更新のためのメソッド
@@ -71,6 +75,7 @@ class AppSettings {
     AppIconType? appIcon,
     String? avatarSearchApiUrl,
     bool? allowNsfw,
+    bool? enableEventReminders, // 追加
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -82,6 +87,8 @@ class AppSettings {
       appIcon: appIcon ?? this.appIcon,
       avatarSearchApiUrl: avatarSearchApiUrl ?? this.avatarSearchApiUrl,
       allowNsfw: allowNsfw ?? this.allowNsfw,
+      enableEventReminders:
+          enableEventReminders ?? this.enableEventReminders, // 追加
     );
   }
 
@@ -148,6 +155,10 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       // 不快なコンテンツ表示の同意を取得
       final allowNsfw = prefs.getBool('allowNsfw') ?? false;
 
+      // イベント通知設定
+      final enableEventReminders =
+          prefs.getBool('enableEventReminders') ?? true;
+
       state = AppSettings(
         themeMode: AppThemeMode.values[themeMode],
         loadImageOnWifi: loadImageOnWifi,
@@ -157,6 +168,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
         appIcon: appIcon,
         avatarSearchApiUrl: avatarSearchApiUrl, // 追加
         allowNsfw: allowNsfw,
+        enableEventReminders: enableEventReminders, // 追加
       );
     } catch (e) {
       // エラー時はデフォルト設定を使用
@@ -246,6 +258,12 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> setAllowNsfw(bool allow) async {
     await prefs.setBool('allowNsfw', allow);
     state = state.copyWith(allowNsfw: allow);
+  }
+
+  // イベント通知設定変更
+  Future<void> setEnableEventReminders(bool value) async {
+    await prefs.setBool('enableEventReminders', value);
+    state = state.copyWith(enableEventReminders: value);
   }
 
   // アイコン変更がサポートされているか確認

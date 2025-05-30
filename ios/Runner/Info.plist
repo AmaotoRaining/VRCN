@@ -95,6 +95,15 @@
           <key>UIPrerenderedIcon</key>
           <false/>
         </dict>
+        <key>abuki</key>
+        <dict>
+          <key>CFBundleIconFiles</key>
+          <array>
+            <string>abuki</string>
+          </array>
+          <key>UIPrerenderedIcon</key>
+          <false/>
+        </dict>
       </dict>
       <key>CFBundleIcons~ipad</key>
       <dict>
@@ -175,6 +184,15 @@
           <key>CFBundleIconFiles</key>
           <array>
             <string>masukawa</string>
+          </array>
+          <key>UIPrerenderedIcon</key>
+          <false/>
+        </dict>
+        <key>abuki</key>
+        <dict>
+          <key>CFBundleIconFiles</key>
+          <array>
+            <string>abuki</string>
           </array>
           <key>UIPrerenderedIcon</key>
           <false/>

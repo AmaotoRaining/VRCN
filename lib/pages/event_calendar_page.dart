@@ -10,11 +10,13 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/provider/event_filter_provider.dart';
+import 'package:vrchat/provider/event_reminder_provider.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/event_filter_sheet.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
+import 'package:vrchat/widgets/reminder_dialog.dart';
 
 // イベントデータを取得するためのプロバイダー
 final eventDataProvider = FutureProvider<EventData>((ref) async {
@@ -260,6 +262,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
           style: GoogleFonts.notoSans(
             fontWeight: FontWeight.bold,
             fontSize: 20,
+            color: isDarkMode ? Colors.white : Colors.black87,
           ),
         ),
         centerTitle: true,
@@ -719,25 +722,96 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // リマインダー設定ボタン
+            IconButton(
+              icon: const Icon(Icons.notifications_outlined, size: 20),
+              splashRadius: 20,
+              tooltip: 'リマインダーを設定',
+              onPressed: () => _showReminderDialog(context, event, isDarkMode),
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+            ),
+
+            // 展開アイコン（ビルトイン）
+            // ExpansionTileは自動的にこれを追加するが、
+            // trailingを上書きしたので手動で追加
+            RotatedBox(
+              quarterTurns: 1,
+              child: Icon(
+                Icons.chevron_right,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+              ),
+            ),
+          ],
+        ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.access_time_rounded,
-                size: 14,
-                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.access_time_rounded,
+                    size: 14,
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      '$startTime〜$endTime',
+                      style: GoogleFonts.notoSans(
+                        fontSize: 13,
+                        color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  if (event.quest) _buildQuestBadge(isDarkMode),
+
+                  // リマインダー状態表示 - スペースがあれば表示
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final reminders =
+                          ref
+                              .watch(eventReminderProvider)
+                              .where((r) => r.eventId == event.id)
+                              .toList();
+
+                      if (reminders.isEmpty) return const SizedBox.shrink();
+
+                      return Padding(
+                        padding: const EdgeInsets.only(
+                          left: 4,
+                        ), // 間隔を少し狭める (8→4)
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min, // 必要最小限のサイズに
+                          children: [
+                            Icon(
+                              Icons.notifications_active,
+                              size: 14,
+                              color: eventColor.withValues(alpha: 0.7),
+                            ),
+                            const SizedBox(width: 2), // 間隔を少し狭める (4→2)
+                            Text(
+                              '${reminders.length}件',
+                              style: GoogleFonts.notoSans(
+                                fontSize: 11, // フォントサイズを少し小さく (12→11)
+                                color: eventColor.withValues(alpha: 0.7),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(width: 4),
-              Text(
-                '$startTime〜$endTime',
-                style: GoogleFonts.notoSans(
-                  fontSize: 13,
-                  color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
-                ),
-              ),
-              const SizedBox(width: 12),
-              if (event.quest) _buildQuestBadge(isDarkMode),
             ],
           ),
         ),
@@ -786,7 +860,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                       isDarkMode
                           ? Colors.white.withValues(alpha: 0.1)
                           : Colors.grey.withValues(alpha: 0.1),
-                  margin: const EdgeInsets.only(bottom: 16),
+                  margin: const EdgeInsets.symmetric(vertical: 16),
                 ),
 
                 _buildInfoSection(
@@ -826,7 +900,6 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                   isDarkMode,
                   eventColor,
                 ),
-
                 if (event.note.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   _buildInfoWithLink(
@@ -837,8 +910,147 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                     eventColor,
                   ),
                 ],
+
+                const SizedBox(height: 16),
+                // 通知設定ボタン
+                Center(
+                  child: OutlinedButton.icon(
+                    onPressed:
+                        () => _showReminderDialog(context, event, isDarkMode),
+                    icon: const Icon(Icons.notifications_active_outlined),
+                    label: const Text('リマインダーを設定'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: eventColor,
+                      side: BorderSide(color: eventColor),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 設定済みリマインダーの表示
+                _buildExistingReminders(context, event, isDarkMode, eventColor),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // リマインダー設定ダイアログを表示
+  void _showReminderDialog(BuildContext context, Event event, bool isDarkMode) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => ReminderDialog(event: event, isDarkMode: isDarkMode),
+    );
+  }
+
+  // 設定済みリマインダーを表示するウィジェット
+  Widget _buildExistingReminders(
+    BuildContext context,
+    Event event,
+    bool isDarkMode,
+    Color eventColor,
+  ) {
+    return Consumer(
+      builder: (context, ref, child) {
+        final reminders =
+            ref
+                .watch(eventReminderProvider)
+                .where((r) => r.eventId == event.id)
+                .toList();
+
+        if (reminders.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
+            Text(
+              '設定済みリマインダー',
+              style: GoogleFonts.notoSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+              ),
+            ),
+            const SizedBox(height: 8),
+            ...reminders.map(
+              (reminder) => _buildReminderItem(
+                context,
+                reminder,
+                isDarkMode,
+                eventColor,
+                ref,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 設定済みリマインダー項目
+  Widget _buildReminderItem(
+    BuildContext context,
+    EventReminder reminder,
+    bool isDarkMode,
+    Color eventColor,
+    WidgetRef ref,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: eventColor.withValues(alpha: isDarkMode ? 0.15 : 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: eventColor.withValues(alpha: isDarkMode ? 0.3 : 0.2),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.notifications,
+            size: 16,
+            color: eventColor.withValues(alpha: isDarkMode ? 0.8 : 1.0),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              reminder.reminderTime.label,
+              style: GoogleFonts.notoSans(
+                fontSize: 13,
+                color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 16),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            onPressed: () {
+              ref
+                  .read(eventReminderProvider.notifier)
+                  .removeReminder(reminder.eventId, reminder.reminderTime);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('リマインダーを削除しました'),
+                  backgroundColor: Colors.red[700],
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
           ),
         ],
       ),
