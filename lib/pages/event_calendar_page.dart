@@ -180,7 +180,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
               decoration: BoxDecoration(
                 color:
                     isDarkMode
-                        ? Colors.black.withValues(alpha: .2)
+                        ? Colors.black.withValues(alpha: 0.2)
                         : Colors.white.withValues(alpha: 0.8),
                 border: Border(
                   bottom: BorderSide(

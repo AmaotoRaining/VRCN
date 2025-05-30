@@ -132,6 +132,17 @@ class AppDrawer extends ConsumerWidget {
                                 Navigator.pop(context);
                               },
                             ),
+                            // _MenuItem(
+                            //   icon: Icons.control_camera,
+                            //   title: 'OSCコントローラー',
+                            //   isSelected: GoRouterState.of(
+                            //     context,
+                            //   ).uri.path.startsWith('/osc'),
+                            //   onTap: () {
+                            //     context.push('/osc');
+                            //     Navigator.pop(context);
+                            //   },
+                            // ),
                           ],
                         ),
 

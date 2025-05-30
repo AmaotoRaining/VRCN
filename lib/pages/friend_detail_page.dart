@@ -425,6 +425,11 @@ class FriendDetailPage extends ConsumerWidget {
             ],
           ),
         ),
+        // Pronouns表示を追加
+        if (user.pronouns != null && user.pronouns!.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          _buildPronouns(user.pronouns!, statusColor),
+        ],
         const SizedBox(height: 8),
         if (user.statusDescription.isNotEmpty)
           _buildStatusDescription(user, statusColor),
@@ -1058,4 +1063,32 @@ class FriendDetailPage extends ConsumerWidget {
       // refコンテキストの代わりに現在のBuildContextを使用
     }
   }
+}
+
+// Pronouns表示用のウィジェット
+Widget _buildPronouns(String pronouns, Color statusColor) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+    decoration: BoxDecoration(
+      color: Colors.black26,
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(
+        color: Colors.purple.shade300, // pronouns用の色
+        width: 1.5,
+      ),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          pronouns,
+          style: GoogleFonts.notoSans(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
+        ),
+      ],
+    ),
+  );
 }

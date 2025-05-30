@@ -15,7 +15,6 @@ import 'package:vrchat/utils/user_type_helpers.dart';
 import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/info_card.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
-import 'package:vrchat/widgets/profile_edit_sheet.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
@@ -91,7 +90,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
             data:
                 (user) => IconButton(
                   icon: const Icon(Icons.edit_outlined),
-                  onPressed: () async {
+                  onPressed: () {
                     // 編集前に最新情報を取得
                     ref.invalidate(currentUserProvider);
 
@@ -105,46 +104,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                       );
                     }
 
-                    // 最新のユーザー情報を待機
-                    final updatedUser = await ref.read(
-                      currentUserProvider.future,
-                    );
-
                     if (!context.mounted) return;
-
-                    // 最新の情報で編集シートを表示
-                    final result = await showModalBottomSheet<bool>(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      enableDrag: true,
-                      isDismissible: true,
-                      builder: (context) {
-                        return ProfileEditSheet(user: updatedUser);
-                      },
-                    );
-
-                    // プロフィールが更新されたら、情報を再取得
-                    if (result == true) {
-                      // ローディングインジケータを表示
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('プロフィール情報を更新中...'),
-                            duration: Duration(milliseconds: 1000),
-                          ),
-                        );
-                      }
-
-                      // 更新処理を待機
-                      await _refreshProfile();
-
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('プロフィールを更新しました')),
-                        );
-                      }
-                    }
                   },
                 ),
             loading: () => const SizedBox.shrink(),

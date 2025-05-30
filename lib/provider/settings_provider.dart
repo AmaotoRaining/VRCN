@@ -20,6 +20,7 @@ enum AppIconType {
   ray,
   hare,
   aihuru,
+  rea,
 }
 
 // アイコン名のマッピング
@@ -32,6 +33,7 @@ Map<AppIconType, String> appIconNameMap = {
   AppIconType.ray: 'ray',
   AppIconType.hare: 'hare',
   AppIconType.aihuru: 'aihuru',
+  AppIconType.rea: 'rea',
 };
 
 // 設定データモデル
