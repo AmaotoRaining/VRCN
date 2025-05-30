@@ -9,9 +9,11 @@ import 'package:http/http.dart' as http;
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vrchat/provider/event_filter_provider.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/widgets/error_container.dart';
+import 'package:vrchat/widgets/event_filter_sheet.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 
 // イベントデータを取得するためのプロバイダー
@@ -144,6 +146,96 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
     }
   }
 
+  // フィルタリングされたイベントリストを取得するメソッド
+  List<Event> _getFilteredEvents(List<Event> events, EventFilter filter) {
+    return events.where((event) {
+      // 日付フィルター
+      if (filter.startDate != null) {
+        final eventDate = DateTime(
+          event.start.year,
+          event.start.month,
+          event.start.day,
+        );
+        final filterDate = DateTime(
+          filter.startDate!.year,
+          filter.startDate!.month,
+          filter.startDate!.day,
+        );
+        if (eventDate.isBefore(filterDate)) return false;
+      }
+
+      if (filter.endDate != null) {
+        final eventDate = DateTime(
+          event.start.year,
+          event.start.month,
+          event.start.day,
+        );
+        final filterDate = DateTime(
+          filter.endDate!.year,
+          filter.endDate!.month,
+          filter.endDate!.day,
+        );
+        if (eventDate.isAfter(filterDate)) return false;
+      }
+
+      // 時間フィルター
+      if (filter.startTime != null) {
+        final eventTime = TimeOfDay.fromDateTime(event.start);
+        final minutes1 = eventTime.hour * 60 + eventTime.minute;
+        final minutes2 = filter.startTime!.hour * 60 + filter.startTime!.minute;
+        if (minutes1 < minutes2) return false;
+      }
+
+      if (filter.endTime != null) {
+        final eventTime = TimeOfDay.fromDateTime(event.start);
+        final minutes1 = eventTime.hour * 60 + eventTime.minute;
+        final minutes2 = filter.endTime!.hour * 60 + filter.endTime!.minute;
+        if (minutes1 > minutes2) return false;
+      }
+
+      // キーワード検索
+      if (filter.searchQuery.isNotEmpty) {
+        final query = filter.searchQuery.toLowerCase();
+        final title = event.title.toLowerCase();
+        final body = event.body.toLowerCase();
+        final author = event.author.toLowerCase();
+
+        if (!title.contains(query) &&
+            !body.contains(query) &&
+            !author.contains(query)) {
+          return false;
+        }
+      }
+
+      // ジャンルフィルター
+      if (filter.selectedGenres.isNotEmpty) {
+        if (!event.genres.any(
+          (genre) => filter.selectedGenres.contains(genre),
+        )) {
+          return false;
+        }
+      }
+
+      return true;
+    }).toList();
+  }
+
+  // フィルターUIを表示するダイアログを追加
+  void _showFilterDialog(
+    BuildContext context,
+    bool isDarkMode,
+    Map<String, int> genres,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) =>
+              FilterBottomSheet(isDarkMode: isDarkMode, genres: genres),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final eventDataAsync = ref.watch(eventDataProvider);
@@ -195,7 +287,27 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
           ),
         ),
         actions: [
-          // リフレッシュボタン
+          // フィルターボタン
+          IconButton(
+            icon: const Icon(Icons.filter_list_rounded),
+            color:
+                _isRefreshing
+                    ? Colors.grey
+                    : isDarkMode
+                    ? Colors.white
+                    : Colors.black87,
+            onPressed:
+                _isRefreshing || !eventDataAsync.hasValue
+                    ? null
+                    : () => _showFilterDialog(
+                      context,
+                      isDarkMode,
+                      eventDataAsync.value!.genres,
+                    ),
+            tooltip: 'イベントを絞り込む',
+          ),
+
+          // リフレッシュボタン（既存のコード）
           AnimatedBuilder(
             animation: _animationController,
             builder: (context, child) {
@@ -206,12 +318,13 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                     Icons.refresh_rounded,
                     color:
                         _isRefreshing
-                            ? accentColor
+                            ? Colors.grey
                             : isDarkMode
                             ? Colors.white
                             : Colors.black87,
                   ),
                   onPressed: _isRefreshing ? null : _refreshEvents,
+                  tooltip: 'イベント情報を更新',
                 ),
               );
             },
@@ -251,6 +364,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
     );
   }
 
+  // _buildEventListメソッドを修正してフィルター適用
   Widget _buildEventList(
     BuildContext context,
     EventData eventData,
@@ -258,11 +372,17 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
     Color accentColor,
     Color secondaryColor,
   ) {
-    // イベントを日付ごとにグループ化
+    // フィルターを取得
+    final filter = ref.watch(eventFilterProvider);
+
+    // イベントにフィルターを適用
+    final filteredEvents = _getFilteredEvents(eventData.events, filter);
+
+    // 日付ごとにグループ化
     final eventsByDate = <String, List<Event>>{};
     final dateFormat = DateFormat('yyyy-MM-dd');
 
-    for (final event in eventData.events) {
+    for (final event in filteredEvents) {
       final dateKey = dateFormat.format(event.start);
       if (!eventsByDate.containsKey(dateKey)) {
         eventsByDate[dateKey] = [];
@@ -273,158 +393,120 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
     // 日付でソート
     final sortedDates = eventsByDate.keys.toList()..sort();
 
+    // フィルターが適用されているかのステータス表示
+    final hasActiveFilter =
+        filter.startDate != null ||
+        filter.endDate != null ||
+        filter.startTime != null ||
+        filter.endTime != null ||
+        filter.searchQuery.isNotEmpty ||
+        filter.selectedGenres.isNotEmpty;
+
     return Column(
       children: [
-        _buildGenreSummary(eventData.genres, isDarkMode, accentColor)
-            .animate()
-            .fadeIn(duration: const Duration(milliseconds: 600))
-            .slideY(begin: -0.2, end: 0, curve: Curves.easeOutQuad),
-
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.only(bottom: 20),
-            physics: const BouncingScrollPhysics(),
-            itemCount: sortedDates.length,
-            itemBuilder: (context, index) {
-              final dateKey = sortedDates[index];
-              final events = eventsByDate[dateKey]!;
-
-              // 日付ごとのイベントを時間順にソート
-              events.sort((a, b) => a.start.compareTo(b.start));
-
-              return _buildDateSection(
-                context,
-                dateKey,
-                events,
-                isDarkMode,
-                accentColor,
-                secondaryColor,
-                index,
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGenreSummary(
-    Map<String, int> genres,
-    bool isDarkMode,
-    Color accentColor,
-  ) {
-    final sortedGenres =
-        genres.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      decoration: BoxDecoration(
-        color: isDarkMode ? Colors.black.withValues(alpha: 0.3) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-        border: Border.all(
-          color:
-              isDarkMode
-                  ? Colors.white.withValues(alpha: 0.1)
-                  : Colors.grey.withValues(alpha: 0.2),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12.0),
+        // フィルター状態バー
+        if (hasActiveFilter)
+          Container(
+            margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color:
+                  isDarkMode
+                      ? Colors.blue.withValues(alpha: 0.2)
+                      : Colors.blue.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color:
+                    isDarkMode
+                        ? Colors.blue.withValues(alpha: 0.3)
+                        : Colors.blue.withValues(alpha: 0.2),
+              ),
+            ),
             child: Row(
               children: [
-                Icon(Icons.bar_chart_rounded, color: accentColor, size: 20),
+                const Icon(Icons.filter_list, size: 18, color: Colors.blue),
                 const SizedBox(width: 8),
-                Text(
-                  'ジャンル別イベント数',
-                  style: GoogleFonts.notoSans(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: isDarkMode ? Colors.white : Colors.black87,
+                Expanded(
+                  child: Text(
+                    'フィルター適用中（${filteredEvents.length}件）',
+                    style: GoogleFonts.notoSans(
+                      fontSize: 14,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed:
+                      () => ref.read(eventFilterProvider.notifier).clearAll(),
+                  child: Text(
+                    'クリア',
+                    style: GoogleFonts.notoSans(
+                      fontSize: 14,
+                      color: Colors.blue,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children:
-                sortedGenres.take(10).map((entry) {
-                  // ジャンルごとに異なる色を割り当てる
-                  final color = _getGenreColor(
-                    entry.key,
-                    accentColor,
-                    isDarkMode,
-                  );
+        // イベントリスト
+        if (sortedDates.isEmpty)
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.event_busy,
+                    size: 64,
+                    color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '条件に一致するイベントがありません',
+                    style: GoogleFonts.notoSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed:
+                        () => ref.read(eventFilterProvider.notifier).clearAll(),
+                    icon: const Icon(Icons.filter_list_off),
+                    label: const Text('フィルターをクリア'),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.only(bottom: 20),
+              physics: const BouncingScrollPhysics(),
+              itemCount: sortedDates.length,
+              itemBuilder: (context, index) {
+                final dateKey = sortedDates[index];
+                final events = eventsByDate[dateKey]!;
 
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: isDarkMode ? 0.2 : 0.1),
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(
-                        color: color.withValues(alpha: 0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          entry.key,
-                          style: GoogleFonts.notoSans(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 12,
-                            color:
-                                isDarkMode
-                                    ? color.withValues(alpha: 0.9)
-                                    : color,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '${entry.value}',
-                            style: GoogleFonts.notoSans(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 10,
-                              color:
-                                  isDarkMode
-                                      ? color.withValues(alpha: 0.9)
-                                      : color,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
+                // 日付ごとのイベントを時間順にソート
+                events.sort((a, b) => a.start.compareTo(b.start));
+
+                return _buildDateSection(
+                  context,
+                  dateKey,
+                  events,
+                  isDarkMode,
+                  accentColor,
+                  secondaryColor,
+                  index,
+                );
+              },
+            ),
           ),
-        ],
-      ),
+      ],
     );
   }
 

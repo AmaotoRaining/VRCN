@@ -43,7 +43,6 @@ class VRChatNavigationObserver extends NavigatorObserver {
       index = 2;
     }
 
-    // ビルド中に状態更新が起きないように遅延実行
     Future.microtask(() {
       navigationController.state = index;
     });

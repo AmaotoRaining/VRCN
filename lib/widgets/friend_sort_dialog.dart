@@ -50,7 +50,6 @@ void showFriendSortOptions(BuildContext context, WidgetRef ref) {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // フィルターセクションのヘッダー
                         Padding(
                           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                           child: Row(
