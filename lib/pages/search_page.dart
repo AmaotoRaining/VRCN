@@ -48,7 +48,6 @@ class SearchPageState extends ConsumerState<SearchPage>
       () => _onSearchChanged(_searchController.text),
     );
 
-    // タブ変更時の処理を追加
     _tabController.addListener(_onTabChanged);
   }
 
@@ -63,7 +62,6 @@ class SearchPageState extends ConsumerState<SearchPage>
     super.dispose();
   }
 
-  // タブ変更時の処理
   void _onTabChanged() {
     setState(() {});
   }

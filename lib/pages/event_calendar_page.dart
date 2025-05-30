@@ -241,7 +241,14 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
   @override
   Widget build(BuildContext context) {
     final eventDataAsync = ref.watch(eventDataProvider);
-    final isDarkMode = ref.watch(themeModeProvider) == ThemeMode.dark;
+    final themeMode = ref.watch(themeModeProvider);
+
+    // テーマモードに基づいてダークモードかどうかを判定
+    final isDarkMode = switch (themeMode) {
+      ThemeMode.dark => true,
+      ThemeMode.light => false,
+      ThemeMode.system => Theme.of(context).brightness == Brightness.dark,
+    };
 
     // 背景グラデーション
     final backgroundColor =
