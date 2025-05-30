@@ -92,7 +92,7 @@ class CreditsPage extends StatelessWidget {
                   credits: [
                     CreditItem(
                       name: 'annobu',
-                      role: 'のっぶのお店 店長',
+                      role: '店長',
                       icon: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
                         child: Image.asset('assets/images/annobu@3x.png'),
@@ -146,6 +146,30 @@ class CreditsPage extends StatelessWidget {
                         child: Image.asset('assets/images/aihuru@3x.png'),
                       ),
                     ),
+                    CreditItem(
+                      name: 'Rea',
+                      role: 'ここはひとつ',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/rea@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'ますかわ',
+                      role: 'ぼくせいだいすきだからねー',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/masukawa@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'Abuki',
+                      role: '緑の窓口',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/abuki@3x.png'),
+                      ),
+                    ),
                   ],
                   isDarkMode: isDarkMode,
                   delay: 0.2,
@@ -182,6 +206,21 @@ class CreditsPage extends StatelessWidget {
                         ),
                       ),
                     ),
+                    CreditItem(
+                      name: 'あのめあ',
+                      role: 'あのめあちゃん買え',
+                      icon: const CircleAvatar(
+                        backgroundImage: NetworkImage(
+                          'https://booth.pximg.net/9c55fea2-2854-4e53-9a97-6c2c086c37c9/i/5020157/25c1f1fa-4929-4a6c-a424-ede13c90a5b9.png',
+                        ),
+                      ),
+                      onTap: () {
+                        launchUrl(
+                          Uri.parse('https://booth.pm/ja/items/5020157'),
+                        );
+                      },
+                    ),
+
                     CreditItem(
                       name: 'あのめあ ﾁｬﾝSDイラスト',
                       role: 'ローディングアニメーション',
