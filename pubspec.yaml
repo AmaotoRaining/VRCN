@@ -97,7 +97,7 @@ flutter:
       # iOS
       - debug
       # Android
-      - dev
+      # - dev
 
 dependency_overrides:
   vrchat_dart_generated:

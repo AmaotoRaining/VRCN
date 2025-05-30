@@ -426,9 +426,9 @@ class FriendDetailPage extends ConsumerWidget {
           ),
         ),
         // Pronouns表示を追加
-        if (user.pronouns != null && user.pronouns!.isNotEmpty) ...[
+        if (user.pronouns.isNotEmpty) ...[
           const SizedBox(height: 8),
-          _buildPronouns(user.pronouns!, statusColor),
+          _buildPronouns(user.pronouns, statusColor),
         ],
         const SizedBox(height: 8),
         if (user.statusDescription.isNotEmpty)

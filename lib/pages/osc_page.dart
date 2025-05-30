@@ -306,7 +306,7 @@ class _OscPageState extends ConsumerState<OscPage> {
       socket.close();
     } catch (e) {
       debugPrint('OSC送信エラー: $e');
-      throw e;
+      rethrow;
     }
   }
 
