@@ -121,6 +121,17 @@ class AppDrawer extends ConsumerWidget {
                                 Navigator.pop(context);
                               },
                             ),
+                            _MenuItem(
+                              icon: Icons.calendar_month,
+                              title: 'イベントカレンダー',
+                              isSelected: GoRouterState.of(
+                                context,
+                              ).uri.path.startsWith('/event_calendar'),
+                              onTap: () {
+                                context.push('/event_calendar');
+                                Navigator.pop(context);
+                              },
+                            ),
                           ],
                         ),
 

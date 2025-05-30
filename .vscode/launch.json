@@ -30,6 +30,15 @@
       "flutterMode": "debug",
       "deviceId": "emulator-5554",
       "args": ["--flavor", "dev"]
+    },
+    {
+      "name": "Production Androidエミュ",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "flutterMode": "release",
+      "deviceId": "emulator-5554",
+      "args": ["--flavor", "production"]
     }
   ]
 }

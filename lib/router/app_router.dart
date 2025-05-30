@@ -8,6 +8,7 @@ import 'package:vrchat/analytics_repository.dart';
 import 'package:vrchat/pages/avatar_detail_page.dart';
 import 'package:vrchat/pages/avatars_page.dart';
 import 'package:vrchat/pages/credits_page.dart';
+import 'package:vrchat/pages/event_calendar_page.dart';
 import 'package:vrchat/pages/favorites_page.dart';
 import 'package:vrchat/pages/friend_detail_page.dart';
 import 'package:vrchat/pages/friends_page.dart';
@@ -305,6 +306,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           _setCurrentScreen(ref, 'お気に入り画面');
           return const FavoritesPage();
+        },
+      ),
+      GoRoute(
+        path: '/event_calendar',
+        name: 'event_calendar',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'イベントカレンダー');
+          return const EventCalendarPage();
         },
       ),
       GoRoute(

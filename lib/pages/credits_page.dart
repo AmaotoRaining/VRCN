@@ -69,7 +69,7 @@ class CreditsPage extends StatelessWidget {
                   credits: [
                     CreditItem(
                       name: 'null_base',
-                      role: '人生つかれた',
+                      role: 'merry bad end',
                       icon: const CircleAvatar(
                         backgroundImage: AssetImage(
                           'assets/images/default.png',
@@ -112,6 +112,38 @@ class CreditsPage extends StatelessWidget {
                       icon: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
                         child: Image.asset('assets/images/miyamoto@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'Le0yuki',
+                      role: 'ピアス',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/le0yuki@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'Ray',
+                      role: '能面',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/ray@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'Hare',
+                      role: 'Abysswalker',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/hare@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'アイフル',
+                      role: 'ペアマッチング',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/aihuru@3x.png'),
                       ),
                     ),
                   ],

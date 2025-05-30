@@ -90,8 +90,9 @@ class VRChatApp extends ConsumerWidget {
       // アプリ開いたとき
       analytics.logAppOpen();
 
-      PackageInfo.fromPlatform().then((packageInfo) {
-        FirebaseAnalytics.instance.setUserProperty(
+      Future.microtask(() async {
+        final packageInfo = await PackageInfo.fromPlatform();
+        await FirebaseAnalytics.instance.setUserProperty(
           name: 'app_version',
           value: packageInfo.version,
         );

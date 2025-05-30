@@ -1,7 +1,7 @@
 name: vrchat
-description: "VRChat Tracker Application"
+description: "VRCN"
 publish_to: "none"
-version: 1.0.0
+version: 1.0.1
 
 environment:
   sdk: ^3.7.2
@@ -55,6 +55,8 @@ dependencies:
 
   # 共有
   share_plus: ^11.0.0
+
+  # アニメーション
   flutter_animate: ^4.5.2
 
   # グリッドレイアウト
