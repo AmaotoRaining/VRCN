@@ -4,6 +4,7 @@ import 'package:flutter/material.dart' hide Badge;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/provider/instance_provider.dart';
 import 'package:vrchat/provider/playermoderation_provider.dart';
@@ -926,6 +927,9 @@ class FriendDetailPage extends ConsumerWidget {
           case 'website':
             // VRChatウェブサイトでユーザーページを開く
             await _openUserWebsite(user.id);
+          case 'share':
+            // ユーザーのURLを共有
+            await _shareUserProfile(user);
         }
       },
       itemBuilder:
@@ -936,6 +940,12 @@ class FriendDetailPage extends ConsumerWidget {
               'website',
               'ウェブサイトで開く',
               Icons.public,
+              isDarkMode,
+            ),
+            _buildPopupMenuItem(
+              'share',
+              'プロフィールを共有',
+              Icons.share_outlined,
               isDarkMode,
             ),
           ],
@@ -1061,6 +1071,19 @@ class FriendDetailPage extends ConsumerWidget {
     } else {
       debugPrint('URLを開けませんでした: $url');
       // refコンテキストの代わりに現在のBuildContextを使用
+    }
+  }
+
+  // ユーザーのプロフィールを共有するメソッド
+  Future<void> _shareUserProfile(User user) async {
+    final url = 'https://vrchat.com/home/user/${user.id}';
+
+    try {
+      await SharePlus.instance.share(
+        ShareParams(uri: Uri.parse(url), title: user.displayName),
+      );
+    } catch (e) {
+      debugPrint('共有に失敗しました: $e');
     }
   }
 }

@@ -86,6 +86,15 @@
           <key>UIPrerenderedIcon</key>
           <false/>
         </dict>
+        <key>masukawa</key>
+        <dict>
+          <key>CFBundleIconFiles</key>
+          <array>
+            <string>masukawa</string>
+          </array>
+          <key>UIPrerenderedIcon</key>
+          <false/>
+        </dict>
       </dict>
       <key>CFBundleIcons~ipad</key>
       <dict>
@@ -145,18 +154,27 @@
         </dict>
         <key>aihuru</key>
         <dict>
-          <key>rea</key>
-          <dict>
-            <key>CFBundleIconFiles</key>
-            <array>
-              <string>rea</string>
-            </array>
-            <key>UIPrerenderedIcon</key>
-            <false/>
-          </dict>
           <key>CFBundleIconFiles</key>
           <array>
             <string>aihuru</string>
+          </array>
+          <key>UIPrerenderedIcon</key>
+          <false/>
+        </dict>
+        <key>rea</key>
+        <dict>
+          <key>CFBundleIconFiles</key>
+          <array>
+            <string>rea</string>
+          </array>
+          <key>UIPrerenderedIcon</key>
+          <false/>
+        </dict>
+        <key>masukawa</key>
+        <dict>
+          <key>CFBundleIconFiles</key>
+          <array>
+            <string>masukawa</string>
           </array>
           <key>UIPrerenderedIcon</key>
           <false/>

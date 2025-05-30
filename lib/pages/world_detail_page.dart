@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
@@ -149,6 +150,12 @@ class WorldDetailPage extends ConsumerWidget {
       ),
       // _buildAppBar メソッド内の actions 部分を修正
       actions: [
+        // 共有ボタン
+        IconButton(
+          icon: const Icon(Icons.share, color: Colors.white),
+          tooltip: 'このワールドを共有',
+          onPressed: () => _shareWorld(world),
+        ),
         PopupMenuButton<String>(
           icon: const Icon(Icons.more_vert, color: Colors.white),
           tooltip: 'アクション',
@@ -481,5 +488,18 @@ Future<void> _launchVRChatWebsite(String worldId) async {
     }
   } catch (e) {
     debugPrint('Error launching URL: $e');
+  }
+}
+
+// ワールド情報を共有するメソッド
+Future<void> _shareWorld(World world) async {
+  final url = 'https://vrchat.com/home/world/${world.id}';
+
+  try {
+    await SharePlus.instance.share(
+      ShareParams(uri: Uri.parse(url), subject: world.name),
+    );
+  } catch (e) {
+    debugPrint('共有中にエラーが発生しました: $e');
   }
 }
