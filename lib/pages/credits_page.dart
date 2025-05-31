@@ -139,8 +139,8 @@ class CreditsPage extends StatelessWidget {
                       ),
                     ),
                     CreditItem(
-                      name: 'アイフル',
-                      role: 'ペアマッチング',
+                      name: '愛が一番アイフル',
+                      role: 'ペアマッチング公式',
                       icon: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
                         child: Image.asset('assets/images/aihuru@3x.png'),
@@ -168,6 +168,14 @@ class CreditsPage extends StatelessWidget {
                       icon: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
                         child: Image.asset('assets/images/abuki@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'エナドリ',
+                      role: 'valorant',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/enadori@3x.png'),
                       ),
                     ),
                   ],

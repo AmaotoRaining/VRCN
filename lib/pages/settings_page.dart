@@ -103,13 +103,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 centerTitle: false,
-                expandedHeight: 120,
+                expandedHeight: 60,
                 flexibleSpace: FlexibleSpaceBar(
                   titlePadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
                   title: Text(
                     '設定',
                     style: GoogleFonts.notoSans(
-                      fontSize: 32,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: textColor,
                     ),
@@ -1239,6 +1239,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     label: 'AbukI',
                     assetPath: 'assets/images/abuki@3x.png',
                     isSelected: settings.appIcon == AppIconType.abuki,
+                    isDarkMode: isDarkMode,
+                    textColor: textColor,
+                  ),
+                  _buildAppIconOption(
+                    context: context,
+                    ref: ref,
+                    iconType: AppIconType.enadori,
+                    label: 'エナドリ',
+                    assetPath: 'assets/images/enadori@3x.png',
+                    isSelected: settings.appIcon == AppIconType.enadori,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
                   ),

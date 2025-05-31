@@ -21,8 +21,13 @@ final worldPaletteProvider = FutureProvider.family<PaletteGenerator?, String>((
   if (imageUrl.isEmpty) return null;
 
   try {
+    final headers = <String, String>{'User-Agent': 'VRChat/1.0'};
     final paletteGenerator = await PaletteGenerator.fromImageProvider(
-      CachedNetworkImageProvider(imageUrl, cacheManager: JsonCacheManager()),
+      CachedNetworkImageProvider(
+        imageUrl,
+        cacheManager: JsonCacheManager(),
+        headers: headers,
+      ),
       size: const Size(100, 100),
       maximumColorCount: 8,
     );

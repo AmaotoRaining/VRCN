@@ -12,6 +12,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vrchat/analytics_repository.dart';
 import 'package:vrchat/firebase_options.dart';
+import 'package:vrchat/provider/event_reminder_provider.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/provider/streaming_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
@@ -43,22 +44,8 @@ Future<void> main() async {
   // SharedPreferencesの初期化
   final prefs = await SharedPreferences.getInstance();
 
-  final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-  // Android通知権限のリクエスト
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin
-      >()
-      ?.requestNotificationsPermission();
-
   // 通知の初期化
-  await flutterLocalNotificationsPlugin.initialize(
-    const InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-      iOS: DarwinInitializationSettings(),
-    ),
-  );
+  final notifications = await initializeNotifications();
 
   // デバッグ用.envファイルの読み込み
   if (kDebugMode) {
@@ -67,12 +54,76 @@ Future<void> main() async {
     await dotenv.load(fileName: '.env.demo');
   }
 
-  runApp(
-    ProviderScope(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-      child: const VRChatApp(),
-    ),
+  // 前回表示された通知の履歴を確認
+  final launchDetails = await notifications.getNotificationAppLaunchDetails();
+  if (launchDetails != null && launchDetails.didNotificationLaunchApp) {
+    // 通知によってアプリが起動された場合
+    debugPrint('通知からアプリが起動されました');
+    if (launchDetails.notificationResponse != null) {
+      _handleNotificationResponse(launchDetails.notificationResponse!);
+    }
+  }
+
+  // ProviderContainerを正しく初期化
+  final container = ProviderContainer(
+    overrides: [
+      sharedPreferencesProvider.overrideWithValue(prefs),
+      localNotificationsProvider.overrideWithValue(notifications),
+    ],
   );
+
+  try {
+    await container.read(eventReminderProvider.notifier).cleanupOldReminders();
+  } catch (e) {
+    debugPrint('リマインダーのクリーンアップ中にエラーが発生しました: $e');
+  }
+
+  runApp(
+    UncontrolledProviderScope(container: container, child: const VRChatApp()),
+  );
+}
+
+/// 通知の初期化
+Future<FlutterLocalNotificationsPlugin> initializeNotifications() async {
+  final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  // Android設定
+  const initializationSettingsAndroid = AndroidInitializationSettings(
+    '@mipmap/ic_launcher',
+  );
+
+  // iOS設定
+  const initializationSettingsIOS = DarwinInitializationSettings(
+    requestAlertPermission: true,
+    requestBadgePermission: true,
+    requestSoundPermission: true,
+  );
+
+  // 初期化設定
+  const initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsIOS,
+  );
+
+  // 通知が届いたときやタップされたときの処理を設定
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: _handleNotificationResponse,
+  );
+
+  return flutterLocalNotificationsPlugin;
+}
+
+/// 通知応答ハンドラ
+void _handleNotificationResponse(NotificationResponse details) {
+  final notificationId = details.id ?? -1;
+  if (notificationId != -1) {
+    // プロバイダーコンテナを取得し、リマインダーを削除
+    final container = ProviderContainer();
+    container
+        .read(eventReminderProvider.notifier)
+        .removeReminderByNotificationId(notificationId);
+  }
 }
 
 class VRChatApp extends ConsumerWidget {

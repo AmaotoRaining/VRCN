@@ -10,11 +10,12 @@ import 'package:vrchat/provider/settings_provider.dart';
 
 // リマインダーの時間オプション
 enum ReminderTime {
+  atStart(0, '開始時間'),
+  fiveMinitues(5, '5分前'),
+  tenMinitues(10, '10分前'),
   fifteenMinutes(15, '15分前'),
   thirtyMinutes(30, '30分前'),
-  oneHour(60, '1時間前'),
-  threeHours(180, '3時間前'),
-  oneDay(1440, '1日前');
+  oneHour(60, '1時間前');
 
   final int minutes;
   final String label;
@@ -75,7 +76,16 @@ class EventReminderNotifier extends StateNotifier<List<EventReminder>> {
 
   // タイムゾーンの初期化
   void _initializeTimezone() {
-    tz_data.initializeTimeZones();
+    try {
+      tz_data.initializeTimeZones();
+      final tokyo = tz.getLocation('Asia/Tokyo');
+      tz.setLocalLocation(tokyo);
+      debugPrint('タイムゾーンを東京(JST)に設定しました');
+    } catch (e) {
+      debugPrint('タイムゾーン設定エラー: $e');
+      // 代替方法としてデフォルトのローカルタイムゾーンを使用
+      tz_data.initializeTimeZones();
+    }
   }
 
   // リマインダーをロード
@@ -91,8 +101,21 @@ class EventReminderNotifier extends StateNotifier<List<EventReminder>> {
     final validReminders =
         reminders.where((reminder) => reminder.eventTime.isAfter(now)).toList();
 
+    // 過去の通知（すでに表示された通知）は削除
+    for (final reminder in reminders) {
+      if (reminder.notificationTime.isBefore(now)) {
+        debugPrint(
+          '過去の通知を削除: 「${reminder.eventTitle}」${reminder.reminderTime.label}',
+        );
+        await notifications.cancel(reminder.notificationId);
+      }
+    }
+
     // 無効になった通知を削除
     if (validReminders.length != reminders.length) {
+      debugPrint(
+        '${reminders.length - validReminders.length}件の過去のリマインダーを削除しました',
+      );
       await _saveReminders(validReminders);
     }
 
@@ -159,6 +182,31 @@ class EventReminderNotifier extends StateNotifier<List<EventReminder>> {
     await _saveReminders(newState);
   }
 
+  // 通知IDからリマインダーを削除するメソッド
+  Future<void> removeReminderByNotificationId(int notificationId) async {
+    final reminderToRemove =
+        state
+            .where((reminder) => reminder.notificationId == notificationId)
+            .toList();
+
+    if (reminderToRemove.isEmpty) {
+      debugPrint('通知ID $notificationId に対応するリマインダーが見つかりませんでした');
+      return;
+    }
+
+    for (final reminder in reminderToRemove) {
+      debugPrint('通知表示: 「${reminder.eventTitle}」のリマインダーを削除します');
+      // 通知のキャンセルは不要（すでに表示されているため）
+
+      // 状態を更新
+      final newState =
+          state.where((r) => r.notificationId != notificationId).toList();
+
+      state = newState;
+      await _saveReminders(newState);
+    }
+  }
+
   // イベントの通知をスケジュール
   Future<void> _scheduleNotification(EventReminder reminder) async {
     final notificationTime = reminder.notificationTime;
@@ -170,7 +218,7 @@ class EventReminderNotifier extends StateNotifier<List<EventReminder>> {
     }
 
     try {
-      // 通知の詳細を設定
+      // 通知の詳細を設定（変更なし）
       const androidDetails = AndroidNotificationDetails(
         'event_reminder_channel',
         'イベントリマインダー',
@@ -198,23 +246,58 @@ class EventReminderNotifier extends StateNotifier<List<EventReminder>> {
         iOS: iosDetails,
       );
 
-      debugPrint(
-        '通知をスケジュール: 「${reminder.eventTitle}」${reminder.reminderTime.label} - ${notificationTime.toString()}',
+      // 日本時間として通知時間を設定（TimeZoneを明示的に指定）
+      final scheduledDate = _createScheduledLocalNotificationDateTime(
+        notificationTime,
       );
 
-      // サンプルコードに従って修正
+      debugPrint(
+        '通知をスケジュール: 「${reminder.eventTitle}」${reminder.reminderTime.label}',
+      );
+      debugPrint('設定時間: ${notificationTime.toString()}');
+      debugPrint('スケジュール時間: ${scheduledDate.toString()}');
+
+      // ここを修正：「〇〇前に始まります」→「〇〇後に始まります」
+      final timeLabel = _formatTimeToFutureLabel(reminder.reminderTime.minutes);
+
+      // _scheduleNotification メソッド内の通知テキスト部分
+      final String notificationTitle;
+      final String notificationBody;
+
+      if (reminder.reminderTime.minutes == 0) {
+        notificationTitle = 'イベント開始';
+        notificationBody = '「${reminder.eventTitle}」が今から始まります';
+      } else {
+        notificationTitle = 'イベント開始まもなく';
+        notificationBody = '「${reminder.eventTitle}」が$timeLabelに始まります';
+      }
+
       await notifications.zonedSchedule(
         reminder.notificationId,
-        'イベント開始まもなく',
-        '「${reminder.eventTitle}」が${reminder.reminderTime.label}に始まります',
-        tz.TZDateTime.from(notificationTime, tz.local),
+        notificationTitle,
+        notificationBody,
+        scheduledDate,
         notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: reminder.eventId,
       );
 
       debugPrint('通知スケジュール成功: ID=${reminder.notificationId}');
     } catch (e) {
       debugPrint('通知スケジュールエラー: $e');
+    }
+  }
+
+  // 分を「○○後」の形式に変換するヘルパーメソッド
+  String _formatTimeToFutureLabel(int minutes) {
+    if (minutes == 0) {
+      return 'まもなく'; // イベント開始時間の場合
+    } else if (minutes == 1440) {
+      return '1日後';
+    } else if (minutes >= 60 && minutes % 60 == 0) {
+      return '${minutes ~/ 60}時間後';
+    } else {
+      return '$minutes分後';
     }
   }
 
@@ -247,51 +330,55 @@ class EventReminderNotifier extends StateNotifier<List<EventReminder>> {
     }
   }
 
-  // テスト通知を即時送信するメソッド
-  Future<bool> sendImmediateTestNotification() async {
-    try {
-      // 基本的な通知設定
-      const androidDetails = AndroidNotificationDetails(
-        'test_channel',
-        'テスト通知',
-        channelDescription: 'デバッグ用のテスト通知',
-        importance: Importance.high,
-        priority: Priority.high,
-      );
+  Future<void> cleanupOldReminders() async {
+    // 過去の通知を全てチェック
+    final now = DateTime.now();
+    final oldReminders =
+        state
+            .where((reminder) => reminder.notificationTime.isBefore(now))
+            .toList();
 
-      const iosDetails = DarwinNotificationDetails(
-        presentAlert: true,
-        presentBadge: true,
-        presentSound: true,
-      );
+    if (oldReminders.isNotEmpty) {
+      debugPrint('${oldReminders.length}件の過去のリマインダーをクリーンアップします');
 
-      const notificationDetails = NotificationDetails(
-        android: androidDetails,
-        iOS: iosDetails,
-      );
+      // 通知をキャンセル
+      for (final reminder in oldReminders) {
+        await notifications.cancel(reminder.notificationId);
+      }
 
-      // 即時通知を送信
-      await notifications.show(
-        999999, // テスト用ID
-        'テスト通知',
-        'これはテスト通知です (${DateTime.timestamp().toString()})',
-        notificationDetails,
-      );
+      // 状態を更新
+      final newState =
+          state
+              .where((reminder) => reminder.notificationTime.isAfter(now))
+              .toList();
 
-      debugPrint('テスト通知を送信しました');
-      return true;
-    } catch (e) {
-      debugPrint('テスト通知エラー: $e');
-      return false;
+      state = newState;
+      await _saveReminders(newState);
     }
   }
+}
+
+// 通知スケジュール用の日本時間TZDateTimeを作成
+tz.TZDateTime _createScheduledLocalNotificationDateTime(DateTime dateTime) {
+  // 日本時間として扱い、TZDateTimeに変換
+  final scheduledDate = tz.TZDateTime(
+    tz.local,
+    dateTime.year,
+    dateTime.month,
+    dateTime.day,
+    dateTime.hour,
+    dateTime.minute,
+    dateTime.second,
+  );
+
+  return scheduledDate;
 }
 
 // プロバイダー
 final eventReminderProvider =
     StateNotifierProvider<EventReminderNotifier, List<EventReminder>>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      final notifications = FlutterLocalNotificationsPlugin();
+      final notifications = ref.watch(localNotificationsProvider);
       return EventReminderNotifier(prefs, notifications);
     });
 
@@ -300,3 +387,9 @@ int generateNotificationId(String eventId, ReminderTime reminderTime) {
   // 衝突しにくいようにハッシュとインデックスを組み合わせる
   return eventId.hashCode + reminderTime.index;
 }
+
+final localNotificationsProvider = Provider<FlutterLocalNotificationsPlugin>((
+  ref,
+) {
+  throw UnimplementedError('通知プラグインが初期化されていません');
+});

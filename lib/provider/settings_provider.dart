@@ -23,6 +23,7 @@ enum AppIconType {
   rea,
   masukawa,
   abuki,
+  enadori,
 }
 
 // アイコン名のマッピング
@@ -38,6 +39,7 @@ Map<AppIconType, String> appIconNameMap = {
   AppIconType.rea: 'rea',
   AppIconType.masukawa: 'masukawa',
   AppIconType.abuki: 'abuki',
+  AppIconType.enadori: 'enadori',
 };
 
 // 設定データモデル

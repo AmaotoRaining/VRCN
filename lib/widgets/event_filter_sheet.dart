@@ -806,7 +806,6 @@ class FilterBottomSheet extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ラベル
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -834,7 +833,6 @@ class FilterBottomSheet extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 4),
-              // 値 - オーバーフロー修正
               Row(
                 children: [
                   Icon(

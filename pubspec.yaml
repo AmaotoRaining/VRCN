@@ -80,6 +80,7 @@ dependencies:
 
   # Deeplink
   app_links: ^6.4.0
+
   timezone: ^0.10.1
 
 dev_dependencies:
