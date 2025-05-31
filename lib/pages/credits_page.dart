@@ -88,11 +88,11 @@ class CreditsPage extends StatelessWidget {
                 const SizedBox(height: 24),
                 _buildCreditSection(
                   context: context,
-                  title: '愉快なアイコン',
+                  title: '愉快なアイコンの人たち',
                   credits: [
                     CreditItem(
                       name: 'annobu',
-                      role: '店長',
+                      role: '君が代',
                       icon: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
                         child: Image.asset('assets/images/annobu@3x.png'),
@@ -108,7 +108,7 @@ class CreditsPage extends StatelessWidget {
                     ),
                     CreditItem(
                       name: 'Miyamoto_',
-                      role: 'いびき💤',
+                      role: 'オービスフラッシャー',
                       icon: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
                         child: Image.asset('assets/images/miyamoto@3x.png'),
@@ -176,6 +176,14 @@ class CreditsPage extends StatelessWidget {
                       icon: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
                         child: Image.asset('assets/images/enadori@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'Roize',
+                      role: 'いいね',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/roize@3x.png'),
                       ),
                     ),
                   ],

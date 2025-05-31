@@ -332,7 +332,7 @@ class EventReminderNotifier extends StateNotifier<List<EventReminder>> {
 
   Future<void> cleanupOldReminders() async {
     // 過去の通知を全てチェック
-    final now = DateTime.now();
+    final now = DateTime.timestamp();
     final oldReminders =
         state
             .where((reminder) => reminder.notificationTime.isBefore(now))

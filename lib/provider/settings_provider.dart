@@ -13,6 +13,7 @@ enum AppThemeMode {
 // アプリアイコンタイプ
 enum AppIconType {
   nullbase,
+  nullkalne,
   annobu,
   kazkiller,
   miyamoto,
@@ -24,11 +25,13 @@ enum AppIconType {
   masukawa,
   abuki,
   enadori,
+  roize,
 }
 
 // アイコン名のマッピング
 Map<AppIconType, String> appIconNameMap = {
   AppIconType.nullbase: 'default',
+  AppIconType.nullkalne: 'nullkalne',
   AppIconType.annobu: 'annobu',
   AppIconType.kazkiller: 'kazkiller',
   AppIconType.miyamoto: 'miyamoto',
@@ -40,6 +43,7 @@ Map<AppIconType, String> appIconNameMap = {
   AppIconType.masukawa: 'masukawa',
   AppIconType.abuki: 'abuki',
   AppIconType.enadori: 'enadori',
+  AppIconType.roize: 'roize',
 };
 
 // 設定データモデル

@@ -500,6 +500,17 @@ class AppDrawer extends ConsumerWidget {
 
                 const SizedBox(height: 2),
 
+                // 代名詞
+                Text(
+                  user.pronouns,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 14,
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                ),
+
+                const SizedBox(height: 2),
+
                 // ユーザーID
                 Text(
                   '@${user.username}',
