@@ -3,7 +3,6 @@ import 'package:flutter_dynamic_icon_plus/flutter_dynamic_icon_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// アプリテーマ設定の列挙型
 enum AppThemeMode {
   light, // ライトテーマ
   dark, // ダークテーマ
@@ -26,6 +25,7 @@ enum AppIconType {
   abuki,
   enadori,
   roize,
+  r4in,
 }
 
 // アイコン名のマッピング
@@ -44,6 +44,7 @@ Map<AppIconType, String> appIconNameMap = {
   AppIconType.abuki: 'abuki',
   AppIconType.enadori: 'enadori',
   AppIconType.roize: 'roize',
+  AppIconType.r4in: 'r4in',
 };
 
 // 設定データモデル
@@ -57,7 +58,7 @@ class AppSettings {
   final AppIconType appIcon;
   final String avatarSearchApiUrl;
   final bool allowNsfw;
-  final bool enableEventReminders; // 追加
+  final bool enableEventReminders;
 
   const AppSettings({
     this.themeMode = AppThemeMode.system,
@@ -68,7 +69,7 @@ class AppSettings {
     this.appIcon = AppIconType.nullbase,
     this.avatarSearchApiUrl = '',
     this.allowNsfw = false,
-    this.enableEventReminders = true, // デフォルトで有効
+    this.enableEventReminders = true,
   });
 
   // コピーと一部更新のためのメソッド
@@ -81,7 +82,7 @@ class AppSettings {
     AppIconType? appIcon,
     String? avatarSearchApiUrl,
     bool? allowNsfw,
-    bool? enableEventReminders, // 追加
+    bool? enableEventReminders,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -93,8 +94,7 @@ class AppSettings {
       appIcon: appIcon ?? this.appIcon,
       avatarSearchApiUrl: avatarSearchApiUrl ?? this.avatarSearchApiUrl,
       allowNsfw: allowNsfw ?? this.allowNsfw,
-      enableEventReminders:
-          enableEventReminders ?? this.enableEventReminders, // 追加
+      enableEventReminders: enableEventReminders ?? this.enableEventReminders,
     );
   }
 
@@ -172,9 +172,9 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
         notifyFriendOnline: notifyFriendOnline,
         maxFriendCache: maxFriendCache,
         appIcon: appIcon,
-        avatarSearchApiUrl: avatarSearchApiUrl, // 追加
+        avatarSearchApiUrl: avatarSearchApiUrl,
         allowNsfw: allowNsfw,
-        enableEventReminders: enableEventReminders, // 追加
+        enableEventReminders: enableEventReminders,
       );
     } catch (e) {
       // エラー時はデフォルト設定を使用

@@ -131,6 +131,15 @@
           <key>UIPrerenderedIcon</key>
           <false/>
         </dict>
+        <key>r4in</key>
+        <dict>
+          <key>CFBundleIconFiles</key>
+          <array>
+            <string>r4in</string>
+          </array>
+          <key>UIPrerenderedIcon</key>
+          <false/>
+        </dict>
       </dict>
       <key>CFBundleIcons~ipad</key>
       <dict>
@@ -247,6 +256,15 @@
           <key>CFBundleIconFiles</key>
           <array>
             <string>roize</string>
+          </array>
+          <key>UIPrerenderedIcon</key>
+          <false/>
+        </dict>
+        <key>r4in</key>
+        <dict>
+          <key>CFBundleIconFiles</key>
+          <array>
+            <string>r4in</string>
           </array>
           <key>UIPrerenderedIcon</key>
           <false/>

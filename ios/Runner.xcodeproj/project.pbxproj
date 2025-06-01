@@ -31,6 +31,10 @@
 		264B43EF2DEB7BF8000E555D /* nullkalne@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 264B43EC2DEB7BF8000E555D /* nullkalne@2x.png */; };
 		264B43F02DEB7BF8000E555D /* nullkalne@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 264B43ED2DEB7BF8000E555D /* nullkalne@3x.png */; };
 		264B43F12DEB7BF8000E555D /* nullkalne@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 264B43EC2DEB7BF8000E555D /* nullkalne@2x.png */; };
+		264B43F42DECB7B8000E555D /* r4in@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 264B43F32DECB7B8000E555D /* r4in@3x.png */; };
+		264B43F52DECB7B8000E555D /* r4in@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 264B43F22DECB7B8000E555D /* r4in@2x.png */; };
+		264B43F62DECB7B8000E555D /* r4in@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 264B43F32DECB7B8000E555D /* r4in@3x.png */; };
+		264B43F72DECB7B8000E555D /* r4in@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 264B43F22DECB7B8000E555D /* r4in@2x.png */; };
 		268F4BB62DC122750060165E /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 268F4BB52DC122750060165E /* InfoPlist.xcstrings */; };
 		26A305A72DE9595B00800CAD /* hare@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 26A305A62DE9595B00800CAD /* hare@2x.png */; };
 		26A305A82DE9595B00800CAD /* hare@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 26A305A62DE9595B00800CAD /* hare@2x.png */; };
@@ -102,6 +106,8 @@
 		264B43DB2DEB7A45000E555D /* roize@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "roize@3x.png"; sourceTree = "<group>"; };
 		264B43EC2DEB7BF8000E555D /* nullkalne@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "nullkalne@2x.png"; sourceTree = "<group>"; };
 		264B43ED2DEB7BF8000E555D /* nullkalne@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "nullkalne@3x.png"; sourceTree = "<group>"; };
+		264B43F22DECB7B8000E555D /* r4in@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "r4in@2x.png"; sourceTree = "<group>"; };
+		264B43F32DECB7B8000E555D /* r4in@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "r4in@3x.png"; sourceTree = "<group>"; };
 		268F4BB02DC113F20060165E /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Main.strings; sourceTree = "<group>"; };
 		268F4BB12DC113F20060165E /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		268F4BB52DC122750060165E /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
@@ -162,6 +168,8 @@
 		260FE9BC2DBFD92A00E1BDC5 /* Icons */ = {
 			isa = PBXGroup;
 			children = (
+				264B43F22DECB7B8000E555D /* r4in@2x.png */,
+				264B43F32DECB7B8000E555D /* r4in@3x.png */,
 				264B43DA2DEB7A45000E555D /* roize@2x.png */,
 				264B43EC2DEB7BF8000E555D /* nullkalne@2x.png */,
 				264B43ED2DEB7BF8000E555D /* nullkalne@3x.png */,
@@ -365,6 +373,8 @@
 			files = (
 				26A305A72DE9595B00800CAD /* hare@2x.png in Resources */,
 				26A305AE2DE9663F00800CAD /* aihuru@3x.png in Resources */,
+				264B43F62DECB7B8000E555D /* r4in@3x.png in Resources */,
+				264B43F72DECB7B8000E555D /* r4in@2x.png in Resources */,
 				26A305AF2DE9663F00800CAD /* aihuru@2x.png in Resources */,
 				26A305AB2DE9597300800CAD /* hare@3x.png in Resources */,
 				264B43CC2DE9903F000E555D /* masukawa@3x.png in Resources */,
@@ -398,6 +408,8 @@
 				264B43CA2DE9903F000E555D /* masukawa@3x.png in Resources */,
 				264B43F02DEB7BF8000E555D /* nullkalne@3x.png in Resources */,
 				264B43F12DEB7BF8000E555D /* nullkalne@2x.png in Resources */,
+				264B43F42DECB7B8000E555D /* r4in@3x.png in Resources */,
+				264B43F52DECB7B8000E555D /* r4in@2x.png in Resources */,
 				264B43CB2DE9903F000E555D /* masukawa@2x.png in Resources */,
 				260FE9C62DBFD9A800E1BDC5 /* kazkiller@2x.png in Resources */,
 				264B43D02DEA1BF4000E555D /* abuki@2x.png in Resources */,

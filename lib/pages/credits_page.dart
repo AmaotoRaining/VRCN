@@ -186,6 +186,14 @@ class CreditsPage extends StatelessWidget {
                         child: Image.asset('assets/images/roize@3x.png'),
                       ),
                     ),
+                    CreditItem(
+                      name: 'R4in',
+                      role: '私が1番可愛いからね〜',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/r4in@3x.png'),
+                      ),
+                    ),
                   ],
                   isDarkMode: isDarkMode,
                   delay: 0.2,

@@ -392,7 +392,7 @@ class AppDrawer extends ConsumerWidget {
         bottom: false,
         child: Column(
           children: [
-            // ユーザーアバター（大きめに表示）
+            // ユーザーアバター
             Center(
               child: Stack(
                 children: [

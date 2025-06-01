@@ -97,7 +97,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
           child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              // カスタムAppBar
               SliverAppBar(
                 floating: true,
                 backgroundColor: Colors.transparent,
@@ -129,7 +128,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 ),
               ),
 
-              // 設定リスト
               SliverList(
                 delegate: SliverChildListDelegate([
                   Padding(
@@ -209,7 +207,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                 _buildSwitchSetting(
                                   icon: Icons.warning_amber_outlined,
                                   iconColor: const Color(0xFFE76F51),
-                                  title: '不快なコンテンツを表示',
+                                  title: '検索機能を有効',
                                   subtitle:
                                       '検索結果に性的なコンテンツや暴力的なコンテンツが表示される可能性があります。',
                                   value: settings.allowNsfw,
@@ -1075,7 +1073,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
           );
         }
 
-        // サポートされている場合（snapshot.data == true）
+        // サポートされている場合
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1269,6 +1267,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     label: 'Roize',
                     assetPath: 'assets/images/roize@3x.png',
                     isSelected: settings.appIcon == AppIconType.roize,
+                    isDarkMode: isDarkMode,
+                    textColor: textColor,
+                  ),
+                  _buildAppIconOption(
+                    context: context,
+                    ref: ref,
+                    iconType: AppIconType.r4in,
+                    label: 'R4in',
+                    assetPath: 'assets/images/r4in@3x.png',
+                    isSelected: settings.appIcon == AppIconType.r4in,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
                   ),

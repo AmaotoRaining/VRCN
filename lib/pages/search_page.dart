@@ -6,6 +6,7 @@ import 'package:vrchat/pages/tabs/group_search_tab.dart';
 import 'package:vrchat/pages/tabs/user_search_tab.dart';
 import 'package:vrchat/pages/tabs/world_search_tab.dart';
 import 'package:vrchat/provider/search_providers.dart';
+import 'package:vrchat/provider/settings_provider.dart';
 
 class SearchPage extends ConsumerStatefulWidget {
   const SearchPage({super.key});
@@ -43,11 +44,32 @@ class SearchPageState extends ConsumerState<SearchPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
     _searchController.addListener(
       () => _onSearchChanged(_searchController.text),
     );
+  }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _initTabController();
+  }
+
+  void _initTabController() {
+    // avatarSearchApiUrlが設定されているかチェック
+    final hasAvatarApiUrl =
+        ref.read(settingsProvider).avatarSearchApiUrl.isNotEmpty;
+    final tabCount = hasAvatarApiUrl ? 4 : 3; // APIが設定されていない場合は3タブのみ
+
+    try {
+      _tabController.removeListener(_onTabChanged);
+      _tabController.dispose();
+    } catch (e) {
+      debugPrint('TabController未初期化: $e');
+    }
+
+    // 新しいコントローラーを作成
+    _tabController = TabController(length: tabCount, vsync: this);
     _tabController.addListener(_onTabChanged);
   }
 
@@ -91,6 +113,15 @@ class SearchPageState extends ConsumerState<SearchPage>
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = Theme.of(context).colorScheme.primary;
+    final settings = ref.watch(settingsProvider);
+    final hasAvatarApiUrl = settings.avatarSearchApiUrl.isNotEmpty;
+
+    ref.listen<AppSettings>(settingsProvider, (previous, next) {
+      if (previous?.avatarSearchApiUrl.isEmpty !=
+          next.avatarSearchApiUrl.isEmpty) {
+        _initTabController();
+      }
+    });
 
     return Scaffold(
       body: Column(
@@ -112,11 +143,11 @@ class SearchPageState extends ConsumerState<SearchPage>
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
               ),
-              tabs: const [
-                Tab(text: 'ユーザー'),
-                Tab(text: 'ワールド'),
-                Tab(text: 'アバター'),
-                Tab(text: 'グループ'),
+              tabs: [
+                const Tab(text: 'ユーザー'),
+                const Tab(text: 'ワールド'),
+                if (hasAvatarApiUrl) const Tab(text: 'アバター'),
+                const Tab(text: 'グループ'),
               ],
             ),
           ),
@@ -125,11 +156,11 @@ class SearchPageState extends ConsumerState<SearchPage>
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: const [
-                UserSearchTab(),
-                WorldSearchTab(),
-                AvatarSearchTab(),
-                GroupSearchTab(),
+              children: [
+                const UserSearchTab(),
+                const WorldSearchTab(),
+                if (hasAvatarApiUrl) const AvatarSearchTab(),
+                const GroupSearchTab(),
               ],
             ),
           ),

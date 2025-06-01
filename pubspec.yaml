@@ -10,6 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_localizations:
+     sdk: flutter
+
   # VRChat API
   vrchat_dart: ^3.6.0
 
@@ -51,6 +54,7 @@ dependencies:
   # 画面遷移
   go_router: ^15.1.1
 
+  # フォーマット
   intl: ^0.20.2
 
   # 共有
@@ -93,6 +97,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  generate: true
 
   assets:
     - path: assets/images/
