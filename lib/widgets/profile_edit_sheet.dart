@@ -766,11 +766,14 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
 
   // 確認ダイアログを表示する関数
   Future<bool> _showDiscardChangesDialog() async {
+    if (!mounted) return false;
+
     final result = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder:
-          (context) => AlertDialog(
+          (dialogContext) => AlertDialog(
+            // contextではなくdialogContextを使用
             title: Row(
               children: [
                 Icon(Icons.warning_amber_rounded, color: Colors.amber[700]),
@@ -783,20 +786,28 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
               borderRadius: BorderRadius.circular(20),
             ),
             backgroundColor:
-                Theme.of(context).brightness == Brightness.dark
+                Theme.of(dialogContext).brightness ==
+                        Brightness
+                            .dark // dialogContextを使用
                     ? Colors.grey[850]
                     : Colors.white,
             elevation: 8,
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(context).pop(false), // キャンセル
+                onPressed:
+                    () => Navigator.of(
+                      dialogContext,
+                    ).pop(false), // dialogContextを使用
                 child: const Text(
                   'キャンセル',
                   style: TextStyle(color: AppTheme.primaryColor),
                 ),
               ),
               ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(true), // 破棄して閉じる
+                onPressed:
+                    () => Navigator.of(
+                      dialogContext,
+                    ).pop(true), // dialogContextを使用
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red[700],
                   foregroundColor: Colors.white,
@@ -810,7 +821,6 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
           ),
     );
 
-    // nullの場合はダイアログ外をタップして閉じた場合（破棄しない）
     return result ?? false;
   }
 }

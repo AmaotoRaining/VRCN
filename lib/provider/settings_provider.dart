@@ -3,22 +3,48 @@ import 'package:flutter_dynamic_icon_plus/flutter_dynamic_icon_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// アプリテーマ設定の列挙型
 enum AppThemeMode {
   light, // ライトテーマ
   dark, // ダークテーマ
   system, // システム設定に従う
 }
 
-// アプリアイコンタイプの列挙型
-enum AppIconType { nullbase, annobu, kazkiller, miyamoto }
+// アプリアイコンタイプ
+enum AppIconType {
+  nullbase,
+  nullkalne,
+  annobu,
+  kazkiller,
+  miyamoto,
+  le0yuki,
+  ray,
+  hare,
+  aihuru,
+  rea,
+  masukawa,
+  abuki,
+  enadori,
+  roize,
+  r4in,
+}
 
-// アイコン名のマッピング (iOS/Androidプラットフォーム用)
+// アイコン名のマッピング
 Map<AppIconType, String> appIconNameMap = {
   AppIconType.nullbase: 'default',
+  AppIconType.nullkalne: 'nullkalne',
   AppIconType.annobu: 'annobu',
   AppIconType.kazkiller: 'kazkiller',
   AppIconType.miyamoto: 'miyamoto',
+  AppIconType.le0yuki: 'le0yuki',
+  AppIconType.ray: 'ray',
+  AppIconType.hare: 'hare',
+  AppIconType.aihuru: 'aihuru',
+  AppIconType.rea: 'rea',
+  AppIconType.masukawa: 'masukawa',
+  AppIconType.abuki: 'abuki',
+  AppIconType.enadori: 'enadori',
+  AppIconType.roize: 'roize',
+  AppIconType.r4in: 'r4in',
 };
 
 // 設定データモデル
@@ -30,6 +56,9 @@ class AppSettings {
   final bool notifyFriendOnline;
   final int maxFriendCache;
   final AppIconType appIcon;
+  final String avatarSearchApiUrl;
+  final bool allowNsfw;
+  final bool enableEventReminders;
 
   const AppSettings({
     this.themeMode = AppThemeMode.system,
@@ -38,6 +67,9 @@ class AppSettings {
     this.notifyFriendOnline = true,
     this.maxFriendCache = 500,
     this.appIcon = AppIconType.nullbase,
+    this.avatarSearchApiUrl = '',
+    this.allowNsfw = false,
+    this.enableEventReminders = true,
   });
 
   // コピーと一部更新のためのメソッド
@@ -48,6 +80,9 @@ class AppSettings {
     bool? notifyFriendOnline,
     int? maxFriendCache,
     AppIconType? appIcon,
+    String? avatarSearchApiUrl,
+    bool? allowNsfw,
+    bool? enableEventReminders,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -57,6 +92,9 @@ class AppSettings {
       notifyFriendOnline: notifyFriendOnline ?? this.notifyFriendOnline,
       maxFriendCache: maxFriendCache ?? this.maxFriendCache,
       appIcon: appIcon ?? this.appIcon,
+      avatarSearchApiUrl: avatarSearchApiUrl ?? this.avatarSearchApiUrl,
+      allowNsfw: allowNsfw ?? this.allowNsfw,
+      enableEventReminders: enableEventReminders ?? this.enableEventReminders,
     );
   }
 
@@ -69,6 +107,8 @@ class AppSettings {
       'notifyFriendOnline': notifyFriendOnline,
       'maxFriendCache': maxFriendCache,
       'appIcon': appIcon.index,
+      'avatarSearchApiUrl': avatarSearchApiUrl,
+      'allowNsfw': allowNsfw,
     };
   }
 
@@ -84,6 +124,8 @@ class AppSettings {
           json['appIcon'] != null
               ? AppIconType.values[json['appIcon']]
               : AppIconType.nullbase,
+      avatarSearchApiUrl: json['avatarSearchApiUrl'] ?? '',
+      allowNsfw: json['allowNsfw'] ?? false,
     );
   }
 }
@@ -106,12 +148,22 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       final notifyFriendOnline = prefs.getBool('notifyFriendOnline') ?? true;
       final maxFriendCache = prefs.getInt('maxFriendCache') ?? 500;
 
+      // アバター検索APIのURLを取得
+      final avatarSearchApiUrl = prefs.getString('avatarSearchApiUrl') ?? '';
+
       // 現在のアプリアイコン名を取得
       final appIconIndex = prefs.getInt('appIcon') ?? 0;
       final appIcon =
           appIconIndex < AppIconType.values.length
               ? AppIconType.values[appIconIndex]
               : AppIconType.nullbase;
+
+      // 不快なコンテンツ表示の同意を取得
+      final allowNsfw = prefs.getBool('allowNsfw') ?? false;
+
+      // イベント通知設定
+      final enableEventReminders =
+          prefs.getBool('enableEventReminders') ?? true;
 
       state = AppSettings(
         themeMode: AppThemeMode.values[themeMode],
@@ -120,6 +172,9 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
         notifyFriendOnline: notifyFriendOnline,
         maxFriendCache: maxFriendCache,
         appIcon: appIcon,
+        avatarSearchApiUrl: avatarSearchApiUrl,
+        allowNsfw: allowNsfw,
+        enableEventReminders: enableEventReminders,
       );
     } catch (e) {
       // エラー時はデフォルト設定を使用
@@ -197,6 +252,24 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       // エラー発生時
       return false;
     }
+  }
+
+  // アバター検索APIのURL変更
+  Future<void> setAvatarSearchApiUrl(String url) async {
+    await prefs.setString('avatarSearchApiUrl', url);
+    state = state.copyWith(avatarSearchApiUrl: url);
+  }
+
+  // 不快なコンテンツ表示の同意設定変更
+  Future<void> setAllowNsfw(bool allow) async {
+    await prefs.setBool('allowNsfw', allow);
+    state = state.copyWith(allowNsfw: allow);
+  }
+
+  // イベント通知設定変更
+  Future<void> setEnableEventReminders(bool value) async {
+    await prefs.setBool('enableEventReminders', value);
+    state = state.copyWith(enableEventReminders: value);
   }
 
   // アイコン変更がサポートされているか確認

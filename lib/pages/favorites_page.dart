@@ -12,7 +12,6 @@ import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/utils/cache_manager.dart';
-import 'package:vrchat/utils/status_helpers.dart';
 import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat_dart/vrchat_dart.dart' hide FavoriteType;
@@ -767,8 +766,6 @@ Widget _buildEnhancedFriendItem(
     'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
   };
 
-  final statusColor = StatusHelper.getStatusColor(friend.status);
-
   return Card(
     margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -781,7 +778,6 @@ Widget _buildEnhancedFriendItem(
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            // プロフィール画像（スタイル改善）
             Stack(
               children: [
                 Container(
@@ -809,43 +805,23 @@ Widget _buildEnhancedFriendItem(
                               headers: headers,
                               cacheManager: JsonCacheManager(),
                             )
+                            : (friend.currentAvatarThumbnailImageUrl.isNotEmpty
+                                ? CachedNetworkImageProvider(
+                                  friend.currentAvatarThumbnailImageUrl,
+                                  headers: headers,
+                                  cacheManager: JsonCacheManager(),
+                                )
+                                : null),
+                    backgroundColor:
+                        (friend.userIcon.isEmpty) &&
+                                friend.currentAvatarThumbnailImageUrl.isEmpty
+                            ? Colors.grey[300]
                             : null,
                     child:
-                        friend.userIcon.isEmpty
-                            ? const Icon(
-                              Icons.person,
-                              color: Colors.white70,
-                              size: 30,
-                            )
+                        (friend.userIcon.isEmpty) &&
+                                friend.currentAvatarThumbnailImageUrl.isEmpty
+                            ? const Icon(Icons.person, color: Colors.grey)
                             : null,
-                  ),
-                ),
-
-                // ステータスインジケーター
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 18,
-                    height: 18,
-                    decoration: BoxDecoration(
-                      color: isDarkMode ? Colors.grey[900] : Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isDarkMode ? Colors.grey[800]! : Colors.white,
-                        width: 2,
-                      ),
-                    ),
-                    child: Center(
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: statusColor,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
                   ),
                 ),
               ],

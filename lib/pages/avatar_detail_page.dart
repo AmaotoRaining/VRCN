@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:vrchat/provider/avatar_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -90,6 +91,14 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
       expandedHeight: 250,
       pinned: true,
       leading: const AppBackButton(),
+      actions: [
+        // 共有ボタンをAppBarに追加
+        IconButton(
+          icon: const Icon(Icons.share_outlined, color: Colors.white),
+          onPressed: () => _shareAvatarProfile(avatar),
+          tooltip: 'アバター情報を共有',
+        ),
+      ],
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,
@@ -406,32 +415,33 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
             ),
           ),
         const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('この機能は現在開発中です')));
-            },
-            icon: const Icon(Icons.favorite_border),
-            label: Text(
-              'お気に入りに追加',
-              style: GoogleFonts.notoSans(
-                fontWeight: FontWeight.w500,
-                fontSize: 16,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppTheme.primaryColor,
-              side: const BorderSide(color: AppTheme.primaryColor),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-        ),
+        // TODO: お気に入り追加
+        // SizedBox(
+        //   width: double.infinity,
+        //   child: OutlinedButton.icon(
+        //     onPressed: () {
+        //       ScaffoldMessenger.of(
+        //         context,
+        //       ).showSnackBar(const SnackBar(content: Text('この機能は現在開発中です')));
+        //     },
+        //     icon: const Icon(Icons.favorite_border),
+        //     label: Text(
+        //       'お気に入りに追加',
+        //       style: GoogleFonts.notoSans(
+        //         fontWeight: FontWeight.w500,
+        //         fontSize: 16,
+        //       ),
+        //     ),
+        //     style: OutlinedButton.styleFrom(
+        //       foregroundColor: AppTheme.primaryColor,
+        //       side: const BorderSide(color: AppTheme.primaryColor),
+        //       padding: const EdgeInsets.symmetric(vertical: 12),
+        //       shape: RoundedRectangleBorder(
+        //         borderRadius: BorderRadius.circular(12),
+        //       ),
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }
@@ -484,5 +494,17 @@ class AppBackButton extends StatelessWidget {
         onPressed: () => Navigator.of(context).pop(),
       ),
     );
+  }
+}
+
+Future<void> _shareAvatarProfile(Avatar avatar) async {
+  final url = 'https://vrchat.com/home/avatar/${avatar.id}';
+
+  try {
+    await SharePlus.instance.share(
+      ShareParams(uri: Uri.parse(url), subject: avatar.name),
+    );
+  } catch (e) {
+    debugPrint('共有中にエラーが発生しました: $e');
   }
 }

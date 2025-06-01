@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:vrchat/provider/group_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
@@ -74,7 +75,17 @@ class GroupDetailPage extends ConsumerWidget {
             pinned: true,
             stretch: true,
             backgroundColor:
-                isDarkMode ? Colors.indigo.withValues(alpha: .8) : Colors.indigo,
+                isDarkMode
+                    ? Colors.indigo.withValues(alpha: .8)
+                    : Colors.indigo,
+            // 共有ボタンを追加
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.share_outlined, color: Colors.white),
+                tooltip: 'グループ情報を共有',
+                onPressed: () => _shareGroup(group),
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
@@ -591,5 +602,18 @@ class GroupDetailPage extends ConsumerWidget {
     final day = date.day.toString().padLeft(2, '0');
 
     return '$year年$month月$day日';
+  }
+}
+
+// グループ情報を共有するメソッド
+Future<void> _shareGroup(Group group) async {
+  final url = 'https://vrchat.com/home/group/${group.id}';
+
+  try {
+    await SharePlus.instance.share(
+      ShareParams(uri: Uri.parse(url), subject: group.name),
+    );
+  } catch (e) {
+    debugPrint('共有中にエラーが発生しました: $e');
   }
 }

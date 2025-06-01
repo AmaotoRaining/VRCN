@@ -54,16 +54,19 @@ android {
         }
         getByName("release") {
             signingConfig = signingConfigs.getByName("release")
+
         }
-        flavorDimensions += "default"
-        productFlavors{
-          create("dev"){
-            isDefault = true
-            dimension = "default"
+    }
+    flavorDimensions += "default"
+    productFlavors{
+      create("production") {
+        dimension = "default"
+        }
+        create("dev"){
+          dimension = "default"
             // applicationIdSuffix = ".debug"
           }
         }
-    }
 }
 
 flutter {

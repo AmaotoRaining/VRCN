@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
@@ -146,6 +148,53 @@ class WorldDetailPage extends ConsumerWidget {
           ),
         ),
       ),
+      // _buildAppBar メソッド内の actions 部分を修正
+      actions: [
+        // 共有ボタン
+        IconButton(
+          icon: const Icon(Icons.share, color: Colors.white),
+          tooltip: 'このワールドを共有',
+          onPressed: () => _shareWorld(world),
+        ),
+        PopupMenuButton<String>(
+          icon: const Icon(Icons.more_vert, color: Colors.white),
+          tooltip: 'アクション',
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          onSelected: (value) {
+            switch (value) {
+              case 'website':
+                _launchVRChatWebsite(world.id);
+              case 'report':
+                _launchVRChatWebsite(world.id);
+            }
+          },
+          itemBuilder:
+              (context) => [
+                const PopupMenuItem<String>(
+                  value: 'website',
+                  child: Row(
+                    children: [
+                      Icon(Icons.public, size: 20),
+                      SizedBox(width: 12),
+                      Text('VRChat公式サイトで開く'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'report',
+                  child: Row(
+                    children: [
+                      Icon(Icons.report_problem, size: 20),
+                      SizedBox(width: 12),
+                      Text('このワールドを通報'),
+                    ],
+                  ),
+                ),
+              ],
+        ),
+      ],
     );
   }
 
@@ -343,74 +392,74 @@ class WorldDetailPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionButtons(
-    BuildContext context,
-    World world,
-    bool isDarkMode,
-    WidgetRef ref,
-  ) {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () {
-              // TODO: ワールドへの参加処理
-              _joinWorld(context, world, ref);
-            },
-            icon: const Icon(Icons.public),
-            label: Text(
-              'パブリックで招待を送信',
-              style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              elevation: 2,
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        IconButton(
-          onPressed: () {
-            // TODO: お気に入り登録処理
-            _toggleFavorite(context, world, ref);
-          },
-          icon: const Icon(Icons.favorite_border),
-          style: IconButton.styleFrom(
-            backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
-            foregroundColor: Colors.red,
-            padding: const EdgeInsets.all(12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-              side: BorderSide(color: Colors.red.withValues(alpha: 0.5)),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  // Widget _buildActionButtons(
+  //   BuildContext context,
+  //   World world,
+  //   bool isDarkMode,
+  //   WidgetRef ref,
+  // ) {
+  //   return Row(
+  //     children: [
+  //       Expanded(
+  //         child: ElevatedButton.icon(
+  //           onPressed: () {
+  //             // TODO: ワールドへの参加処理
+  //             _joinWorld(context, world, ref);
+  //           },
+  //           icon: const Icon(Icons.public),
+  //           label: Text(
+  //             'パブリックで招待を送信',
+  //             style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
+  //           ),
+  //           style: ElevatedButton.styleFrom(
+  //             backgroundColor: Colors.green,
+  //             foregroundColor: Colors.white,
+  //             padding: const EdgeInsets.symmetric(vertical: 12),
+  //             shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.circular(8),
+  //             ),
+  //             elevation: 2,
+  //           ),
+  //         ),
+  //       ),
+  //       const SizedBox(width: 12),
+  //       IconButton(
+  //         onPressed: () {
+  //           // TODO: お気に入り登録処理
+  //           _toggleFavorite(context, world, ref);
+  //         },
+  //         icon: const Icon(Icons.favorite_border),
+  //         style: IconButton.styleFrom(
+  //           backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
+  //           foregroundColor: Colors.red,
+  //           padding: const EdgeInsets.all(12),
+  //           shape: RoundedRectangleBorder(
+  //             borderRadius: BorderRadius.circular(8),
+  //             side: BorderSide(color: Colors.red.withValues(alpha: 0.5)),
+  //           ),
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
-  void _joinWorld(BuildContext context, World world, WidgetRef ref) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('${world.name}へ参加しようとしています...実装中')));
+  // void _joinWorld(BuildContext context, World world, WidgetRef ref) {
+  //   ScaffoldMessenger.of(
+  //     context,
+  //   ).showSnackBar(SnackBar(content: Text('${world.name}へ参加しようとしています...実装中')));
 
-    // TODO:ここに実際のワールド参加ロジックを実装
-    // 例: ref.read(joinWorldProvider)(world.id);
-  }
+  //   // TODO:ここに実際のワールド参加ロジックを実装
+  //   // 例: ref.read(joinWorldProvider)(world.id);
+  // }
 
-  void _toggleFavorite(BuildContext context, World world, WidgetRef ref) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('${world.name}をお気に入りに追加しました。実装中')));
+  // void _toggleFavorite(BuildContext context, World world, WidgetRef ref) {
+  //   ScaffoldMessenger.of(
+  //     context,
+  //   ).showSnackBar(SnackBar(content: Text('${world.name}をお気に入りに追加しました。実装中')));
 
-    // TODO:ここに実際のお気に入り登録/解除ロジックを実装
-    // 例: ref.read(favoriteWorldProvider)(world.id);
-  }
+  //   // TODO:ここに実際のお気に入り登録/解除ロジックを実装
+  //   // 例: ref.read(favoriteWorldProvider)(world.id);
+  // }
 
   String _formatDate(DateTime? date) {
     if (date == null) return '不明';
@@ -425,5 +474,32 @@ class WorldDetailPage extends ConsumerWidget {
       return '${(number / 1000).toStringAsFixed(1)}K';
     }
     return number.toString();
+  }
+}
+
+// ブラウザでVRChatウェブサイトを開くメソッド
+Future<void> _launchVRChatWebsite(String worldId) async {
+  final url = Uri.parse('https://vrchat.com/home/world/$worldId');
+  try {
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not launch $url';
+    }
+  } catch (e) {
+    debugPrint('Error launching URL: $e');
+  }
+}
+
+// ワールド情報を共有するメソッド
+Future<void> _shareWorld(World world) async {
+  final url = 'https://vrchat.com/home/world/${world.id}';
+
+  try {
+    await SharePlus.instance.share(
+      ShareParams(uri: Uri.parse(url), subject: world.name),
+    );
+  } catch (e) {
+    debugPrint('共有中にエラーが発生しました: $e');
   }
 }

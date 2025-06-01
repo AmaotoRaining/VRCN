@@ -69,7 +69,7 @@ class CreditsPage extends StatelessWidget {
                   credits: [
                     CreditItem(
                       name: 'null_base',
-                      role: '人生つかれた',
+                      role: 'merry bad end',
                       icon: const CircleAvatar(
                         backgroundImage: AssetImage(
                           'assets/images/default.png',
@@ -88,11 +88,11 @@ class CreditsPage extends StatelessWidget {
                 const SizedBox(height: 24),
                 _buildCreditSection(
                   context: context,
-                  title: '愉快なアイコン',
+                  title: '愉快なアイコンの人たち',
                   credits: [
                     CreditItem(
                       name: 'annobu',
-                      role: 'のっぶのお店 店長',
+                      role: '君が代',
                       icon: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
                         child: Image.asset('assets/images/annobu@3x.png'),
@@ -108,10 +108,90 @@ class CreditsPage extends StatelessWidget {
                     ),
                     CreditItem(
                       name: 'Miyamoto_',
-                      role: 'いびき💤',
+                      role: 'オービスフラッシャー',
                       icon: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
                         child: Image.asset('assets/images/miyamoto@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'Le0yuki',
+                      role: 'ピアス',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/le0yuki@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'Ray',
+                      role: '能面',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/ray@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'Hare',
+                      role: 'Abysswalker',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/hare@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: '愛が一番アイフル',
+                      role: 'ペアマッチング公式',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/aihuru@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'Rea',
+                      role: 'ここはひとつ',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/rea@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'ますかわ',
+                      role: 'ぼくせいだいすきだからねー',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/masukawa@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'Abuki',
+                      role: '緑の窓口',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/abuki@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'エナドリ',
+                      role: 'valorant',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/enadori@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'Roize',
+                      role: 'いいね',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/roize@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'R4in',
+                      role: '私が1番可愛いからね〜',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/images/r4in@3x.png'),
                       ),
                     ),
                   ],
@@ -150,6 +230,21 @@ class CreditsPage extends StatelessWidget {
                         ),
                       ),
                     ),
+                    CreditItem(
+                      name: 'あのめあ',
+                      role: 'あのめあちゃん買え',
+                      icon: const CircleAvatar(
+                        backgroundImage: NetworkImage(
+                          'https://booth.pximg.net/9c55fea2-2854-4e53-9a97-6c2c086c37c9/i/5020157/25c1f1fa-4929-4a6c-a424-ede13c90a5b9.png',
+                        ),
+                      ),
+                      onTap: () {
+                        launchUrl(
+                          Uri.parse('https://booth.pm/ja/items/5020157'),
+                        );
+                      },
+                    ),
+
                     CreditItem(
                       name: 'あのめあ ﾁｬﾝSDイラスト',
                       role: 'ローディングアニメーション',

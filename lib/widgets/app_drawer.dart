@@ -121,6 +121,28 @@ class AppDrawer extends ConsumerWidget {
                                 Navigator.pop(context);
                               },
                             ),
+                            _MenuItem(
+                              icon: Icons.calendar_month,
+                              title: 'イベントカレンダー',
+                              isSelected: GoRouterState.of(
+                                context,
+                              ).uri.path.startsWith('/event_calendar'),
+                              onTap: () {
+                                context.push('/event_calendar');
+                                Navigator.pop(context);
+                              },
+                            ),
+                            // _MenuItem(
+                            //   icon: Icons.control_camera,
+                            //   title: 'OSCコントローラー',
+                            //   isSelected: GoRouterState.of(
+                            //     context,
+                            //   ).uri.path.startsWith('/osc'),
+                            //   onTap: () {
+                            //     context.push('/osc');
+                            //     Navigator.pop(context);
+                            //   },
+                            // ),
                           ],
                         ),
 
@@ -370,7 +392,7 @@ class AppDrawer extends ConsumerWidget {
         bottom: false,
         child: Column(
           children: [
-            // ユーザーアバター（大きめに表示）
+            // ユーザーアバター
             Center(
               child: Stack(
                 children: [
@@ -474,6 +496,17 @@ class AppDrawer extends ConsumerWidget {
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                ),
+
+                const SizedBox(height: 2),
+
+                // 代名詞
+                Text(
+                  user.pronouns,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 14,
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  ),
                 ),
 
                 const SizedBox(height: 2),

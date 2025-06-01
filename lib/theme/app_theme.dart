@@ -6,8 +6,7 @@ class AppTheme {
   // インスタンス化禁止
   AppTheme._();
 
-  // VRChatブランドカラー
-  static const primaryColor = Color(0xFF597BFF); // VRChatのメインカラー
+  static const primaryColor = Color(0xFF597BFF);
   static const secondaryColor = Color(0xFF353535);
   static const accentColor = Color(0xFF6C38FF);
 
@@ -24,7 +23,7 @@ class AppTheme {
       brightness: Brightness.light,
     ),
     textTheme: _baseTextTheme,
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -64,7 +63,7 @@ class AppTheme {
       displayColor: Colors.white,
     ),
     scaffoldBackgroundColor: const Color(0xFF121212),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

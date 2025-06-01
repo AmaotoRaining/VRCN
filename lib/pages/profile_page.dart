@@ -104,14 +104,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                         ),
                       );
                     }
-
                     // 最新のユーザー情報を待機
                     final updatedUser = await ref.read(
                       currentUserProvider.future,
                     );
-
                     if (!context.mounted) return;
-
                     // 最新の情報で編集シートを表示
                     final result = await showModalBottomSheet<bool>(
                       context: context,
@@ -1536,7 +1533,9 @@ Widget _buildBioLinksCard(
           Favicon? favicon;
           try {
             favicon = await FaviconFinder.getBest(link);
-          } catch (e) {}
+          } catch (e) {
+            // ファビコンが取得できなくても代替手段があるので無視
+          }
 
           String? faviconUrl;
           if (favicon != null && favicon.url.isNotEmpty) {

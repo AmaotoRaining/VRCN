@@ -189,8 +189,6 @@ void _handleVrcEvent(vrc.VrcStreamingEvent event, ref) async {
     case vrc.VrcStreamingEventType.friendUpdate:
       final friendUpdateEvent = event as vrc.FriendUpdateEvent;
       debugPrint('フレンド情報更新: ${friendUpdateEvent.user.displayName}');
-      debugPrint('ステータス: ${friendUpdateEvent.user.status}');
-      debugPrint('ステータス説明: ${friendUpdateEvent.user.statusDescription}');
 
       ref.read(friendInfoUpdaterProvider)(
         friendUpdateEvent.userId,

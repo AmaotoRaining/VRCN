@@ -8,6 +8,7 @@ import 'package:vrchat/analytics_repository.dart';
 import 'package:vrchat/pages/avatar_detail_page.dart';
 import 'package:vrchat/pages/avatars_page.dart';
 import 'package:vrchat/pages/credits_page.dart';
+import 'package:vrchat/pages/event_calendar_page.dart';
 import 'package:vrchat/pages/favorites_page.dart';
 import 'package:vrchat/pages/friend_detail_page.dart';
 import 'package:vrchat/pages/friends_page.dart';
@@ -15,6 +16,7 @@ import 'package:vrchat/pages/group_detail_page.dart';
 import 'package:vrchat/pages/groups_page.dart';
 import 'package:vrchat/pages/login_page.dart';
 import 'package:vrchat/pages/notifications_page.dart';
+import 'package:vrchat/pages/osc_page.dart';
 import 'package:vrchat/pages/profile_page.dart';
 import 'package:vrchat/pages/search_page.dart';
 import 'package:vrchat/pages/settings_page.dart';
@@ -305,6 +307,22 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           _setCurrentScreen(ref, 'お気に入り画面');
           return const FavoritesPage();
+        },
+      ),
+      GoRoute(
+        path: '/event_calendar',
+        name: 'event_calendar',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'イベントカレンダー');
+          return const EventCalendarPage();
+        },
+      ),
+      GoRoute(
+        path: '/osc',
+        name: 'osc',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'OSCコントローラー');
+          return const OscPage();
         },
       ),
       GoRoute(

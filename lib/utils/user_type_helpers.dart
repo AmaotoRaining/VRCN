@@ -10,8 +10,8 @@ class UserTypeHelper {
     if (tags == null) return 'Visitor';
 
     if (tags.contains('admin')) return 'Admin';
-    if (tags.contains('system_trust_veteran')) return 'Trusted User';
-    if (tags.contains('system_trust_trusted')) return 'Known User';
+    if (tags.contains('system_trust_veteran')) return 'Trusted';
+    if (tags.contains('system_trust_trusted')) return 'Known';
     if (tags.contains('system_trust_known')) return 'User';
     if (tags.contains('system_trust_basic')) return 'New User';
 

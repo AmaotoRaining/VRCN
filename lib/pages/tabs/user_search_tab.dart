@@ -164,39 +164,37 @@ class _UserSearchTabState extends ConsumerState<UserSearchTab> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha:0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 4,
                         spreadRadius: 0,
                       ),
                     ],
                   ),
-                  child: ClipOval(
-                    child:
-                        user.currentAvatarThumbnailImageUrl != null &&
-                                user.currentAvatarThumbnailImageUrl!.isNotEmpty
-                            ? CachedNetworkImage(
-                              imageUrl: user.currentAvatarThumbnailImageUrl!,
-                              fit: BoxFit.cover,
-                              httpHeaders: headers,
+                  child: CircleAvatar(
+                    backgroundImage:
+                        user.userIcon != null && user.userIcon!.isNotEmpty
+                            ? CachedNetworkImageProvider(
+                              user.userIcon!,
+                              headers: headers,
                               cacheManager: JsonCacheManager(),
-                              placeholder:
-                                  (context, url) => Container(
-                                    color:
-                                        isDarkMode
-                                            ? Colors.grey[800]
-                                            : Colors.grey[200],
-                                  ),
-                              errorWidget:
-                                  (context, url, error) => const Icon(
-                                    Icons.person,
-                                    size: 30,
-                                    color: Colors.grey,
-                                  ),
                             )
-                            : Image.asset(
-                              'assets/images/default_avatar.png',
-                              fit: BoxFit.cover,
-                            ),
+                            : (user.currentAvatarThumbnailImageUrl != null
+                                ? CachedNetworkImageProvider(
+                                  user.currentAvatarThumbnailImageUrl!,
+                                  headers: headers,
+                                  cacheManager: JsonCacheManager(),
+                                )
+                                : null),
+                    backgroundColor:
+                        (user.userIcon == null || user.userIcon!.isEmpty) &&
+                                user.currentAvatarThumbnailImageUrl == null
+                            ? Colors.grey[300]
+                            : null,
+                    child:
+                        (user.userIcon == null || user.userIcon!.isEmpty) &&
+                                user.currentAvatarThumbnailImageUrl == null
+                            ? const Icon(Icons.person, color: Colors.grey)
+                            : null,
                   ),
                 ),
               ),

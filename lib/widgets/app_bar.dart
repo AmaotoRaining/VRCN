@@ -70,7 +70,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   )),
       iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       actions: actions,
-      leadingWidth: 56, // 適切な幅を設定
+      leadingWidth: 56,
       leading:
           showAvatar
               ? Padding(

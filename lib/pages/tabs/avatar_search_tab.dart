@@ -38,7 +38,7 @@ class AvatarSearchTab extends ConsumerWidget {
       loading: () => const LoadingIndicator(message: 'アバターを検索中...'),
       error:
           (error, stack) => ErrorContainer(
-            message: '検索エラー: ${error.toString()}',
+            message: error.toString(),
             onRetry: () => ref.refresh(avtrDbSearchProvider(query)),
           ),
     );
@@ -60,8 +60,8 @@ class AvatarSearchTab extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color:
                         isDarkMode
-                            ? Colors.grey[800]!.withValues(alpha:0.3)
-                            : Colors.grey[200]!.withValues(alpha:0.7),
+                            ? Colors.grey[800]!.withValues(alpha: 0.3)
+                            : Colors.grey[200]!.withValues(alpha: 0.7),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -148,7 +148,7 @@ class AvatarSearchTab extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -211,7 +211,7 @@ class AvatarSearchTab extends ConsumerWidget {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withValues(alpha:0.7),
+                              Colors.black.withValues(alpha: 0.7),
                             ],
                           ),
                         ),

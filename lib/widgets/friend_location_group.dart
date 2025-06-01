@@ -21,8 +21,13 @@ final worldPaletteProvider = FutureProvider.family<PaletteGenerator?, String>((
   if (imageUrl.isEmpty) return null;
 
   try {
+    final headers = <String, String>{'User-Agent': 'VRChat/1.0'};
     final paletteGenerator = await PaletteGenerator.fromImageProvider(
-      CachedNetworkImageProvider(imageUrl, cacheManager: JsonCacheManager()),
+      CachedNetworkImageProvider(
+        imageUrl,
+        cacheManager: JsonCacheManager(),
+        headers: headers,
+      ),
       size: const Size(100, 100),
       maximumColorCount: 8,
     );
@@ -828,7 +833,7 @@ class FriendLocationGroup extends ConsumerWidget {
                       return _buildImageError(isDarkMode, accentColor);
                     },
                     // キャッシュポリシーを調整
-                    cacheKey: '$thumbnailUrl-${DateTime.now().day}',
+                    cacheKey: '$thumbnailUrl-${DateTime.timestamp().day}',
                     memCacheHeight: 120,
                     memCacheWidth: 120,
                   ),
