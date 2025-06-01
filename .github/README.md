@@ -11,6 +11,8 @@
   <a href="https://discord.gg/xAcm4KBZGk"><img src="https://img.shields.io/discord/1289569604967862295?color=7289DA&logo=discord&logoColor=white" alt="Discord"></a>
   <img src="https://img.shields.io/badge/platforms-iOS%20%7C%20Android-brightgreen" alt="Platforms">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
+   <img src="https://api.codemagic.io/apps/682e8ae9a8104c525fbd3b06/682e8ae9a8104c525fbd3b05/status_badge.svg" alt="Codemagic">
+
 </p>
 
 ## 🌟 概要

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:vrchat/analytics_repository.dart';
 import 'package:vrchat/pages/avatar_detail_page.dart';
 import 'package:vrchat/pages/avatars_page.dart';
+import 'package:vrchat/pages/biometric_auth_page.dart';
 import 'package:vrchat/pages/credits_page.dart';
 import 'package:vrchat/pages/event_calendar_page.dart';
 import 'package:vrchat/pages/favorites_page.dart';
@@ -21,6 +22,7 @@ import 'package:vrchat/pages/profile_page.dart';
 import 'package:vrchat/pages/search_page.dart';
 import 'package:vrchat/pages/settings_page.dart';
 import 'package:vrchat/pages/world_detail_page.dart';
+import 'package:vrchat/provider/biometric_auth_provider.dart';
 import 'package:vrchat/provider/search_providers.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
@@ -146,16 +148,35 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
     redirect: (context, state) {
       final isLoginRoute = state.uri.toString() == '/login';
+      final isBiometricAuthRoute = state.uri.toString() == '/auth';
+      final isResumed = ref.read(appResumedProvider);
 
       // API初期化中は何もしない
       if (isInitializing) {
         return null;
       }
 
+      // バックグラウンドから復帰した場合は認証画面へ
+      if (isResumed && !isBiometricAuthRoute) {
+        ref.read(appResumedProvider.notifier).state = false;
+        ref.read(shouldCheckBiometricsProvider.notifier).state = true;
+        return '/auth';
+      }
+
       // 自動ログイン処理中は特別処理
       if (autoLoginState == AutoLoginState.inProgress) {
-        // 一時的なロード画面を表示（/loadingパスを追加）
+        // 一時的なロード画面を表示
         return state.uri.toString() == '/loading' ? null : '/loading';
+      }
+
+      // 生体認証チェック
+      final isLoggedIn = authState.valueOrNull ?? false;
+      if (isLoggedIn && !isLoginRoute && !isBiometricAuthRoute) {
+        // ログイン済みで認証画面でない場合は生体認証チェック
+        final shouldCheckBiometrics = ref.read(shouldCheckBiometricsProvider);
+        if (shouldCheckBiometrics) {
+          return '/auth';
+        }
       }
 
       // 認証状態に基づいてリダイレクト
@@ -348,6 +369,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           _setCurrentScreen(ref, 'クレジット画面');
           return const CreditsPage();
         },
+      ),
+      // 生体認証画面
+      GoRoute(
+        path: '/auth',
+        builder: (context, state) => const BiometricAuthPage(),
       ),
     ],
   );
