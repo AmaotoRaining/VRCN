@@ -12,7 +12,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vrchat/analytics_repository.dart';
 import 'package:vrchat/firebase_options.dart';
-import 'package:vrchat/provider/biometric_auth_provider.dart';
 import 'package:vrchat/provider/event_reminder_provider.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/provider/streaming_provider.dart';
@@ -77,16 +76,6 @@ Future<void> main() async {
     await container.read(eventReminderProvider.notifier).cleanupOldReminders();
   } catch (e) {
     debugPrint('リマインダーのクリーンアップ中にエラーが発生しました: $e');
-  }
-
-  try {
-    // 生体認証の初期化
-    await container.read(performBiometricCheckProvider.future);
-
-    // 認証フラグをリセット（アプリ起動時は常に認証を要求）
-    container.read(resetBiometricCheckProvider);
-  } catch (e) {
-    debugPrint('生体認証の初期化中にエラーが発生しました: $e');
   }
 
   runApp(

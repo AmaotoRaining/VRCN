@@ -17,9 +17,15 @@ dependencies:
   vrchat_dart: ^3.6.0
 
   path_provider: ^2.0.11
+
   shared_preferences: ^2.5.3
+  # Keychain
+  flutter_secure_storage: ^9.2.4
+
   flutter_riverpod: ^2.6.1
   riverpod_annotation: ^2.6.1
+
+  # 環境変数
   flutter_dotenv: ^5.2.1
 
   # アプリ情報
@@ -87,7 +93,7 @@ dependencies:
 
   timezone: ^0.10.1
 
-  flutter_secure_storage:
+
 
 dev_dependencies:
   flutter_test:
@@ -107,10 +113,7 @@ flutter:
     - path: .env.demo
     - path: .env
       flavors:
-      # iOS
-      - debug
-      # Android
-      # - dev
+      - dev
 
 dependency_overrides:
   vrchat_dart_generated:

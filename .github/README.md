@@ -2,18 +2,15 @@
 
 # VRCN
 
-</div>
-
 <p align="center">
   <img src="./assets/icon.png" alt="VRCN Logo" width="120" height="120">
 
-<p align="center">
-  <a href="https://discord.gg/xAcm4KBZGk"><img src="https://img.shields.io/discord/1289569604967862295?color=7289DA&logo=discord&logoColor=white" alt="Discord"></a>
-  <img src="https://img.shields.io/badge/platforms-iOS%20%7C%20Android-brightgreen" alt="Platforms">
-  <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
-   <img src="https://api.codemagic.io/apps/682e8ae9a8104c525fbd3b06/682e8ae9a8104c525fbd3b05/status_badge.svg" alt="Codemagic">
+  ![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20Android-brightgreen)
+  ![License](https://img.shields.io/badge/license-MIT-blue)
+  ![Codemagic](https://api.codemagic.io/apps/682e8ae9a8104c525fbd3b06/682e8ae9a8104c525fbd3b05/status_badge.svg)
+  [![Codacy Badge](https://app.codacy.com/project/badge/Grade/10cc81cd2bb84bdda6d05a0bde01f4ea)](https://app.codacy.com/gh/null-base/VRCN/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
-</p>
+</div>
 
 ## 🌟 概要
 
@@ -113,7 +110,7 @@ flutter build apk --flavor release
 
 ## 📞 サポート
 
-問題が発生した場合や機能リクエストがある場合は、[Discord](https://discord.gg/xAcm4KBZGk)または[GitHub Issues](https://github.com/null-base/vrcn/issues)からご連絡ください。
+問題が発生した場合や機能リクエストがある場合は、[Discord](https://discord.gg/wNgbkdXq6M)または[GitHub Issues](https://github.com/null-base/vrcn/issues)からご連絡ください。
 
 
 ## 📝 プライバシーポリシー
@@ -127,7 +124,7 @@ flutter build apk --flavor release
 </p>
 
 <p align="center">
-  <a href="https://discord.gg/xAcm4KBZGk">Discord</a> •
+  <a href="https://discord.gg/wNgbkdXq6M">Discord</a> •
   <a href="https://null-base.com/vrcn/privacy-policy/">プライバシーポリシー</a> •
   <a href="https://null-base.com/vrcn/terms-of-service">利用規約</a>
 </p>

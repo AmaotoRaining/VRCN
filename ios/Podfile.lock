@@ -52,7 +52,7 @@ PODS:
     - Flutter
   - flutter_native_splash (2.4.3):
     - Flutter
-  - flutter_secure_storage (3.3.1):
+  - flutter_secure_storage (6.0.0):
     - Flutter
   - GoogleAppMeasurement (11.10.0):
     - GoogleAppMeasurement/AdIdSupport (= 11.10.0)
@@ -202,7 +202,7 @@ SPEC CHECKSUMS:
   flutter_dynamic_icon_plus: 3ddd12bc2316b98ffdd4048e9cdd3cf51e02095d
   flutter_local_notifications: a5a732f069baa862e728d839dd2ebb904737effb
   flutter_native_splash: c32d145d68aeda5502d5f543ee38c192065986cf
-  flutter_secure_storage: 50035aef357c5a8bdd67fd6bc81370d46efc4d16
+  flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
   GoogleAppMeasurement: 36684bfb3ee034e2b42b4321eb19da3a1b81e65d
   GoogleUtilities: 26a3abef001b6533cf678d3eb38fd3f614b7872d
   local_auth_darwin: 553ce4f9b16d3fdfeafce9cf042e7c9f77c1c391

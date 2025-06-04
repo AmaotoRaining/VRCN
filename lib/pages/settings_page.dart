@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:vrchat/provider/biometric_auth_provider.dart';
+import 'package:vrchat/provider/auth_storage_provider.dart';
 import 'package:vrchat/provider/event_reminder_provider.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
@@ -272,30 +272,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
                         const SizedBox(height: 24),
 
-                        // セキュリティ設定
-                        _buildSettingsSection(
-                              title: 'セキュリティ',
-                              icon: Icons.security_outlined,
-                              iconColor: const Color(0xFF8D86C9),
-                              backgroundColor: sectionBgColor,
-                              textColor: textColor,
-                              secondaryTextColor: secondaryTextColor,
-                              buttonColor: buttonColor,
-                              isDarkMode: isDarkMode,
-                              children: [
-                                _buildBiometricAuthSetting(
-                                  isDarkMode,
-                                  textColor,
-                                  secondaryTextColor,
-                                ),
-                              ],
-                            )
-                            .animate()
-                            .fadeIn(delay: 450.ms, duration: 600.ms)
-                            .slideY(begin: 0.1, end: 0),
-
-                        const SizedBox(height: 40),
-
                         // アプリ情報
                         if (_packageInfo != null)
                           _buildSettingsSection(
@@ -344,7 +320,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                     subtitle: '不具合報告・ご意見はこちら',
                                     onTap:
                                         () => _launchURL(
-                                          'https://discord.gg/xAcm4KBZGk',
+                                          'https://discord.gg/wNgbkdXq6M',
                                         ),
                                     textColor: textColor,
                                     secondaryTextColor: secondaryTextColor,
@@ -1545,6 +1521,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
     if (shouldLogout == true) {
       try {
+        // 保存された認証情報をクリア
+        final authStorage = ref.read(authStorageProvider);
+        await authStorage.clearCredentials();
+
+        // ログアウト処理
         final auth = await ref.read(vrchatAuthProvider.future);
         await auth.logout();
         ref.read(authRefreshProvider.notifier).state++;
@@ -1599,208 +1580,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
         child: Image.asset('assets/images/default.png', width: 64, height: 64),
       ),
       applicationLegalese: '© 2025 null_base',
-    );
-  }
-
-  // 生体認証設定
-  Widget _buildBiometricAuthSetting(
-    bool isDarkMode,
-    Color textColor,
-    Color secondaryTextColor,
-  ) {
-    final biometricAvailableAsync = ref.watch(biometricAvailableProvider);
-    final biometricEnabledAsync = ref.watch(biometricEnabledProvider);
-
-    return biometricAvailableAsync.when(
-      data: (isAvailable) {
-        // 生体認証が利用できない場合
-        if (!isAvailable) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(
-                      0xFF8D86C9,
-                    ).withValues(alpha: isDarkMode ? 0.2 : 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.fingerprint,
-                    size: 20,
-                    color: Color(0xFF8D86C9),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '生体認証',
-                        style: GoogleFonts.notoSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: textColor,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'お使いのデバイスでは生体認証が利用できません',
-                        style: GoogleFonts.notoSans(
-                          fontSize: 13,
-                          color: secondaryTextColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-
-        // 生体認証が利用可能な場合
-        return biometricEnabledAsync.when(
-          data: (isEnabled) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(
-                        0xFF8D86C9,
-                      ).withValues(alpha: isDarkMode ? 0.2 : 0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.fingerprint,
-                      size: 20,
-                      color: Color(0xFF8D86C9),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '生体認証',
-                          style: GoogleFonts.notoSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: textColor,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'アプリ起動時に生体認証を要求します',
-                          style: GoogleFonts.notoSans(
-                            fontSize: 13,
-                            color: secondaryTextColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Transform.scale(
-                    scale: 0.8,
-                    child: Switch(
-                      value: isEnabled,
-                      onChanged: (value) async {
-                        // 生体認証を有効にする場合は一度認証を試す
-                        if (value) {
-                          final service = ref.read(
-                            biometricAuthServiceProvider,
-                          );
-                          final success = await service.authenticate();
-
-                          if (success) {
-                            await service.setBiometricEnabled(true);
-                            ref.invalidate(biometricEnabledProvider);
-
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Text('生体認証を有効にしました'),
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              );
-                            }
-                          }
-                        } else {
-                          // 無効にする場合は直接設定
-                          final service = ref.read(
-                            biometricAuthServiceProvider,
-                          );
-                          await service.setBiometricEnabled(false);
-                          ref.invalidate(biometricEnabledProvider);
-
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text('生体認証を無効にしました'),
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                      activeColor: AppTheme.primaryColor,
-                      activeTrackColor: AppTheme.primaryColor.withValues(
-                        alpha: 0.3,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-          loading:
-              () => const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-          error:
-              (_, _) => Padding(
-                padding: const EdgeInsets.all(20),
-                child: Text(
-                  '設定の読み込みに失敗しました',
-                  style: GoogleFonts.notoSans(color: Colors.red),
-                ),
-              ),
-        );
-      },
-      loading:
-          () => const Center(
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: CircularProgressIndicator(),
-            ),
-          ),
-      error:
-          (_, _) => Padding(
-            padding: const EdgeInsets.all(20),
-            child: Text(
-              '生体認証の確認に失敗しました',
-              style: GoogleFonts.notoSans(color: Colors.red),
-            ),
-          ),
     );
   }
 }
