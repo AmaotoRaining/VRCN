@@ -19,7 +19,6 @@ class AppDrawer extends ConsumerWidget {
     final vrchatApi = ref.watch(vrchatProvider).value;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    // User-Agentヘッダーの定義
     final headers = <String, String>{
       'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
     };
@@ -294,7 +293,7 @@ class AppDrawer extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
-                // アイコン（アニメーション付き）
+                // アイコン
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.all(8),
@@ -326,7 +325,7 @@ class AppDrawer extends ConsumerWidget {
 
                 const SizedBox(width: 16),
 
-                // タイトル（アニメーション付き）
+                // タイトル
                 Expanded(
                   child: Text(
                     title,
@@ -364,7 +363,7 @@ class AppDrawer extends ConsumerWidget {
     );
   }
 
-  // 強化されたヘッダー
+  // ヘッダー
   Widget _buildEnhancedHeader(
     BuildContext context,
     CurrentUser user,
