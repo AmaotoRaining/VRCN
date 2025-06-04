@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/provider/auth_storage_provider.dart';
+import 'package:vrchat/provider/cache_provider.dart';
 import 'package:vrchat/provider/event_reminder_provider.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
@@ -268,6 +269,30 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             )
                             .animate()
                             .fadeIn(delay: 400.ms, duration: 600.ms)
+                            .slideY(begin: 0.1, end: 0),
+
+                        const SizedBox(height: 24),
+
+                        // データとストレージ
+                        _buildSettingsSection(
+                              title: 'データとストレージ',
+                              icon: Icons.storage_outlined,
+                              iconColor: const Color(0xFF2A9D8F),
+                              backgroundColor: sectionBgColor,
+                              textColor: textColor,
+                              secondaryTextColor: secondaryTextColor,
+                              buttonColor: buttonColor,
+                              isDarkMode: isDarkMode,
+                              children: [
+                                _buildCacheClearItem(
+                                  isDarkMode,
+                                  textColor,
+                                  secondaryTextColor,
+                                ),
+                              ],
+                            )
+                            .animate()
+                            .fadeIn(delay: 550.ms, duration: 600.ms)
                             .slideY(begin: 0.1, end: 0),
 
                         const SizedBox(height: 24),
@@ -1581,5 +1606,153 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       ),
       applicationLegalese: '© 2025 null_base',
     );
+  }
+
+  // キャッシュクリアアイテム
+  Widget _buildCacheClearItem(
+    bool isDarkMode,
+    Color textColor,
+    Color secondaryTextColor,
+  ) {
+     final cacheSizeAsync = ref.watch(cacheSizeProvider);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      child: InkWell(
+        onTap: _showClearCacheConfirmation,
+        borderRadius: BorderRadius.circular(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(
+                  0xFF2A9D8F,
+                ).withValues(alpha: isDarkMode ? 0.2 : 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.cleaning_services_outlined,
+                size: 20,
+                color: Color(0xFF2A9D8F),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'キャッシュを削除',
+                    style: GoogleFonts.notoSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: textColor,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  cacheSizeAsync.when(
+                    data:
+                        (size) => Text(
+                          'キャッシュサイズ: $size',
+                          style: GoogleFonts.notoSans(
+                            fontSize: 13,
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                    loading:
+                        () => Text(
+                          'キャッシュサイズを計算中...',
+                          style: GoogleFonts.notoSans(
+                            fontSize: 13,
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                    error:
+                        (_, _) => Text(
+                          'キャッシュサイズを取得できませんでした',
+                          style: GoogleFonts.notoSans(
+                            fontSize: 13,
+                            color: Colors.red[300],
+                          ),
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.delete_outline, size: 22, color: Colors.red[400]),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // キャッシュ削除確認ダイアログ
+  Future<void> _showClearCacheConfirmation() async {
+    final shouldClear = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Colors.amber[700]),
+                const SizedBox(width: 12),
+                Text(
+                  'キャッシュを削除',
+                  style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            content: Text(
+              'キャッシュを削除すると、一時的に保存された画像やデータが削除されます。\n\nアカウント情報やアプリの設定は削除されません。',
+              style: GoogleFonts.notoSans(),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(
+                  'キャンセル',
+                  style: GoogleFonts.notoSans(color: Colors.grey[600]),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2A9D8F),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text('削除する', style: GoogleFonts.notoSans()),
+              ),
+            ],
+          ),
+    );
+
+    if (shouldClear == true) {
+      final cacheService = ref.read(cacheServiceProvider);
+      final success = await cacheService.clearCache();
+
+      if (mounted) {
+        // キャッシュサイズを再計算するためプロバイダーを更新
+        ref.invalidate(cacheSizeProvider);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(success ? 'キャッシュを削除しました' : 'キャッシュの削除中にエラーが発生しました'),
+            backgroundColor: success ? Colors.green : Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+    }
   }
 }
