@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -126,11 +127,41 @@ void _handleNotificationResponse(NotificationResponse details) {
   }
 }
 
-class VRChatApp extends ConsumerWidget {
+class VRChatApp extends ConsumerStatefulWidget {
   const VRChatApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<VRChatApp> createState() => _VRChatAppState();
+}
+
+class _VRChatAppState extends ConsumerState<VRChatApp>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    // ライフサイクルオブザーバーとして登録
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    // ライフサイクルオブザーバーの登録解除
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // アプリのライフサイクル状態変化を監視
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // アプリがフォアグラウンドに戻ったらバッジをクリア
+      FlutterAppBadger.removeBadge();
+      debugPrint('アプリがフォアグラウンドに戻りました: 通知バッジをクリア');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isInitializing = ref.watch(apiInitializingProvider);
     final themeMode = ref.watch(themeModeProvider);
 

@@ -222,7 +222,7 @@ class AppDrawer extends ConsumerWidget {
               color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
           Expanded(
             child: Container(
               height: 1,
@@ -323,7 +323,7 @@ class AppDrawer extends ConsumerWidget {
                   ),
                 ),
 
-                const SizedBox(width: 16),
+                const SizedBox(width: 10),
 
                 // タイトル
                 Expanded(
@@ -480,7 +480,7 @@ class AppDrawer extends ConsumerWidget {
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 6),
 
             // ユーザー情報
             Column(
