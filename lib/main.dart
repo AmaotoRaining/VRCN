@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_app_badger/flutter_app_badger.dart';
+import 'package:flutter_app_badge_control/flutter_app_badge_control.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -155,7 +155,7 @@ class _VRChatAppState extends ConsumerState<VRChatApp>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       // アプリがフォアグラウンドに戻ったらバッジをクリア
-      FlutterAppBadger.removeBadge();
+      FlutterAppBadgeControl.removeBadge();
       debugPrint('アプリがフォアグラウンドに戻りました: 通知バッジをクリア');
     }
   }

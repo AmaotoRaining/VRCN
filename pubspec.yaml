@@ -1,7 +1,7 @@
 name: vrchat
 description: "VRCN"
 publish_to: "none"
-version: 1.0.3
+version: 1.0.3+64
 
 environment:
   sdk: ^3.7.2
@@ -16,9 +16,11 @@ dependencies:
   # VRChat API
   vrchat_dart: ^3.6.0
 
+  # パス
   path_provider: ^2.0.11
 
   shared_preferences: ^2.5.3
+
   # Keychain
   flutter_secure_storage: ^9.2.4
 
@@ -94,7 +96,8 @@ dependencies:
   timezone: ^0.10.1
 
   # バッジ
-  flutter_app_badger: ^1.5.0
+  flutter_app_badge_control: ^0.0.2
+
   flutter_background_service: ^5.1.0
   flutter_background_service_android: ^6.3.0
   flutter_background_service_ios: ^5.0.3
