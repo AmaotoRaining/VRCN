@@ -51,8 +51,6 @@ Future<void> main() async {
   // デバッグ用.envファイルの読み込み
   if (kDebugMode) {
     await dotenv.load(fileName: '.env');
-  } else {
-    await dotenv.load(fileName: '.env.demo');
   }
 
   // 前回表示された通知の履歴を確認
