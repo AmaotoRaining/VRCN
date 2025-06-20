@@ -27,7 +27,6 @@ class ProfilePage extends ConsumerStatefulWidget {
 
 class _ProfilePageState extends ConsumerState<ProfilePage>
     with SingleTickerProviderStateMixin {
-  // リロードトリガー用のキー
   Key _refreshKey = UniqueKey();
   late AnimationController _animationController;
   late Animation<double> _fadeInAnimation;
@@ -54,7 +53,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
 
   Future<void> _refreshProfile() async {
     setState(() {
-      // キーを更新することでウィジェットツリーの再構築を強制
       _refreshKey = UniqueKey();
     });
 
@@ -80,7 +78,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
     };
 
     return Scaffold(
-      key: _refreshKey, // リフレッシュキーを設定
+      key: _refreshKey,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -183,7 +181,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
       userRepresentedGroupProvider(user.id),
     );
 
-    // 現在使用中のアバター情報を取得
+    // 現在使用中のアバター情報
     final ownAvatarAsync = ref.watch(ownAvatarProvider(user.id));
 
     // アクセントカラーの設定
@@ -579,7 +577,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                   ],
                 ),
 
-                // 現在のアバター情報セクション（新規追加）
+                // 現在のアバター
                 const SizedBox(height: 24),
                 ownAvatarAsync.when(
                   data:
@@ -600,7 +598,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                   error: (_, _) => const SizedBox.shrink(),
                 ),
 
-                // ステータスメッセージ（存在する場合）
+                // ステータスメッセージ
                 if (user.statusDescription.isNotEmpty) ...[
                   const SizedBox(height: 24),
                   _buildModernInfoCard(

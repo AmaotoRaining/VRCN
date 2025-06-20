@@ -12,6 +12,8 @@ enum AppThemeMode {
 // アプリアイコンタイプ
 enum AppIconType {
   nullbase,
+  vrcn_icon,
+  vrcn_logo,
   nullkalne,
   annobu,
   kazkiller,
@@ -31,6 +33,8 @@ enum AppIconType {
 // アイコン名のマッピング
 Map<AppIconType, String> appIconNameMap = {
   AppIconType.nullbase: 'default',
+  AppIconType.vrcn_icon: 'vrcn_icon',
+  AppIconType.vrcn_logo: 'vrcn_logo',
   AppIconType.nullkalne: 'nullkalne',
   AppIconType.annobu: 'annobu',
   AppIconType.kazkiller: 'kazkiller',

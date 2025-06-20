@@ -49,23 +49,27 @@ android {
             storePassword = keystoreProperties["storePassword"] as String
        }
    }
+
     buildTypes {
         getByName("debug") {
         }
+
         getByName("release") {
             signingConfig = signingConfigs.getByName("release")
 
         }
     }
+
     flavorDimensions += "default"
     productFlavors{
-      create("production") {
-        dimension = "default"
-        }
-        create("dev"){
+      create("dev"){
           dimension = "default"
             // applicationIdSuffix = ".debug"
           }
+
+      create("production") {
+        dimension = "default"
+        }
         }
 }
 

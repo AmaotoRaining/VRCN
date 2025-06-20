@@ -11,7 +11,7 @@
       "program": "lib/main.dart",
       "flutterMode": "debug",
       "deviceId": "67D5ED83-5A6A-4366-9147-AFB46035D253",
-      "args": ["--flavor", "debug"]
+      "args": ["--flavor", "dev"]
     },
     {
       "name": "Debug iPhone実機",
@@ -20,7 +20,7 @@
       "program": "lib/main.dart",
       "flutterMode": "debug",
       "deviceId": "00008140-001C31993ADB001C",
-      "args": ["--flavor", "debug"]
+      "args": ["--flavor", "dev"]
     },
     {
       "name": "Debug Androidエミュ",

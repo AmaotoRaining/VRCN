@@ -154,7 +154,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // 自動ログイン処理中は特別処理
       if (autoLoginState == AutoLoginState.inProgress) {
-        // 一時的なロード画面を表示（/loadingパスを追加）
+        // 一時的なロード画面を表示
         return state.uri.toString() == '/loading' ? null : '/loading';
       }
 

@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
+    <key>NSFaceIDUsageDescription</key>
+    <string>アプリへのアクセスを安全に保つために生体認証を使用します</string>
     <key>CADisableMinimumFrameDurationOnPhone</key>
     <true/>
     <key>CFBundleDevelopmentRegion</key>
@@ -19,6 +21,24 @@
           <key>CFBundleIconFiles</key>
           <array>
             <string>nullkalne</string>
+          </array>
+          <key>UIPrerenderedIcon</key>
+          <false/>
+        </dict>
+        <key>vrcn_icon</key>
+        <dict>
+          <key>CFBundleIconFiles</key>
+          <array>
+            <string>vrcn_icon</string>
+          </array>
+          <key>UIPrerenderedIcon</key>
+          <false/>
+        </dict>
+        <key>vrcn_logo</key>
+        <dict>
+          <key>CFBundleIconFiles</key>
+          <array>
+            <string>vrcn_logo</string>
           </array>
           <key>UIPrerenderedIcon</key>
           <false/>
@@ -148,6 +168,24 @@
           <key>CFBundleIconFiles</key>
           <array>
             <string>nullkalne</string>
+          </array>
+          <key>UIPrerenderedIcon</key>
+          <false/>
+        </dict>
+        <key>vrcn_icon</key>
+        <dict>
+          <key>CFBundleIconFiles</key>
+          <array>
+            <string>vrcn_icon</string>
+          </array>
+          <key>UIPrerenderedIcon</key>
+          <false/>
+        </dict>
+        <key>vrcn_logo</key>
+        <dict>
+          <key>CFBundleIconFiles</key>
+          <array>
+            <string>vrcn_logo</string>
           </array>
           <key>UIPrerenderedIcon</key>
           <false/>

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vrchat/api/vrc_api_container.dart';
+import 'package:vrchat/provider/auth_storage_provider.dart';
 import 'package:vrchat/router/app_router.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
@@ -55,6 +56,33 @@ final autoLoginProvider = FutureProvider<bool>((ref) async {
       // 認証状態更新
       ref.read(authRefreshProvider.notifier).state++;
       return true;
+    }
+
+    // 保存された認証情報を使用してログイン試行
+    final authStorage = ref.read(authStorageProvider);
+    final shouldRemember = await authStorage.getRememberLogin();
+
+    if (shouldRemember) {
+      final credentials = await authStorage.getCredentials();
+
+      if (credentials.username != null &&
+          credentials.password != null &&
+          credentials.username!.isNotEmpty &&
+          credentials.password!.isNotEmpty) {
+        debugPrint('保存された認証情報でログインを試みます');
+
+        // 保存された認証情報でログイン試行
+        result = await api.login(
+          username: credentials.username!,
+          password: credentials.password!,
+        );
+
+        if (result.success != null) {
+          // 認証状態更新
+          ref.read(authRefreshProvider.notifier).state++;
+          return true;
+        }
+      }
     }
 
     // デバッグモードで.env認証情報がある場合に使用

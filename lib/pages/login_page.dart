@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vrchat/provider/auth_storage_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
@@ -34,6 +35,9 @@ class _LoginPageState extends ConsumerState<LoginPage>
   String? _errorMessage;
   var _obscurePassword = true;
   var _showTwoFactorAuth = false;
+
+  // ログイン状態を保存するかどうか
+  var _rememberLogin = true;
 
   // アニメーション用コントローラー
   late AnimationController _animationController;
@@ -135,8 +139,16 @@ class _LoginPageState extends ConsumerState<LoginPage>
         await _animationController.forward();
 
         // 自動OTP入力を試行
-        _tryAutoOtpInput();
+        // _tryAutoOtpInput();
       } else {
+        if (_rememberLogin) {
+          // ログイン情報を安全に保存
+          final authStorage = ref.read(authStorageProvider);
+          await authStorage.saveCredentials(
+            _usernameController.text,
+            _passwordController.text,
+          );
+        }
         await _handleLoginSuccess();
       }
     } catch (e) {
@@ -431,7 +443,31 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                   ),
                                 ),
 
-                                const SizedBox(height: 40),
+                                const SizedBox(height: 16),
+
+                                // ログイン状態を保存するオプション
+                                Row(
+                                  children: [
+                                    Checkbox(
+                                      value: _rememberLogin,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _rememberLogin = value ?? true;
+                                        });
+                                      },
+                                      activeColor: primaryColor,
+                                    ),
+                                    Text(
+                                      'ログイン状態を保存',
+                                      style: GoogleFonts.notoSans(
+                                        fontSize: 14,
+                                        color: subtitleColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 24),
 
                                 // ログインボタン
                                 _buildGradientButton(

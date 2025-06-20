@@ -92,11 +92,17 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
       pinned: true,
       leading: const AppBackButton(),
       actions: [
-        // 共有ボタンをAppBarに追加
-        IconButton(
-          icon: const Icon(Icons.share_outlined, color: Colors.white),
-          onPressed: () => _shareAvatarProfile(avatar),
-          tooltip: 'アバター情報を共有',
+        Container(
+          margin: const EdgeInsets.all(8),
+          decoration: const BoxDecoration(
+            color: Colors.black26,
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.share_outlined, color: Colors.white),
+            color: Colors.white,
+            onPressed: () => _shareAvatarProfile(avatar),
+          ),
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(

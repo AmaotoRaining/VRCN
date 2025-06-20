@@ -31,6 +31,17 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
   final _statusDescriptionFocusNode = FocusNode();
   final _pronounsFocusNode = FocusNode();
 
+  // 現在選択されているカテゴリ
+  var _selectedCategoryIndex = 0;
+
+  // カテゴリ定義
+  final List<Map<String, dynamic>> _categories = [
+    {'title': 'ステータス', 'icon': Icons.mood, 'color': Colors.green},
+    {'title': '自己紹介', 'icon': Icons.person_outline, 'color': Colors.blue},
+    {'title': 'リンク', 'icon': Icons.link, 'color': Colors.purple},
+    {'title': '基本情報', 'icon': Icons.info_outline, 'color': Colors.orange},
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -49,7 +60,6 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
   }
 
   void _initializeControllers() {
-    // 既存のコード
     _statusDescriptionController = TextEditingController(
       text: widget.user.statusDescription,
     );
@@ -144,13 +154,17 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
       }
     } catch (e) {
       if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
               children: [
                 const Icon(Icons.error_outline, color: Colors.white),
                 const SizedBox(width: 12),
-                Flexible(child: Text('更新に失敗しました: ${e.toString()}')),
+                Expanded(child: Text('更新に失敗しました: ${e.toString()}')),
               ],
             ),
             backgroundColor: Colors.red.shade600,
@@ -161,9 +175,6 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
             margin: const EdgeInsets.all(16),
           ),
         );
-        setState(() {
-          _isLoading = false;
-        });
       }
     }
   }
@@ -172,261 +183,512 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     const accentColor = AppTheme.primaryColor;
-    final textColor = isDarkMode ? Colors.white : Colors.black87;
-    final backgroundColor = isDarkMode ? const Color(0xFF1E1E1E) : Colors.white;
     final secondaryColor =
         isDarkMode
-            ? accentColor.withValues(alpha: 0.15)
-            : accentColor.withValues(alpha: 0.08);
+            ? HSLColor.fromColor(accentColor).withLightness(0.4).toColor()
+            : HSLColor.fromColor(accentColor).withLightness(0.6).toColor();
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
 
-    return PopScope(
-      canPop: !_hasUnsavedChanges(),
-      onPopInvokedWithResult: (didPop, [dynamic result]) async {
-        if (didPop) return;
-        final shouldPop = await _showDiscardChangesDialog();
-        if (shouldPop && context.mounted) {
-          await _animationController.reverse();
-          Navigator.of(context).pop();
+    return WillPopScope(
+      onWillPop: () async {
+        if (_hasUnsavedChanges()) {
+          final shouldDiscard = await _showDiscardChangesDialog();
+          return shouldDiscard;
         }
+        return true;
       },
-      child: FadeTransition(
-        opacity: _animation,
-        child: SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, 0.05),
-            end: Offset.zero,
-          ).animate(_animation),
-          child: Container(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
+      child: AnimatedBuilder(
+        animation: _animation,
+        builder: (context, child) {
+          return FractionallySizedBox(
+            heightFactor: 0.85 * _animation.value,
+            child: child,
+          );
+        },
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: isDarkMode ? const Color(0xFF1A1A1A) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 20,
+                offset: const Offset(0, -5),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
-                  blurRadius: 20,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
-            child: Stack(
-              children: [
-                // 装飾的な背景エレメント
-                Positioned(
-                  top: -100,
-                  right: -100,
-                  child: Container(
-                    width: 200,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: accentColor.withValues(alpha: 0.05),
-                    ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // 装飾的な背景エレメント
+              Positioned(
+                top: -100,
+                right: -100,
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: accentColor.withValues(alpha: 0.05),
                   ),
                 ),
-                Positioned(
-                  bottom: -80,
-                  left: -60,
-                  child: Container(
-                    width: 150,
-                    height: 150,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: accentColor.withValues(alpha: 0.07),
-                    ),
+              ),
+              Positioned(
+                bottom: -80,
+                left: -60,
+                child: Container(
+                  width: 150,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: accentColor.withValues(alpha: 0.07),
                   ),
                 ),
+              ),
 
-                // メインコンテンツ
-                SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                  physics: const AlwaysScrollableScrollPhysics(
-                    parent: BouncingScrollPhysics(),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // ハンドル
-                      Center(
-                        child: Container(
-                          width: 40,
-                          height: 5,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(10),
+              // メインコンテンツ
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // ヘッダー
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                    child: Column(
+                      children: [
+                        // ハンドル
+                        Center(
+                          child: Container(
+                            width: 40,
+                            height: 5,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
-                      // ヘッダー
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: accentColor.withValues(alpha: 0.1),
-                              shape: BoxShape.circle,
+                        // ヘッダー
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: accentColor.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.edit, color: accentColor),
                             ),
-                            child: const Icon(Icons.edit, color: accentColor),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'プロフィールを編集',
-                              style: GoogleFonts.notoSans(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: textColor,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'プロフィールを編集',
+                                style: GoogleFonts.notoSans(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: textColor,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 28),
-
-                      // ステータスセクション
-                      _buildSectionHeader(
-                        '現在のステータス',
-                        Icons.mood,
-                        accentColor,
-                        isDarkMode,
-                      ),
-                      const SizedBox(height: 12),
-                      _buildStatusSelector(isDarkMode, accentColor),
-                      const SizedBox(height: 24),
-
-                      // ステータスメッセージセクション
-                      _buildSectionHeader(
-                        'ステータスメッセージ',
-                        Icons.chat_bubble_outline,
-                        accentColor,
-                        isDarkMode,
-                      ),
-                      const SizedBox(height: 12),
-                      _buildStyledTextField(
-                        controller: _statusDescriptionController,
-                        focusNode: _statusDescriptionFocusNode,
-                        hintText: 'あなたの今の状況やメッセージを入力',
-                        maxLength: 100,
-                        prefix: Icon(
-                          Icons.short_text,
-                          color: accentColor.withValues(alpha: 0.7),
-                          size: 22,
+                          ],
                         ),
-                        isDarkMode: isDarkMode,
-                        accentColor: accentColor,
-                      ),
-                      const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
 
-                      // 自己紹介セクション
-                      _buildSectionHeader(
-                        '自己紹介',
-                        Icons.person_outline,
-                        accentColor,
-                        isDarkMode,
-                      ),
-                      const SizedBox(height: 12),
-                      _buildStyledTextField(
-                        controller: _bioController,
-                        focusNode: _bioFocusNode,
-                        hintText: 'あなた自身について書いてみましょう',
-                        maxLength: 500,
-                        maxLines: 5,
-                        isDarkMode: isDarkMode,
-                        accentColor: accentColor,
-                      ),
-                      const SizedBox(height: 24),
+                  // カテゴリ選択
+                  SizedBox(
+                    height: 60,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: _categories.length,
+                      itemBuilder: (context, index) {
+                        final category = _categories[index];
+                        final isSelected = _selectedCategoryIndex == index;
+                        final categoryColor = category['color'] as Color;
 
-                      // リンクセクション
-                      _buildBioLinksSection(
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedCategoryIndex = index;
+                            });
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 8,
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color:
+                                  isSelected
+                                      ? categoryColor.withValues(
+                                        alpha: isDarkMode ? 0.2 : 0.1,
+                                      )
+                                      : isDarkMode
+                                      ? Colors.grey[850]
+                                      : Colors.grey[200],
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color:
+                                    isSelected
+                                        ? categoryColor
+                                        : isDarkMode
+                                        ? Colors.grey[700]!
+                                        : Colors.grey[300]!,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  category['icon'] as IconData,
+                                  size: 20,
+                                  color:
+                                      isSelected
+                                          ? categoryColor
+                                          : isDarkMode
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  category['title'] as String,
+                                  style: GoogleFonts.notoSans(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color:
+                                        isSelected
+                                            ? categoryColor
+                                            : isDarkMode
+                                            ? Colors.grey[300]
+                                            : Colors.grey[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  // コンテンツエリア
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      child: _buildCategoryContent(
                         isDarkMode,
                         accentColor,
                         secondaryColor,
                       ),
-                      const SizedBox(height: 24),
+                    ),
+                  ),
 
-                      // 代名詞セクション
-                      _buildSectionHeader(
-                        '代名詞',
-                        Icons.label_outline,
-                        accentColor,
-                        isDarkMode,
-                      ),
-                      const SizedBox(height: 12),
-                      _buildStyledTextField(
-                        controller: _pronounsController,
-                        focusNode: _pronounsFocusNode,
-                        hintText: '例: he/him, she/her, they/them',
-                        maxLength: 50,
-                        prefix: Icon(
-                          Icons.person_pin,
-                          color: accentColor.withValues(alpha: 0.7),
-                          size: 22,
-                        ),
-                        isDarkMode: isDarkMode,
-                        accentColor: accentColor,
-                      ),
-                      const SizedBox(height: 32),
-
-                      // 保存ボタン
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _saveChanges,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: accentColor,
-                            foregroundColor: Colors.white,
-                            elevation: 2,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            shadowColor: accentColor.withValues(alpha: 0.4),
+                  // 保存ボタン
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                    child: SizedBox(
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _saveChanges,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: accentColor,
+                          foregroundColor: Colors.white,
+                          elevation: 2,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          child:
-                              _isLoading
-                                  ? const SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                  : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(Icons.check_circle),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        '変更を保存',
-                                        style: GoogleFonts.notoSans(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                          shadowColor: accentColor.withValues(alpha: 0.4),
                         ),
+                        child:
+                            _isLoading
+                                ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.check_circle),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      '変更を保存',
+                                      style: GoogleFonts.notoSans(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                       ),
-                      const SizedBox(height: 16),
-                    ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 選択されたカテゴリに応じたコンテンツを表示
+  Widget _buildCategoryContent(
+    bool isDarkMode,
+    Color accentColor,
+    Color secondaryColor,
+  ) {
+    switch (_selectedCategoryIndex) {
+      case 0: // ステータス
+        return _buildStatusCategory(isDarkMode, accentColor);
+      case 1: // 自己紹介
+        return _buildBioCategory(isDarkMode, accentColor);
+      case 2: // リンク
+        return _buildLinksCategory(isDarkMode, accentColor, secondaryColor);
+      case 3: // 基本情報
+        return _buildBasicInfoCategory(isDarkMode, accentColor);
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  // ステータスカテゴリ
+  Widget _buildStatusCategory(bool isDarkMode, Color accentColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('オンラインステータス', Icons.mood, Colors.green, isDarkMode),
+        const SizedBox(height: 16),
+        _buildStatusSelector(isDarkMode, Colors.green),
+        const SizedBox(height: 24),
+
+        _buildSectionHeader(
+          'ステータスメッセージ',
+          Icons.chat_bubble_outline,
+          Colors.green,
+          isDarkMode,
+        ),
+        const SizedBox(height: 12),
+        _buildStyledTextField(
+          controller: _statusDescriptionController,
+          focusNode: _statusDescriptionFocusNode,
+          hintText: 'あなたの今の状況やメッセージを入力',
+          maxLength: 100,
+          prefix: Icon(
+            Icons.short_text,
+            color: Colors.green.withValues(alpha: 0.7),
+            size: 22,
+          ),
+          isDarkMode: isDarkMode,
+          accentColor: Colors.green,
+        ),
+      ],
+    );
+  }
+
+  // 自己紹介カテゴリ
+  Widget _buildBioCategory(bool isDarkMode, Color accentColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          '自己紹介文',
+          Icons.person_outline,
+          Colors.blue,
+          isDarkMode,
+        ),
+        const SizedBox(height: 12),
+        _buildStyledTextField(
+          controller: _bioController,
+          focusNode: _bioFocusNode,
+          hintText: 'あなた自身について書いてみましょう',
+          maxLength: 500,
+          maxLines: 8,
+          isDarkMode: isDarkMode,
+          accentColor: Colors.blue,
+        ),
+      ],
+    );
+  }
+
+  // リンクカテゴリ
+  Widget _buildLinksCategory(
+    bool isDarkMode,
+    Color accentColor,
+    Color secondaryColor,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildSectionHeader(
+              'プロフィールリンク',
+              Icons.link,
+              Colors.purple,
+              isDarkMode,
+            ),
+            TextButton.icon(
+              onPressed: _addLinkField,
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('追加'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.purple,
+                backgroundColor: Colors.purple.withValues(alpha: 0.1),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ..._bioLinkControllers.asMap().entries.map(
+          (entry) => _buildLinkField(
+            entry.key,
+            isDarkMode,
+            Colors.purple,
+            secondaryColor,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'リンクはプロフィールに表示され、タップすると開くことができます',
+          style: GoogleFonts.notoSans(
+            fontSize: 12,
+            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 基本情報カテゴリ
+  Widget _buildBasicInfoCategory(bool isDarkMode, Color accentColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          '代名詞',
+          Icons.label_outline,
+          Colors.orange,
+          isDarkMode,
+        ),
+        const SizedBox(height: 12),
+        _buildStyledTextField(
+          controller: _pronounsController,
+          focusNode: _pronounsFocusNode,
+          hintText: '例: he/him, she/her, they/them',
+          maxLength: 50,
+          prefix: Icon(
+            Icons.person_pin,
+            color: Colors.orange.withValues(alpha: 0.7),
+            size: 22,
+          ),
+          isDarkMode: isDarkMode,
+          accentColor: Colors.orange,
+        ),
+        const SizedBox(height: 20),
+
+        // 現在のユーザー情報表示（読み取り専用）
+        _buildInfoItem(
+          'ユーザー名',
+          widget.user.username.toString(),
+          Icons.account_circle,
+          Colors.orange,
+          isDarkMode,
+        ),
+        const SizedBox(height: 12),
+        _buildInfoItem(
+          '表示名',
+          widget.user.displayName,
+          Icons.badge,
+          Colors.orange,
+          isDarkMode,
+        ),
+        const SizedBox(height: 12),
+        _buildInfoItem(
+          '登録日',
+          _formatDate(widget.user.dateJoined),
+          Icons.calendar_today,
+          Colors.orange,
+          isDarkMode,
+        ),
+      ],
+    );
+  }
+
+  // 読み取り専用の情報アイテム
+  Widget _buildInfoItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+    bool isDarkMode,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: isDarkMode ? 0.1 : 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withValues(alpha: isDarkMode ? 0.2 : 0.1),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 13,
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: isDarkMode ? Colors.white : Colors.black87,
                   ),
                 ),
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
+  }
+
+  // 日付フォーマット
+  String _formatDate(DateTime? date) {
+    if (date == null || date == DateTime.fromMillisecondsSinceEpoch(0)) {
+      return '不明';
+    }
+    return '${date.year}年${date.month}月${date.day}日';
   }
 
   Widget _buildSectionHeader(
@@ -437,17 +699,21 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
   ) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: accentColor.withValues(alpha: 0.8)),
-        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: accentColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: accentColor),
+        ),
+        const SizedBox(width: 12),
         Text(
           title,
           style: GoogleFonts.notoSans(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color:
-                isDarkMode
-                    ? Colors.white.withValues(alpha: 0.9)
-                    : Colors.black87,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: accentColor,
           ),
         ),
       ],
@@ -458,112 +724,89 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
     required TextEditingController controller,
     required FocusNode focusNode,
     required String hintText,
-    required bool isDarkMode,
-    required Color accentColor,
     int maxLength = 100,
     int maxLines = 1,
     Widget? prefix,
+    required bool isDarkMode,
+    required Color accentColor,
   }) {
-    final borderColor = isDarkMode ? Colors.grey[700] : Colors.grey[300];
-    final fillColor =
-        isDarkMode ? Colors.grey[800]!.withValues(alpha: 0.3) : Colors.grey[50];
-
-    return TextFormField(
-      controller: controller,
-      focusNode: focusNode,
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: TextStyle(
-          color: isDarkMode ? Colors.grey[400] : Colors.grey[500],
-          fontSize: 14,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: borderColor!, width: 1.5),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: borderColor, width: 1.5),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: accentColor, width: 1.5),
-        ),
-        filled: true,
-        fillColor: fillColor,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        prefixIcon: prefix,
-        counterStyle: TextStyle(
-          color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
-          fontSize: 12,
-        ),
-      ),
-      style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),
-      maxLength: maxLength,
-      maxLines: maxLines,
-      cursorColor: accentColor,
-    );
-  }
-
-  Widget _buildStatusSelector(bool isDarkMode, Color accentColor) {
-    final statusOptions = [
-      UserStatus.joinMe,
-      UserStatus.active,
-      UserStatus.askMe,
-      UserStatus.busy,
-    ];
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color:
-            isDarkMode
-                ? Colors.grey[850]!.withValues(alpha: 0.5)
-                : Colors.grey[100]!.withValues(alpha: 0.7),
+        color: isDarkMode ? Colors.grey[850] : Colors.grey[100],
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
           width: 1.5,
         ),
-        boxShadow: [
-          BoxShadow(
-            color:
-                isDarkMode
-                    ? Colors.black.withValues(alpha: 0.2)
-                    : Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
-      child: DropdownButtonHideUnderline(
-        child: ButtonTheme(
-          alignedDropdown: true,
+      child: TextField(
+        controller: controller,
+        focusNode: focusNode,
+        maxLength: maxLength,
+        maxLines: maxLines,
+        keyboardType:
+            maxLines > 1 ? TextInputType.multiline : TextInputType.text,
+        textCapitalization: TextCapitalization.sentences,
+        style: GoogleFonts.notoSans(
+          color: isDarkMode ? Colors.white : Colors.black87,
+          height: 1.5,
+        ),
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: GoogleFonts.notoSans(
+            color: isDarkMode ? Colors.grey[500] : Colors.grey[400],
+          ),
+          prefixIcon: prefix,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.all(16),
+          counterStyle: GoogleFonts.notoSans(
+            color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+            fontSize: 12,
+          ),
+        ),
+        cursorColor: accentColor,
+      ),
+    );
+  }
+
+  Widget _buildStatusSelector(bool isDarkMode, Color accentColor) {
+    final statusList = [
+      UserStatus.active,
+      UserStatus.joinMe,
+      UserStatus.askMe,
+      UserStatus.busy,
+      UserStatus.offline,
+    ];
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: isDarkMode ? Colors.grey[850] : Colors.grey[100],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
+          width: 1.5,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: DropdownButtonHideUnderline(
           child: DropdownButton<UserStatus>(
             value: _selectedStatus,
-            icon: Icon(
-              Icons.arrow_drop_down_circle_outlined,
-              color: accentColor.withValues(alpha: 0.7),
-            ),
             isExpanded: true,
             dropdownColor: isDarkMode ? Colors.grey[850] : Colors.white,
             borderRadius: BorderRadius.circular(16),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
             items:
-                statusOptions.map((status) {
-                  final statusColor = StatusHelper.getStatusColor(status);
+                statusList.map((status) {
                   final statusText = StatusHelper.getStatusText(status);
+                  final statusColor = StatusHelper.getStatusColor(status);
 
                   return DropdownMenuItem<UserStatus>(
                     value: status,
                     child: Row(
                       children: [
                         Container(
-                          width: 14,
-                          height: 14,
+                          width: 12,
+                          height: 12,
                           decoration: BoxDecoration(
                             color: statusColor,
                             shape: BoxShape.circle,
@@ -601,91 +844,39 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
     );
   }
 
-  Widget _buildBioLinksSection(
+  Widget _buildLinkField(
+    int index,
     bool isDarkMode,
     Color accentColor,
     Color secondaryColor,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildSectionHeader('リンク', Icons.link, accentColor, isDarkMode),
-            TextButton.icon(
-              onPressed: _addLinkField,
-              icon: const Icon(Icons.add_circle, size: 18),
-              label: const Text('追加'),
-              style: TextButton.styleFrom(
-                foregroundColor: accentColor,
-                backgroundColor: secondaryColor,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        ..._bioLinkControllers.asMap().entries.map((entry) {
-          final index = entry.key;
-          final controller = entry.value;
-
-          return _buildLinkField(
-            controller: controller,
-            index: index,
-            isDarkMode: isDarkMode,
-            accentColor: accentColor,
-          );
-        }),
-      ],
-    );
-  }
-
-  Widget _buildLinkField({
-    required TextEditingController controller,
-    required int index,
-    required bool isDarkMode,
-    required Color accentColor,
-  }) {
-    final focusNode = FocusNode();
-    final borderColor = isDarkMode ? Colors.grey[700] : Colors.grey[300];
-    final fillColor =
-        isDarkMode ? Colors.grey[800]!.withValues(alpha: 0.3) : Colors.grey[50];
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
+      child: DecoratedBox(
         decoration: BoxDecoration(
+          color: isDarkMode ? Colors.grey[850] : Colors.grey[100],
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: borderColor!, width: 1.5),
-          color: fillColor,
+          border: Border.all(
+            color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
+            width: 1.5,
+          ),
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 16),
-              child: Icon(
-                Icons.language,
-                size: 20,
-                color: accentColor.withValues(alpha: 0.6),
-              ),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.link,
+              size: 20,
+              color: accentColor.withValues(alpha: 0.7),
             ),
+            const SizedBox(width: 8),
             Expanded(
-              child: TextFormField(
-                controller: controller,
-                focusNode: focusNode,
+              child: TextField(
+                controller: _bioLinkControllers[index],
                 decoration: InputDecoration(
-                  hintText: 'https://example.com',
-                  hintStyle: TextStyle(
-                    color: isDarkMode ? Colors.grey[400] : Colors.grey[500],
+                  hintText: 'リンクを入力 (例: https://twitter.com/username)',
+                  hintStyle: GoogleFonts.notoSans(
+                    color: isDarkMode ? Colors.grey[500] : Colors.grey[400],
                     fontSize: 14,
                   ),
                   border: InputBorder.none,

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -6,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vrchat/provider/auth_storage_provider.dart';
+import 'package:vrchat/provider/cache_provider.dart';
 import 'package:vrchat/provider/event_reminder_provider.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
@@ -160,31 +164,33 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
                         const SizedBox(height: 24),
 
-                        // アプリアイコン設定
-                        _buildSettingsSection(
-                              title: 'アプリアイコン',
-                              icon: Icons.app_settings_alt_outlined,
-                              iconColor: const Color(0xFF52B69A),
-                              backgroundColor: sectionBgColor,
-                              textColor: textColor,
-                              secondaryTextColor: secondaryTextColor,
-                              buttonColor: buttonColor,
-                              isDarkMode: isDarkMode,
-                              children: [
-                                _buildAppIconSection(
-                                  context,
-                                  ref,
-                                  isDarkMode,
-                                  textColor,
-                                  secondaryTextColor,
-                                ),
-                              ],
-                            )
-                            .animate()
-                            .fadeIn(delay: 200.ms, duration: 600.ms)
-                            .slideY(begin: 0.1, end: 0),
+                        if (Platform.isIOS) ...[
+                          // アプリアイコン設定 (iOS限定)
+                          _buildSettingsSection(
+                                title: 'アプリアイコン',
+                                icon: Icons.app_settings_alt_outlined,
+                                iconColor: const Color(0xFF52B69A),
+                                backgroundColor: sectionBgColor,
+                                textColor: textColor,
+                                secondaryTextColor: secondaryTextColor,
+                                buttonColor: buttonColor,
+                                isDarkMode: isDarkMode,
+                                children: [
+                                  _buildAppIconSection(
+                                    context,
+                                    ref,
+                                    isDarkMode,
+                                    textColor,
+                                    secondaryTextColor,
+                                  ),
+                                ],
+                              )
+                              .animate()
+                              .fadeIn(delay: 200.ms, duration: 600.ms)
+                              .slideY(begin: 0.1, end: 0),
 
-                        const SizedBox(height: 24),
+                          const SizedBox(height: 24),
+                        ],
 
                         // コンテンツ設定
                         _buildSettingsSection(
@@ -271,6 +277,30 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
                         const SizedBox(height: 24),
 
+                        // データとストレージ
+                        _buildSettingsSection(
+                              title: 'データとストレージ',
+                              icon: Icons.storage_outlined,
+                              iconColor: const Color(0xFF2A9D8F),
+                              backgroundColor: sectionBgColor,
+                              textColor: textColor,
+                              secondaryTextColor: secondaryTextColor,
+                              buttonColor: buttonColor,
+                              isDarkMode: isDarkMode,
+                              children: [
+                                _buildCacheClearItem(
+                                  isDarkMode,
+                                  textColor,
+                                  secondaryTextColor,
+                                ),
+                              ],
+                            )
+                            .animate()
+                            .fadeIn(delay: 550.ms, duration: 600.ms)
+                            .slideY(begin: 0.1, end: 0),
+
+                        const SizedBox(height: 24),
+
                         // アプリ情報
                         if (_packageInfo != null)
                           _buildSettingsSection(
@@ -319,7 +349,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                     subtitle: '不具合報告・ご意見はこちら',
                                     onTap:
                                         () => _launchURL(
-                                          'https://discord.gg/xAcm4KBZGk',
+                                          'https://discord.gg/wNgbkdXq6M',
                                         ),
                                     textColor: textColor,
                                     secondaryTextColor: secondaryTextColor,
@@ -357,13 +387,25 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                     textColor: textColor,
                                     secondaryTextColor: secondaryTextColor,
                                   ),
+                                  _buildLinkItem(
+                                    icon: Icons.code_rounded,
+                                    iconColor: const Color(0xFF9381FF),
+                                    title: 'GitHubリポジトリ',
+                                    subtitle: 'ソースコードを見る',
+                                    onTap:
+                                        () => _launchURL(
+                                          'https://github.com/null-base/vrcn',
+                                        ),
+                                    textColor: textColor,
+                                    secondaryTextColor: secondaryTextColor,
+                                  ),
                                 ],
                               )
                               .animate()
                               .fadeIn(delay: 500.ms, duration: 600.ms)
                               .slideY(begin: 0.1, end: 0),
 
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 24),
 
                         // ログアウトボタン
                         Center(
@@ -1143,6 +1185,26 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   _buildAppIconOption(
                     context: context,
                     ref: ref,
+                    iconType: AppIconType.vrcn_icon,
+                    label: 'アイコン',
+                    assetPath: 'assets/images/vrcn_icon@3x.png',
+                    isSelected: settings.appIcon == AppIconType.vrcn_icon,
+                    isDarkMode: isDarkMode,
+                    textColor: textColor,
+                  ),
+                  _buildAppIconOption(
+                    context: context,
+                    ref: ref,
+                    iconType: AppIconType.vrcn_logo,
+                    label: 'ロゴ',
+                    assetPath: 'assets/images/vrcn_logo@3x.png',
+                    isSelected: settings.appIcon == AppIconType.vrcn_logo,
+                    isDarkMode: isDarkMode,
+                    textColor: textColor,
+                  ),
+                  _buildAppIconOption(
+                    context: context,
+                    ref: ref,
                     iconType: AppIconType.nullkalne,
                     label: 'null_base',
                     assetPath: 'assets/images/nullkalne@3x.png',
@@ -1520,6 +1582,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
     if (shouldLogout == true) {
       try {
+        // 保存された認証情報をクリア
+        final authStorage = ref.read(authStorageProvider);
+        await authStorage.clearCredentials();
+
+        // ログアウト処理
         final auth = await ref.read(vrchatAuthProvider.future);
         await auth.logout();
         ref.read(authRefreshProvider.notifier).state++;
@@ -1546,21 +1613,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
   Future<void> _launchURL(String urlString) async {
     final url = Uri.parse(urlString);
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('URLを開けませんでした'),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        );
-      }
-    }
+    await launchUrl(url);
   }
 
   // ライセンス表示メソッド
@@ -1575,5 +1628,153 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       ),
       applicationLegalese: '© 2025 null_base',
     );
+  }
+
+  // キャッシュクリアアイテム
+  Widget _buildCacheClearItem(
+    bool isDarkMode,
+    Color textColor,
+    Color secondaryTextColor,
+  ) {
+    final cacheSizeAsync = ref.watch(cacheSizeProvider);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      child: InkWell(
+        onTap: _showClearCacheConfirmation,
+        borderRadius: BorderRadius.circular(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(
+                  0xFF2A9D8F,
+                ).withValues(alpha: isDarkMode ? 0.2 : 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.cleaning_services_outlined,
+                size: 20,
+                color: Color(0xFF2A9D8F),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'キャッシュを削除',
+                    style: GoogleFonts.notoSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: textColor,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  cacheSizeAsync.when(
+                    data:
+                        (size) => Text(
+                          'キャッシュサイズ: $size',
+                          style: GoogleFonts.notoSans(
+                            fontSize: 13,
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                    loading:
+                        () => Text(
+                          'キャッシュサイズを計算中...',
+                          style: GoogleFonts.notoSans(
+                            fontSize: 13,
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                    error:
+                        (_, _) => Text(
+                          'キャッシュサイズを取得できませんでした',
+                          style: GoogleFonts.notoSans(
+                            fontSize: 13,
+                            color: Colors.red[300],
+                          ),
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.delete_outline, size: 22, color: Colors.red[400]),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // キャッシュ削除確認ダイアログ
+  Future<void> _showClearCacheConfirmation() async {
+    final shouldClear = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Colors.amber[700]),
+                const SizedBox(width: 12),
+                Text(
+                  'キャッシュを削除',
+                  style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            content: Text(
+              'キャッシュを削除すると、一時的に保存された画像やデータが削除されます。\n\nアカウント情報やアプリの設定は削除されません。',
+              style: GoogleFonts.notoSans(),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(
+                  'キャンセル',
+                  style: GoogleFonts.notoSans(color: Colors.grey[600]),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2A9D8F),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text('削除する', style: GoogleFonts.notoSans()),
+              ),
+            ],
+          ),
+    );
+
+    if (shouldClear == true) {
+      final cacheService = ref.read(cacheServiceProvider);
+      final success = await cacheService.clearCache();
+
+      if (mounted) {
+        // キャッシュサイズを再計算するためプロバイダーを更新
+        ref.invalidate(cacheSizeProvider);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(success ? 'キャッシュを削除しました' : 'キャッシュの削除中にエラーが発生しました'),
+            backgroundColor: success ? Colors.green : Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+    }
   }
 }

@@ -8,7 +8,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
-import 'package:vrchat/widgets/app_back_button.dart';
 import 'package:vrchat/widgets/error_view.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
@@ -80,7 +79,18 @@ class WorldDetailPage extends ConsumerWidget {
     return SliverAppBar(
       expandedHeight: 250,
       pinned: true,
-      leading: const AppBackButton(),
+      leading: Container(
+        margin: const EdgeInsets.all(8),
+        decoration: const BoxDecoration(
+          color: Colors.black26,
+          shape: BoxShape.circle,
+        ),
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          color: Colors.white,
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,
