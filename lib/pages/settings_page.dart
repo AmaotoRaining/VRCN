@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -162,31 +164,33 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
                         const SizedBox(height: 24),
 
-                        // アプリアイコン設定
-                        _buildSettingsSection(
-                              title: 'アプリアイコン',
-                              icon: Icons.app_settings_alt_outlined,
-                              iconColor: const Color(0xFF52B69A),
-                              backgroundColor: sectionBgColor,
-                              textColor: textColor,
-                              secondaryTextColor: secondaryTextColor,
-                              buttonColor: buttonColor,
-                              isDarkMode: isDarkMode,
-                              children: [
-                                _buildAppIconSection(
-                                  context,
-                                  ref,
-                                  isDarkMode,
-                                  textColor,
-                                  secondaryTextColor,
-                                ),
-                              ],
-                            )
-                            .animate()
-                            .fadeIn(delay: 200.ms, duration: 600.ms)
-                            .slideY(begin: 0.1, end: 0),
+                        if (Platform.isIOS) ...[
+                          // アプリアイコン設定 (iOS限定)
+                          _buildSettingsSection(
+                                title: 'アプリアイコン',
+                                icon: Icons.app_settings_alt_outlined,
+                                iconColor: const Color(0xFF52B69A),
+                                backgroundColor: sectionBgColor,
+                                textColor: textColor,
+                                secondaryTextColor: secondaryTextColor,
+                                buttonColor: buttonColor,
+                                isDarkMode: isDarkMode,
+                                children: [
+                                  _buildAppIconSection(
+                                    context,
+                                    ref,
+                                    isDarkMode,
+                                    textColor,
+                                    secondaryTextColor,
+                                  ),
+                                ],
+                              )
+                              .animate()
+                              .fadeIn(delay: 200.ms, duration: 600.ms)
+                              .slideY(begin: 0.1, end: 0),
 
-                        const SizedBox(height: 24),
+                          const SizedBox(height: 24),
+                        ],
 
                         // コンテンツ設定
                         _buildSettingsSection(
@@ -380,6 +384,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                     title: 'オープンソース情報',
                                     subtitle: '使用しているライブラリ等のライセンス',
                                     onTap: _showLicenses,
+                                    textColor: textColor,
+                                    secondaryTextColor: secondaryTextColor,
+                                  ),
+                                  _buildLinkItem(
+                                    icon: Icons.code_rounded,
+                                    iconColor: const Color(0xFF9381FF),
+                                    title: 'GitHubリポジトリ',
+                                    subtitle: 'ソースコードを見る',
+                                    onTap:
+                                        () => _launchURL(
+                                          'https://github.com/null-base/vrcn',
+                                        ),
                                     textColor: textColor,
                                     secondaryTextColor: secondaryTextColor,
                                   ),
@@ -1169,6 +1185,26 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   _buildAppIconOption(
                     context: context,
                     ref: ref,
+                    iconType: AppIconType.vrcn_icon,
+                    label: 'アイコン',
+                    assetPath: 'assets/images/vrcn_icon@3x.png',
+                    isSelected: settings.appIcon == AppIconType.vrcn_icon,
+                    isDarkMode: isDarkMode,
+                    textColor: textColor,
+                  ),
+                  _buildAppIconOption(
+                    context: context,
+                    ref: ref,
+                    iconType: AppIconType.vrcn_logo,
+                    label: 'ロゴ',
+                    assetPath: 'assets/images/vrcn_logo@3x.png',
+                    isSelected: settings.appIcon == AppIconType.vrcn_logo,
+                    isDarkMode: isDarkMode,
+                    textColor: textColor,
+                  ),
+                  _buildAppIconOption(
+                    context: context,
+                    ref: ref,
                     iconType: AppIconType.nullkalne,
                     label: 'null_base',
                     assetPath: 'assets/images/nullkalne@3x.png',
@@ -1577,21 +1613,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
   Future<void> _launchURL(String urlString) async {
     final url = Uri.parse(urlString);
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('URLを開けませんでした'),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        );
-      }
-    }
+    await launchUrl(url);
   }
 
   // ライセンス表示メソッド
@@ -1614,7 +1636,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     Color textColor,
     Color secondaryTextColor,
   ) {
-     final cacheSizeAsync = ref.watch(cacheSizeProvider);
+    final cacheSizeAsync = ref.watch(cacheSizeProvider);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),

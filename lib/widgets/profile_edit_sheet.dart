@@ -322,8 +322,8 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
                             decoration: BoxDecoration(
                               color:
                                   isSelected
-                                      ? categoryColor.withValues(alpha:
-                                        isDarkMode ? 0.2 : 0.1,
+                                      ? categoryColor.withValues(
+                                        alpha: isDarkMode ? 0.2 : 0.1,
                                       )
                                       : isDarkMode
                                       ? Colors.grey[850]
@@ -545,7 +545,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
               label: const Text('追加'),
               style: TextButton.styleFrom(
                 foregroundColor: Colors.purple,
-                backgroundColor: Colors.purple.withValues(alpha:0.1),
+                backgroundColor: Colors.purple.withValues(alpha: 0.1),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 8,
@@ -647,7 +647,9 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
       decoration: BoxDecoration(
         color: color.withValues(alpha: isDarkMode ? 0.1 : 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha:isDarkMode ? 0.2 : 0.1)),
+        border: Border.all(
+          color: color.withValues(alpha: isDarkMode ? 0.2 : 0.1),
+        ),
       ),
       child: Row(
         children: [

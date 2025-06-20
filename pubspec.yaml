@@ -1,7 +1,7 @@
 name: vrchat
 description: "VRCN"
 publish_to: "none"
-version: 1.0.3+64
+version: 1.0.3+65
 
 environment:
   sdk: ^3.7.2
@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
 
   flutter_localizations:
-     sdk: flutter
+    sdk: flutter
 
   # VRChat API
   vrchat_dart: ^3.6.0
@@ -117,13 +117,9 @@ flutter:
 
   assets:
     - path: assets/images/
-    - path: .env.demo
     - path: .env
       flavors:
-      - dev
-
-dependency_overrides:
-  vrchat_dart_generated:
+        - dev
 
 flutter_icons:
   image_path_android: assets/launcher_icon/android_icon.png
@@ -136,13 +132,13 @@ flutter_icons:
   ios: true
 
 flutter_native_splash:
-  color: '#262626'
+  color: "#262626"
   image: assets/images/splash.png
-  color_dark: '#262626'
+  color_dark: "#262626"
   image_dark: assets/images/splash.png
   fullscreen: true
   android_12:
-    icon_background_color: '#262626'
+    icon_background_color: "#262626"
     image: assets/images/splash.png
-    icon_background_color_dark: '#262626'
+    icon_background_color_dark: "#262626"
     image_dark: assets/images/splash.png

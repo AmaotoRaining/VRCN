@@ -28,6 +28,30 @@
             "state" : "new",
             "value" : "vrchat"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vrchat"
+          }
+        }
+      }
+    },
+    "NSFaceIDUsageDescription" : {
+      "comment" : "Privacy - Face ID Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "アプリへのアクセスを安全に保つために生体認証を使用します"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリへのアクセスを安全に保つために生体認証を使用します"
+          }
         }
       }
     }

@@ -139,7 +139,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
         await _animationController.forward();
 
         // 自動OTP入力を試行
-        _tryAutoOtpInput();
+        // _tryAutoOtpInput();
       } else {
         if (_rememberLogin) {
           // ログイン情報を安全に保存

@@ -25,6 +25,24 @@
           <key>UIPrerenderedIcon</key>
           <false/>
         </dict>
+        <key>vrcn_icon</key>
+        <dict>
+          <key>CFBundleIconFiles</key>
+          <array>
+            <string>vrcn_icon</string>
+          </array>
+          <key>UIPrerenderedIcon</key>
+          <false/>
+        </dict>
+        <key>vrcn_logo</key>
+        <dict>
+          <key>CFBundleIconFiles</key>
+          <array>
+            <string>vrcn_logo</string>
+          </array>
+          <key>UIPrerenderedIcon</key>
+          <false/>
+        </dict>
         <key>annobu</key>
         <dict>
           <key>CFBundleIconFiles</key>
@@ -150,6 +168,24 @@
           <key>CFBundleIconFiles</key>
           <array>
             <string>nullkalne</string>
+          </array>
+          <key>UIPrerenderedIcon</key>
+          <false/>
+        </dict>
+        <key>vrcn_icon</key>
+        <dict>
+          <key>CFBundleIconFiles</key>
+          <array>
+            <string>vrcn_icon</string>
+          </array>
+          <key>UIPrerenderedIcon</key>
+          <false/>
+        </dict>
+        <key>vrcn_logo</key>
+        <dict>
+          <key>CFBundleIconFiles</key>
+          <array>
+            <string>vrcn_logo</string>
           </array>
           <key>UIPrerenderedIcon</key>
           <false/>
