@@ -1,16 +1,10 @@
 {
-  "sourceLanguage" : "en",
+  "sourceLanguage" : "ja",
   "strings" : {
     "CFBundleDisplayName" : {
       "comment" : "Bundle display name",
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "VRCN"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -23,12 +17,6 @@
       "comment" : "Bundle name",
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "vrchat"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -41,12 +29,6 @@
       "comment" : "Privacy - Face ID Usage Description",
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "アプリへのアクセスを安全に保つために生体認証を使用します"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
