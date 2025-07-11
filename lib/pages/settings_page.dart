@@ -838,13 +838,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     borderRadius: BorderRadius.circular(20),
                   ),
                   title: Text(
-                    'アバター検索 API URL',
+                    'アバター検索API URL',
                     style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
                   ),
                   content: TextField(
                     controller: controller,
                     decoration: InputDecoration(
-                      hintText: 'https://api.example.com/avatar/search',
+                      hintText: 'https://null-base.com/',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

@@ -69,7 +69,7 @@ class CreditsPage extends StatelessWidget {
                   credits: [
                     CreditItem(
                       name: 'null_base',
-                      role: 'Error.Human is Dead,mismatch.',
+                      role: 'じゃあね黙って',
                       icon: const CircleAvatar(
                         backgroundImage: AssetImage('assets/icons/default.png'),
                       ),

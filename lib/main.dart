@@ -1,5 +1,7 @@
+import 'package:app_links/app_links.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,6 +33,15 @@ Future<void> main() async {
   // Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  // クラッシュハンドラ
+  FlutterError.onError = (errorDetails) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
   // システムUIの設定
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
@@ -41,6 +52,8 @@ Future<void> main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
   // SharedPreferencesの初期化
   final prefs = await SharedPreferences.getInstance();
@@ -134,11 +147,37 @@ class VRChatApp extends ConsumerStatefulWidget {
 
 class _VRChatAppState extends ConsumerState<VRChatApp>
     with WidgetsBindingObserver {
+  late AppLinks _appLinks;
+
   @override
   void initState() {
     super.initState();
     // ライフサイクルオブザーバーとして登録
     WidgetsBinding.instance.addObserver(this);
+
+    _initAppLinks();
+  }
+
+  void _initAppLinks() async {
+    _appLinks = AppLinks();
+
+    // アプリ起動時のリンク処理
+    final initialLink = await _appLinks.getInitialLink();
+    if (initialLink != null) {
+      _handleIncomingLink(initialLink);
+    }
+
+    // アプリ実行中のリンク処理
+    _appLinks.uriLinkStream.listen(_handleIncomingLink);
+  }
+
+  void _handleIncomingLink(Uri uri) {
+    if (uri.scheme == 'vrcn' && uri.host == 'avatar-api-url') {
+      final apiUrl = uri.queryParameters['url'];
+      if (apiUrl != null && apiUrl.isNotEmpty) {
+        ref.read(settingsProvider.notifier).setAvatarSearchApiUrl(apiUrl);
+      }
+    }
   }
 
   @override
