@@ -1,7 +1,7 @@
 name: vrchat
 description: "VRCN"
 publish_to: "none"
-version: 1.0.4
+version: 1.1.0
 
 environment:
   sdk: ^3.7.2
@@ -102,6 +102,9 @@ dependencies:
   flutter_background_service_android: ^6.3.0
   flutter_background_service_ios: ^5.0.3
 
+  # Shorebird
+  shorebird_code_push: ^2.0.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -121,6 +124,7 @@ flutter:
     - path: .env
       flavors:
         - dev
+    - shorebird.yaml
 
   # fonts:
   #   - family: LINESeedJP
