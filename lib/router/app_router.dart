@@ -21,6 +21,8 @@ import 'package:vrchat/pages/profile_page.dart';
 import 'package:vrchat/pages/search_page.dart';
 import 'package:vrchat/pages/settings_page.dart';
 import 'package:vrchat/pages/world_detail_page.dart';
+import 'package:vrchat/pages/terms_agreement_page.dart';
+import 'package:vrchat/utils/first_launch_utils.dart';
 import 'package:vrchat/provider/search_providers.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
@@ -144,25 +146,33 @@ final routerProvider = Provider<GoRouter>((ref) {
       VRChatNavigationObserver(ref.read(navigationIndexProvider.notifier)),
       analyticsObserver, // Firebase Analytics Observer
     ],
-    redirect: (context, state) {
-      final isLoginRoute = state.uri.toString() == '/login';
+    redirect: (context, state) async {
+      final location = state.uri.toString();
+      final isLoginRoute = location == '/login';
+      final isTermsRoute = location == '/terms';
 
       // API初期化中は何もしない
       if (isInitializing) {
         return null;
       }
 
+      // 初回起動チェック
+      final shouldShowOnboarding = await FirstLaunchUtils.shouldShowOnboarding();
+      if (shouldShowOnboarding && !isTermsRoute) {
+        return '/terms';
+      }
+
       // 自動ログイン処理中は特別処理
       if (autoLoginState == AutoLoginState.inProgress) {
         // 一時的なロード画面を表示
-        return state.uri.toString() == '/loading' ? null : '/loading';
+        return location == '/loading' ? null : '/loading';
       }
 
       // 認証状態に基づいてリダイレクト
       return authState.when(
         data: (isLoggedIn) {
           // ログインしていない場合はログイン画面へ
-          if (!isLoggedIn && !isLoginRoute) {
+          if (!isLoggedIn && !isLoginRoute && !isTermsRoute) {
             FlutterNativeSplash.remove();
             return '/login';
           }
@@ -176,10 +186,19 @@ final routerProvider = Provider<GoRouter>((ref) {
           return null;
         },
         loading: () => null,
-        error: (_, _) => isLoginRoute ? null : '/login',
+        error: (_, _) => isLoginRoute || isTermsRoute ? null : '/login',
       );
     },
     routes: [
+      // 利用規約同意画面を追加
+      GoRoute(
+        path: '/terms',
+        name: 'terms',
+        builder: (context, state) {
+          _setCurrentScreen(ref, '利用規約同意画面');
+          return const TermsAgreementPage();
+        },
+      ),
       ShellRoute(
         builder: (context, state, child) {
           final location = state.uri.toString();

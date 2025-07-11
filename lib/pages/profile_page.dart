@@ -457,7 +457,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                                               cacheManager: JsonCacheManager(),
                                             )
                                             : const AssetImage(
-                                                  'assets/images/default.png',
+                                                  'assets/icons/default.png',
                                                 )
                                                 as ImageProvider,
                                     child:
@@ -498,7 +498,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                                           cacheManager: JsonCacheManager(),
                                         )
                                         : const AssetImage(
-                                              'assets/images/default.png',
+                                              'assets/icons/default.png',
                                             )
                                             as ImageProvider,
                                 child:

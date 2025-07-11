@@ -158,6 +158,33 @@
 				<key>UIPrerenderedIcon</key>
 				<false/>
 			</dict>
+			<key>etoeto</key>
+			<dict>
+				<key>CFBundleIconFiles</key>
+				<array>
+					<string>etoeto</string>
+				</array>
+				<key>UIPrerenderedIcon</key>
+				<false/>
+			</dict>
+			<key>pampy</key>
+			<dict>
+				<key>CFBundleIconFiles</key>
+				<array>
+					<string>pampy</string>
+				</array>
+				<key>UIPrerenderedIcon</key>
+				<false/>
+			</dict>
+			<key>yume</key>
+			<dict>
+				<key>CFBundleIconFiles</key>
+				<array>
+					<string>yume</string>
+				</array>
+				<key>UIPrerenderedIcon</key>
+				<false/>
+			</dict>
 		</dict>
 		<key>CFBundleIcons~ipad</key>
 		<dict>
@@ -301,6 +328,33 @@
 				<key>CFBundleIconFiles</key>
 				<array>
 					<string>vrcn_logo</string>
+				</array>
+				<key>UIPrerenderedIcon</key>
+				<false/>
+			</dict>
+			<key>etoeto</key>
+			<dict>
+				<key>CFBundleIconFiles</key>
+				<array>
+					<string>etoeto</string>
+				</array>
+				<key>UIPrerenderedIcon</key>
+				<false/>
+			</dict>
+			<key>pampy</key>
+			<dict>
+				<key>CFBundleIconFiles</key>
+				<array>
+					<string>pampy</string>
+				</array>
+				<key>UIPrerenderedIcon</key>
+				<false/>
+			</dict>
+			<key>yume</key>
+			<dict>
+				<key>CFBundleIconFiles</key>
+				<array>
+					<string>yume</string>
 				</array>
 				<key>UIPrerenderedIcon</key>
 				<false/>

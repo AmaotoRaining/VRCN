@@ -28,6 +28,9 @@ enum AppIconType {
   enadori,
   roize,
   r4in,
+  etoeto,
+  pampy,
+  yume,
 }
 
 // アイコン名のマッピング
@@ -49,6 +52,9 @@ Map<AppIconType, String> appIconNameMap = {
   AppIconType.enadori: 'enadori',
   AppIconType.roize: 'roize',
   AppIconType.r4in: 'r4in',
+  AppIconType.etoeto: 'etoeto',
+  AppIconType.pampy: 'pampy',
+  AppIconType.yume: 'yume',
 };
 
 // 設定データモデル
