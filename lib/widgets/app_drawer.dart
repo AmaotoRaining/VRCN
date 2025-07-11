@@ -8,6 +8,7 @@ import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/utils/status_helpers.dart';
+import 'package:vrchat/widgets/feedback_dialog.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
 class AppDrawer extends ConsumerWidget {
@@ -182,6 +183,18 @@ class AppDrawer extends ConsumerWidget {
                           context: context,
                           isDarkMode: isDarkMode,
                           items: [
+                            _MenuItem(
+                              icon: Icons.feedback_outlined,
+                              title: 'フィードバック',
+                              isSelected: false,
+                              onTap: () {
+                                Navigator.pop(context);
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => const FeedbackDialog(),
+                                );
+                              },
+                            ),
                             _MenuItem(
                               icon: Icons.settings_rounded,
                               title: '設定',

@@ -3,7 +3,6 @@
   "strings" : {
     "CFBundleDisplayName" : {
       "comment" : "Bundle display name",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "ja" : {
           "stringUnit" : {
@@ -15,7 +14,6 @@
     },
     "CFBundleName" : {
       "comment" : "Bundle name",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "ja" : {
           "stringUnit" : {
@@ -27,7 +25,6 @@
     },
     "NSFaceIDUsageDescription" : {
       "comment" : "Privacy - Face ID Usage Description",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "ja" : {
           "stringUnit" : {
