@@ -69,10 +69,6 @@ class AppDrawer extends ConsumerWidget {
                       isDarkMode
                           ? const Color(0xFF1A1F2C).withValues(alpha: 0.9)
                           : Colors.white.withValues(alpha: 0.9),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(32),
-                    topRight: Radius.circular(0),
-                  ),
                 ),
                 child: ClipRRect(
                   borderRadius: const BorderRadius.only(
@@ -82,7 +78,7 @@ class AppDrawer extends ConsumerWidget {
                     physics: const BouncingScrollPhysics(),
                     child: Column(
                       children: [
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 6),
 
                         // メインナビゲーション
                         _buildNavigationSection(
@@ -286,7 +282,7 @@ class AppDrawer extends ConsumerWidget {
         isDarkMode ? Colors.grey[300] : Colors.grey[800];
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color:
             isSelected
@@ -303,7 +299,7 @@ class AppDrawer extends ConsumerWidget {
           highlightColor: selectedColor.withValues(alpha: 0.05),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: Row(
               children: [
                 // アイコン
@@ -354,15 +350,15 @@ class AppDrawer extends ConsumerWidget {
                 // 選択インジケーター
                 if (isSelected)
                   Container(
-                    width: 5,
-                    height: 5,
+                    width: 6,
+                    height: 6,
                     decoration: BoxDecoration(
                       color: selectedColor,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
                           color: selectedColor.withValues(alpha: 0.3),
-                          blurRadius: 4,
+                          blurRadius: 6,
                           spreadRadius: 1,
                         ),
                       ],
@@ -386,7 +382,7 @@ class AppDrawer extends ConsumerWidget {
     final statusColor = StatusHelper.getStatusColor(user.status);
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -493,7 +489,7 @@ class AppDrawer extends ConsumerWidget {
               ),
             ),
 
-            const SizedBox(height: 6),
+            const SizedBox(height: 3),
 
             // ユーザー情報
             Column(
@@ -574,7 +570,7 @@ class AppDrawer extends ConsumerWidget {
     );
   }
 
-  // スタイリッシュなローディングヘッダー
+  // ローディングヘッダー
   Widget _buildStylishLoadingHeader(BuildContext context, bool isDarkMode) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 50),
@@ -637,7 +633,7 @@ class AppDrawer extends ConsumerWidget {
     );
   }
 
-  // スタイリッシュなエラーヘッダー
+  // エラーヘッダー
   Widget _buildEnhancedErrorHeader(
     BuildContext context,
     WidgetRef ref,
