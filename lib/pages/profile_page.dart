@@ -636,7 +636,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                           user.statusDescription,
                           style: GoogleFonts.notoSans(
                             fontSize: 16,
-                            fontStyle: FontStyle.italic,
                             height: 1.5,
                             color:
                                 isDarkMode
