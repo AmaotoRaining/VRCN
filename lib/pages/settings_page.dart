@@ -211,7 +211,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                   secondaryTextColor,
                                 ),
                                 _buildSwitchSetting(
-                                  icon: Icons.warning_amber_outlined,
+                                  icon: Icons.search,
                                   iconColor: const Color(0xFFE76F51),
                                   title: '検索機能を有効',
                                   subtitle:
@@ -1236,7 +1236,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     context: context,
                     ref: ref,
                     iconType: AppIconType.miyamoto,
-                    label: 'Miyamoto_',
+                    label: 'lonely縷縷',
                     assetPath: 'assets/icons/miyamoto@3x.png',
                     isSelected: settings.appIcon == AppIconType.miyamoto,
                     isDarkMode: isDarkMode,
