@@ -107,7 +107,7 @@ dependencies:
 
   # Shorebird
   shorebird_code_push: ^2.0.4
-  
+
   device_info_plus: ^11.5.0
   apple_product_name: ^3.6.0
 
