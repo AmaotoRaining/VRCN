@@ -2,17 +2,21 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>FlutterDeepLinkingEnabled</key>
-  <false/>
-  <key>CFBundleURLTypes</key>
-  <array>
-    <dict>
-        <key>CFBundleURLSchemes</key>
-        <array>
-            <string>vrcn</string>
-        </array>
-    </dict>
-  </array>
+	<key>NSPhotoLibraryUsageDescription</key>
+  <string>VRChatのプリントを写真ライブラリに保存するために使用します</string>
+  <key>NSPhotoLibraryAddUsageDescription</key>
+  <string>VRChatのプリントを写真ライブラリに保存するために使用します</string>
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>vrcn</string>
+			</array>
+		</dict>
+	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

@@ -119,26 +119,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                       },
                     );
 
-                    // プロフィールが更新されたら、情報を再取得
-                    if (result == true) {
-                      // ローディングインジケータを表示
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('プロフィール情報を更新中...'),
-                            duration: Duration(milliseconds: 1000),
-                          ),
-                        );
-                      }
-
-                      // 更新処理を待機
+                    // 編集シートが閉じられて結果がtrueの場合
+                    if (result == true && context.mounted) {
                       await _refreshProfile();
-
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('プロフィールを更新しました')),
-                        );
-                      }
                     }
                   },
                 ),
@@ -315,6 +298,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                               ),
                               const SizedBox(height: 4),
                               Text(
+                                // ignore: deprecated_member_use
                                 '@${user.username}',
                                 style: GoogleFonts.notoSans(
                                   fontSize: 14,

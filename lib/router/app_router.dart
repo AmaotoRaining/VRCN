@@ -17,16 +17,17 @@ import 'package:vrchat/pages/groups_page.dart';
 import 'package:vrchat/pages/login_page.dart';
 import 'package:vrchat/pages/notifications_page.dart';
 import 'package:vrchat/pages/osc_page.dart';
+import 'package:vrchat/pages/prints_page.dart';
 import 'package:vrchat/pages/profile_page.dart';
 import 'package:vrchat/pages/search_page.dart';
 import 'package:vrchat/pages/settings_page.dart';
-import 'package:vrchat/pages/world_detail_page.dart';
 import 'package:vrchat/pages/terms_agreement_page.dart';
-import 'package:vrchat/utils/first_launch_utils.dart';
+import 'package:vrchat/pages/world_detail_page.dart';
 import 'package:vrchat/provider/search_providers.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/navigation_observer.dart';
+import 'package:vrchat/utils/first_launch_utils.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat/widgets/navigation_bar.dart';
 
@@ -157,7 +158,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       // 初回起動チェック
-      final shouldShowOnboarding = await FirstLaunchUtils.shouldShowOnboarding();
+      final shouldShowOnboarding =
+          await FirstLaunchUtils.shouldShowOnboarding();
       if (shouldShowOnboarding && !isTermsRoute) {
         return '/terms';
       }
@@ -328,22 +330,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return const FavoritesPage();
         },
       ),
-      GoRoute(
-        path: '/event_calendar',
-        name: 'event_calendar',
-        builder: (context, state) {
-          _setCurrentScreen(ref, 'イベントカレンダー');
-          return const EventCalendarPage();
-        },
-      ),
-      GoRoute(
-        path: '/osc',
-        name: 'osc',
-        builder: (context, state) {
-          _setCurrentScreen(ref, 'OSCコントローラー');
-          return const OscPage();
-        },
-      ),
+
       GoRoute(
         path: '/groups',
         name: 'groups',
@@ -358,6 +345,30 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           _setCurrentScreen(ref, 'アバター一覧画面');
           return const AvatarsPage();
+        },
+      ),
+      GoRoute(
+        path: '/prints',
+        name: 'prints',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'プリント一覧画面');
+          return const PrintsPage();
+        },
+      ),
+      GoRoute(
+        path: '/event_calendar',
+        name: 'event_calendar',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'イベントカレンダー');
+          return const EventCalendarPage();
+        },
+      ),
+      GoRoute(
+        path: '/osc',
+        name: 'osc',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'OSCコントローラー');
+          return const OscPage();
         },
       ),
       GoRoute(

@@ -170,6 +170,17 @@ class AppDrawer extends ConsumerWidget {
                                 Navigator.pop(context);
                               },
                             ),
+                            _MenuItem(
+                              icon: Icons.print,
+                              title: 'プリント',
+                              isSelected: GoRouterState.of(
+                                context,
+                              ).uri.path.startsWith('/prints'),
+                              onTap: () {
+                                context.push('/prints');
+                                Navigator.pop(context);
+                              },
+                            ),
                           ],
                         ),
 
@@ -340,8 +351,7 @@ class AppDrawer extends ConsumerWidget {
                     title,
                     style: GoogleFonts.notoSans(
                       fontSize: 15,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: FontWeight.bold,
                       color: isSelected ? selectedColor : unselectedTextColor,
                     ),
                   ),

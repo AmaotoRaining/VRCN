@@ -113,12 +113,16 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
       );
 
       await ref.read(updateUserProvider(updateRequest).future);
-      ref.invalidate(currentUserProvider);
 
+      // プロバイダーを無効化して最新データを取得
+      ref.invalidate(currentUserProvider); // これを追加
+
+      // 最新のユーザー情報を確実に取得
       try {
         await ref.read(currentUserProvider.future);
       } catch (e) {
         debugPrint('ユーザー情報の再取得中にエラーが発生: $e');
+        // エラーが発生しても保存成功として処理を続行
       }
 
       if (mounted) {
