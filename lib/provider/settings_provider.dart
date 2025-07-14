@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dynamic_icon_plus/flutter_dynamic_icon_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vrchat/analytics_repository.dart';
 
 enum AppThemeMode {
   light, // ライトテーマ
@@ -257,6 +258,15 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       // 状態を更新
       await prefs.setInt('appIcon', iconType.index);
       state = state.copyWith(appIcon: iconType);
+
+      // アナリティクスにログを記録
+      final iconName = appIconNameMap[iconType] ?? 'default';
+      final analytics = AnalyticsService();
+      await analytics.logEvent(
+        name: 'app_icon_changed',
+        parameters: {'icon_type': iconName},
+      );
+
       return true;
     } catch (e) {
       // エラー発生時
