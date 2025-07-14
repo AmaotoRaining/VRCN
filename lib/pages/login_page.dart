@@ -12,7 +12,6 @@ import 'package:vrchat/provider/auth_storage_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
-import 'package:vrchat/utils/auto_otp_helper.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -221,35 +220,6 @@ class _LoginPageState extends ConsumerState<LoginPage>
     // ホーム画面に遷移
     if (mounted) {
       context.go('/');
-    }
-  }
-
-  // 自動OTP入力を試行するメソッド
-  void _tryAutoOtpInput() {
-    if (_showTwoFactorAuth) {
-      final username = _usernameController.text;
-
-      // 開発者アカウントの場合のみOTPを生成
-      final otpCode = AutoOtpHelper.generateOtp(username);
-
-      if (otpCode != null && otpCode.length == 6) {
-        debugPrint('OTP自動入力: コード=$otpCode');
-
-        // OTPコードを各桁に分解して入力
-        setState(() {
-          for (var i = 0; i < 6; i++) {
-            _twoFactorCodeValue[i] = otpCode[i];
-          }
-          _twoFactorCodeController.text = otpCode;
-        });
-
-        // 自動認証を少し遅延して実行（UIの更新が完了するように）
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) _verifyTwoFactorCode();
-        });
-      } else {
-        debugPrint('OTP自動入力: 対象外のユーザーまたは生成失敗');
-      }
     }
   }
 
