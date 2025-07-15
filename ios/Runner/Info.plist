@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>NSPhotoLibraryUsageDescription</key>
-  <string>VRChatのプリントを写真ライブラリに保存するために使用します</string>
-  <key>NSPhotoLibraryAddUsageDescription</key>
-  <string>VRChatのプリントを写真ライブラリに保存するために使用します</string>
+	<string>VRChatのプリントを写真に保存するために使用します</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>VRChatのプリントを写真に保存するために使用します</string>
 	<key>FlutterDeepLinkingEnabled</key>
 	<false/>
 	<key>CFBundleURLTypes</key>
@@ -22,7 +22,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>$(APP_DISPLAY_NAME)VRCN</string>
+	<string>VRCN</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIcons</key>

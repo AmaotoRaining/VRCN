@@ -314,14 +314,11 @@ class FriendLocationGroup extends ConsumerWidget {
             child: Row(
               children: [
                 // サムネイルまたはアイコン
-                Hero(
-                  tag: 'world-${effectiveWorldId ?? locationName}',
-                  child: _buildLocationImage(
-                    thumbnailUrl,
-                    headers,
-                    isDarkMode,
-                    dominantColor,
-                  ),
+                _buildLocationImage(
+                  thumbnailUrl,
+                  headers,
+                  isDarkMode,
+                  dominantColor,
                 ),
 
                 const SizedBox(width: 16),

@@ -154,50 +154,47 @@ class _UserSearchTabState extends ConsumerState<UserSearchTab> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // シンプルなアバター表示
-              Hero(
-                tag: 'avatar_${user.id}',
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 4,
-                        spreadRadius: 0,
-                      ),
-                    ],
-                  ),
-                  child: CircleAvatar(
-                    backgroundImage:
-                        user.userIcon != null && user.userIcon!.isNotEmpty
-                            ? CachedNetworkImageProvider(
-                              user.userIcon!,
-                              headers: headers,
-                              cacheManager: JsonCacheManager(),
-                            )
-                            : (user.currentAvatarThumbnailImageUrl != null
-                                ? CachedNetworkImageProvider(
-                                  user.currentAvatarThumbnailImageUrl!,
-                                  headers: headers,
-                                  cacheManager: JsonCacheManager(),
-                                )
-                                : null),
-                    backgroundColor:
-                        (user.userIcon == null || user.userIcon!.isEmpty) &&
-                                user.currentAvatarThumbnailImageUrl == null
-                            ? Colors.grey[300]
-                            : null,
-                    child:
-                        (user.userIcon == null || user.userIcon!.isEmpty) &&
-                                user.currentAvatarThumbnailImageUrl == null
-                            ? const Icon(Icons.person, color: Colors.grey)
-                            : null,
-                  ),
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 4,
+                      spreadRadius: 0,
+                    ),
+                  ],
+                ),
+                child: CircleAvatar(
+                  backgroundImage:
+                      user.userIcon != null && user.userIcon!.isNotEmpty
+                          ? CachedNetworkImageProvider(
+                            user.userIcon!,
+                            headers: headers,
+                            cacheManager: JsonCacheManager(),
+                          )
+                          : (user.currentAvatarThumbnailImageUrl != null
+                              ? CachedNetworkImageProvider(
+                                user.currentAvatarThumbnailImageUrl!,
+                                headers: headers,
+                                cacheManager: JsonCacheManager(),
+                              )
+                              : null),
+                  backgroundColor:
+                      (user.userIcon == null || user.userIcon!.isEmpty) &&
+                              user.currentAvatarThumbnailImageUrl == null
+                          ? Colors.grey[300]
+                          : null,
+                  child:
+                      (user.userIcon == null || user.userIcon!.isEmpty) &&
+                              user.currentAvatarThumbnailImageUrl == null
+                          ? const Icon(Icons.person, color: Colors.grey)
+                          : null,
                 ),
               ),
+
               const SizedBox(width: 16),
               // ユーザー情報（名前のみ）
               Expanded(

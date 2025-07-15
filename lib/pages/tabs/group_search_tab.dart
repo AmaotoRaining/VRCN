@@ -290,7 +290,7 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -305,114 +305,110 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // グループアイコン
-              Hero(
-                tag: 'group-${group.id}',
-                child: Stack(
-                  children: [
-                    SizedBox(
-                      height: 180,
-                      width: double.infinity,
-                      child:
-                          group.iconUrl != null && group.iconUrl!.isNotEmpty
-                              ? CachedNetworkImage(
-                                imageUrl: group.iconUrl!,
-                                fit: BoxFit.cover,
-                                httpHeaders: headers,
-                                cacheManager: JsonCacheManager(),
-                                placeholder:
-                                    (context, url) => Container(
-                                      color:
-                                          isDarkMode
-                                              ? Colors.grey[800]
-                                              : Colors.grey[300],
-                                      child: const Center(
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      ),
-                                    ),
-                                errorWidget:
-                                    (context, url, error) => Container(
-                                      color:
-                                          isDarkMode
-                                              ? Colors.grey[800]
-                                              : Colors.grey[300],
-                                      child: const Icon(Icons.group, size: 60),
-                                    ),
-                              )
-                              : Container(
-                                color:
-                                    isDarkMode
-                                        ? Colors.grey[800]
-                                        : Colors.grey[300],
-                                child: Center(
-                                  child: Icon(
-                                    Icons.group,
-                                    size: 60,
+              Stack(
+                children: [
+                  SizedBox(
+                    height: 180,
+                    width: double.infinity,
+                    child:
+                        group.iconUrl != null && group.iconUrl!.isNotEmpty
+                            ? CachedNetworkImage(
+                              imageUrl: group.iconUrl!,
+                              fit: BoxFit.cover,
+                              httpHeaders: headers,
+                              cacheManager: JsonCacheManager(),
+                              placeholder:
+                                  (context, url) => Container(
                                     color:
                                         isDarkMode
-                                            ? Colors.grey[600]
-                                            : Colors.grey[500],
+                                            ? Colors.grey[800]
+                                            : Colors.grey[300],
+                                    child: const Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
                                   ),
+                              errorWidget:
+                                  (context, url, error) => Container(
+                                    color:
+                                        isDarkMode
+                                            ? Colors.grey[800]
+                                            : Colors.grey[300],
+                                    child: const Icon(Icons.group, size: 60),
+                                  ),
+                            )
+                            : Container(
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[800]
+                                      : Colors.grey[300],
+                              child: Center(
+                                child: Icon(
+                                  Icons.group,
+                                  size: 60,
+                                  color:
+                                      isDarkMode
+                                          ? Colors.grey[600]
+                                          : Colors.grey[500],
                                 ),
                               ),
-                    ),
-                    // グラデーションオーバーレイ
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        height: 60,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withValues(alpha:0.7),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    // メンバー数
-                    Positioned(
-                      bottom: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha:0.6),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.people,
-                              color: Colors.white,
-                              size: 16,
                             ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${group.memberCount ?? "?"}',
-                              style: GoogleFonts.notoSans(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                  ),
+                  // グラデーションオーバーレイ
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      height: 60,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.7),
                           ],
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  // メンバー数
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.people,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${group.memberCount ?? "?"}',
+                            style: GoogleFonts.notoSans(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
 
               // グループ情報

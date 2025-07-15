@@ -96,9 +96,7 @@ class WorldDetailPage extends ConsumerWidget {
           fit: StackFit.expand,
           children: [
             // ワールド画像
-            Hero(
-              tag: 'world-${world.id}',
-              child: CachedNetworkImage(
+            CachedNetworkImage(
                 imageUrl: world.imageUrl,
                 fit: BoxFit.cover,
                 httpHeaders: headers,
@@ -125,7 +123,7 @@ class WorldDetailPage extends ConsumerWidget {
                       ),
                     ),
               ),
-            ),
+
             // グラデーションオーバーレイ
             Container(
               decoration: BoxDecoration(

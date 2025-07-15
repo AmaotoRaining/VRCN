@@ -14,10 +14,10 @@ import 'package:vrchat/pages/friend_detail_page.dart';
 import 'package:vrchat/pages/friends_page.dart';
 import 'package:vrchat/pages/group_detail_page.dart';
 import 'package:vrchat/pages/groups_page.dart';
+import 'package:vrchat/pages/inventory_page.dart';
 import 'package:vrchat/pages/login_page.dart';
 import 'package:vrchat/pages/notifications_page.dart';
 import 'package:vrchat/pages/osc_page.dart';
-import 'package:vrchat/pages/prints_page.dart';
 import 'package:vrchat/pages/profile_page.dart';
 import 'package:vrchat/pages/search_page.dart';
 import 'package:vrchat/pages/settings_page.dart';
@@ -348,11 +348,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/prints',
-        name: 'prints',
+        path: '/inventory',
+        name: 'inventory',
         builder: (context, state) {
-          _setCurrentScreen(ref, 'プリント一覧画面');
-          return const PrintsPage();
+          _setCurrentScreen(ref, 'インベントリ画面');
+          return const InventoryPage();
         },
       ),
       GoRoute(

@@ -373,87 +373,79 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // サムネイルイメージ
-            Hero(
-              tag: 'world_${world.id}',
-              child: Stack(
-                children: [
-                  AspectRatio(
-                    aspectRatio: isGrid ? 16 / 12 : 16 / 9,
-                    child:
-                        world.thumbnailImageUrl.isNotEmpty
-                            ? CachedNetworkImage(
-                              imageUrl: world.thumbnailImageUrl,
-                              fit: BoxFit.cover,
-                              httpHeaders: headers,
-                              placeholder:
-                                  (context, url) => Container(
-                                    color:
-                                        isDarkMode
-                                            ? const Color(0xFF262626)
-                                            : Colors.grey[200],
-                                    child: const Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
+            Stack(
+              children: [
+                AspectRatio(
+                  aspectRatio: isGrid ? 16 / 12 : 16 / 9,
+                  child:
+                      world.thumbnailImageUrl.isNotEmpty
+                          ? CachedNetworkImage(
+                            imageUrl: world.thumbnailImageUrl,
+                            fit: BoxFit.cover,
+                            httpHeaders: headers,
+                            placeholder:
+                                (context, url) => Container(
+                                  color:
+                                      isDarkMode
+                                          ? const Color(0xFF262626)
+                                          : Colors.grey[200],
+                                  child: const Center(
+                                    child: CircularProgressIndicator(),
                                   ),
-                              errorWidget:
-                                  (context, url, error) => Container(
-                                    color:
-                                        isDarkMode
-                                            ? const Color(0xFF262626)
-                                            : Colors.grey[200],
-                                    child: const Icon(
-                                      Icons.broken_image,
-                                      size: 40,
-                                    ),
+                                ),
+                            errorWidget:
+                                (context, url, error) => Container(
+                                  color:
+                                      isDarkMode
+                                          ? const Color(0xFF262626)
+                                          : Colors.grey[200],
+                                  child: const Icon(
+                                    Icons.broken_image,
+                                    size: 40,
                                   ),
-                              cacheManager: JsonCacheManager(),
-                            )
-                            : Container(
-                              color:
-                                  isDarkMode
-                                      ? const Color(0xFF262626)
-                                      : Colors.grey[200],
-                              child: const Icon(Icons.image, size: 40),
-                            ),
-                  ),
-                  // 人気度バッジ
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: .6),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.favorite,
-                            color: Colors.red[400],
-                            size: 16,
+                                ),
+                            cacheManager: JsonCacheManager(),
+                          )
+                          : Container(
+                            color:
+                                isDarkMode
+                                    ? const Color(0xFF262626)
+                                    : Colors.grey[200],
+                            child: const Icon(Icons.image, size: 40),
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            SearchUtils.formatNumber(world.popularity),
-                            style: GoogleFonts.notoSans(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
+                ),
+                // 人気度バッジ
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: .6),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.favorite, color: Colors.red[400], size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          SearchUtils.formatNumber(world.popularity),
+                          style: GoogleFonts.notoSans(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-
             // ワールド情報
             Padding(
               padding: const EdgeInsets.all(12.0),

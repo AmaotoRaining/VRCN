@@ -163,10 +163,7 @@ class AvatarSearchTab extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // アバター画像 (高さを若干ランダムに)
-              Hero(
-                tag: 'avatar-${avatar.id}',
-                child: Stack(
+              Stack(
                   children: [
                     SizedBox(
                       height: cardHeight,
@@ -219,7 +216,6 @@ class AvatarSearchTab extends ConsumerWidget {
                     ),
                   ],
                 ),
-              ),
 
               // アバター情報
               Padding(

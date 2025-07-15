@@ -171,13 +171,13 @@ class AppDrawer extends ConsumerWidget {
                               },
                             ),
                             _MenuItem(
-                              icon: Icons.print,
-                              title: 'プリント',
+                              icon: Icons.inventory,
+                              title: 'インベントリ',
                               isSelected: GoRouterState.of(
                                 context,
-                              ).uri.path.startsWith('/prints'),
+                              ).uri.path.startsWith('/inventory'),
                               onTap: () {
-                                context.push('/prints');
+                                context.push('/inventory');
                                 Navigator.pop(context);
                               },
                             ),

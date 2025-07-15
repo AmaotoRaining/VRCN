@@ -201,38 +201,32 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                     if (userRepresentedGroupAsync.valueOrNull?.bannerUrl !=
                         null)
                       Positioned.fill(
-                        child: Hero(
-                          tag:
-                              'banner-${userRepresentedGroupAsync.valueOrNull?.groupId ?? ""}',
-                          child: CachedNetworkImage(
-                            imageUrl:
-                                userRepresentedGroupAsync
-                                    .valueOrNull!
-                                    .bannerUrl!,
-                            httpHeaders: headers,
-                            cacheManager: JsonCacheManager(),
-                            fit: BoxFit.cover,
-                            placeholder:
-                                (context, url) => Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [accentColor, secondaryColor],
-                                    ),
+                        child: CachedNetworkImage(
+                          imageUrl:
+                              userRepresentedGroupAsync.valueOrNull!.bannerUrl!,
+                          httpHeaders: headers,
+                          cacheManager: JsonCacheManager(),
+                          fit: BoxFit.cover,
+                          placeholder:
+                              (context, url) => Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [accentColor, secondaryColor],
                                   ),
                                 ),
-                            errorWidget:
-                                (context, url, error) => Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [accentColor, secondaryColor],
-                                    ),
+                              ),
+                          errorWidget:
+                              (context, url, error) => Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [accentColor, secondaryColor],
                                   ),
                                 ),
-                          ),
+                              ),
                         ),
                       ),
 
@@ -420,43 +414,41 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                                     context.push('/avatar/${avatar.id}');
                                   }
                                 },
-                                child: Hero(
-                                  tag: 'avatar-${user.id}',
-                                  child: CircleAvatar(
-                                    radius: 50,
-                                    backgroundColor: Colors.grey[300],
-                                    backgroundImage:
-                                        user.userIcon.isNotEmpty
-                                            ? CachedNetworkImageProvider(
-                                              user.userIcon,
-                                              headers: headers,
-                                              cacheManager: JsonCacheManager(),
-                                            )
-                                            : user
-                                                .currentAvatarThumbnailImageUrl
-                                                .isNotEmpty
-                                            ? CachedNetworkImageProvider(
-                                              user.currentAvatarThumbnailImageUrl,
-                                              headers: headers,
-                                              cacheManager: JsonCacheManager(),
-                                            )
-                                            : const AssetImage(
-                                                  'assets/icons/default.png',
-                                                )
-                                                as ImageProvider,
-                                    child:
-                                        user
-                                                .currentAvatarThumbnailImageUrl
-                                                .isEmpty
-                                            ? const Icon(
-                                              Icons.person,
-                                              size: 30,
-                                              color: Colors.white70,
-                                            )
-                                            : null,
-                                  ),
+                                child: CircleAvatar(
+                                  radius: 50,
+                                  backgroundColor: Colors.grey[300],
+                                  backgroundImage:
+                                      user.userIcon.isNotEmpty
+                                          ? CachedNetworkImageProvider(
+                                            user.userIcon,
+                                            headers: headers,
+                                            cacheManager: JsonCacheManager(),
+                                          )
+                                          : user
+                                              .currentAvatarThumbnailImageUrl
+                                              .isNotEmpty
+                                          ? CachedNetworkImageProvider(
+                                            user.currentAvatarThumbnailImageUrl,
+                                            headers: headers,
+                                            cacheManager: JsonCacheManager(),
+                                          )
+                                          : const AssetImage(
+                                                'assets/icons/default.png',
+                                              )
+                                              as ImageProvider,
+                                  child:
+                                      user
+                                              .currentAvatarThumbnailImageUrl
+                                              .isEmpty
+                                          ? const Icon(
+                                            Icons.person,
+                                            size: 30,
+                                            color: Colors.white70,
+                                          )
+                                          : null,
                                 ),
                               ),
+
                           loading:
                               () => CircleAvatar(
                                 radius: 50,
@@ -1079,40 +1071,35 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: Hero(
-                      tag: 'avatar-thumbnail-${avatar.id}',
-                      child: CachedNetworkImage(
-                        imageUrl: avatar.imageUrl,
-                        httpHeaders: headers,
-                        cacheManager: JsonCacheManager(),
-                        fit: BoxFit.cover,
-                        placeholder:
-                            (context, url) => Container(
+                    child: CachedNetworkImage(
+                      imageUrl: avatar.imageUrl,
+                      httpHeaders: headers,
+                      cacheManager: JsonCacheManager(),
+                      fit: BoxFit.cover,
+                      placeholder:
+                          (context, url) => Container(
+                            color:
+                                isDarkMode
+                                    ? Colors.grey[800]
+                                    : Colors.grey[200],
+                            child: const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                      errorWidget:
+                          (context, url, error) => Container(
+                            color:
+                                isDarkMode
+                                    ? Colors.grey[800]
+                                    : Colors.grey[200],
+                            child: Icon(
+                              Icons.broken_image,
                               color:
                                   isDarkMode
-                                      ? Colors.grey[800]
-                                      : Colors.grey[200],
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              ),
+                                      ? Colors.grey[600]
+                                      : Colors.grey[400],
                             ),
-                        errorWidget:
-                            (context, url, error) => Container(
-                              color:
-                                  isDarkMode
-                                      ? Colors.grey[800]
-                                      : Colors.grey[200],
-                              child: Icon(
-                                Icons.broken_image,
-                                color:
-                                    isDarkMode
-                                        ? Colors.grey[600]
-                                        : Colors.grey[400],
-                              ),
-                            ),
-                      ),
+                          ),
                     ),
                   ),
                 ),
