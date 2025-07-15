@@ -89,15 +89,6 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
                 color: isDarkMode ? Colors.white : Colors.black87,
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'VRChatでアップロードしたプリント画像がここに表示されます',
-              style: GoogleFonts.notoSans(
-                fontSize: 16,
-                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-            ),
           ],
         ),
       ),

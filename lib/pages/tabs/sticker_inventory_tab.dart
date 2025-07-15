@@ -89,15 +89,6 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
                 color: isDarkMode ? Colors.white : Colors.black87,
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'VRChatでアップロードしたステッカーがここに表示されます',
-              style: GoogleFonts.notoSans(
-                fontSize: 16,
-                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-            ),
           ],
         ),
       ),
