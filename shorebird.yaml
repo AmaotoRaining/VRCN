@@ -5,7 +5,7 @@
 # Your app_id is the unique identifier assigned to your app.
 # It is used to identify your app when requesting patches from Shorebird's servers.
 # It is not a secret and can be shared publicly.
-app_id: 24631cb6-3f60-4867-9ef9-eb19f1a2a57c
+app_id: 3d020eaf-fb65-494e-9984-969529663a8
 flavors:
   dev: 24631cb6-3f60-4867-9ef9-eb19f1a2a57c
   production: 3d020eaf-fb65-494e-9984-969529663a88
