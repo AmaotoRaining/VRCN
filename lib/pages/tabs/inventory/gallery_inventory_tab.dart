@@ -8,6 +8,7 @@ import 'package:vrchat/provider/files_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/utils/cache_manager.dart';
+import 'package:vrchat/utils/download_utils.dart';
 import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
@@ -26,14 +27,14 @@ class _GalleryInventoryTabState extends ConsumerState<GalleryInventoryTab>
   bool get wantKeepAlive => true;
 
   Future<void> _refreshFiles() async {
-    ref.invalidate(getGalleryFilesProvider);
+    ref.invalidate(getFilesByTagProvider('gallery'));
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final galleryFilesAsync = ref.watch(getGalleryFilesProvider);
+    final galleryFilesAsync = ref.watch(getFilesByTagProvider('gallery'));
     final vrchatApi = ref.watch(vrchatProvider).value;
 
     final headers = <String, String>{
@@ -114,7 +115,7 @@ class _GalleryInventoryTabState extends ConsumerState<GalleryInventoryTab>
             child: SlideAnimation(
               verticalOffset: 50.0,
               child: FadeInAnimation(
-                child: _buildFileCard(file, headers, isDarkMode),
+                child: _buildGalleryCard(file, headers, isDarkMode),
               ),
             ),
           );
@@ -123,11 +124,16 @@ class _GalleryInventoryTabState extends ConsumerState<GalleryInventoryTab>
     );
   }
 
-  Widget _buildFileCard(
+  Widget _buildGalleryCard(
     File file,
     Map<String, String> headers,
     bool isDarkMode,
   ) {
+    // URLが空の場合はカードを表示しない
+    if (file.versions.last.file!.url.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Card(
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -167,7 +173,6 @@ class _GalleryInventoryTabState extends ConsumerState<GalleryInventoryTab>
       ),
     );
   }
-
   // フルスクリーン画像表示
   void _showFullScreenImage(File file, Map<String, String> headers) {
     Navigator.of(context).push(
@@ -267,6 +272,32 @@ class _FullScreenFileViewerState extends State<_FullScreenFileViewer>
     _animationController.forward();
   }
 
+  void _downloadFile() {
+    final url = widget.file.versions.last.file!.url.toString();
+    final extension = DownloadUtils.getFileExtension(url);
+    final fileName = '${widget.file.name}$extension';
+
+    DownloadUtils.downloadFile(
+      context: context,
+      url: url,
+      fileName: fileName,
+      headers: widget.headers,
+    );
+  }
+
+  void _shareFile() {
+    final url = widget.file.versions.last.file!.url.toString();
+    final extension = DownloadUtils.getFileExtension(url);
+    final fileName = '${widget.file.name}$extension';
+
+    DownloadUtils.shareFile(
+      context: context,
+      url: url,
+      fileName: fileName,
+      headers: widget.headers,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -333,7 +364,7 @@ class _FullScreenFileViewerState extends State<_FullScreenFileViewer>
             ),
           ),
 
-          // ヘッダー（閉じるボタン）
+          // ヘッダー（閉じるボタンとアクションボタン）
           Positioned(
             top: MediaQuery.of(context).padding.top + 16,
             left: 16,
@@ -356,26 +387,76 @@ class _FullScreenFileViewerState extends State<_FullScreenFileViewer>
                   ),
                 ),
 
-                // ズームヒント
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.7),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'ダブルタップでズーム',
-                    style: GoogleFonts.notoSans(
-                      fontSize: 12,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
+                // アクションボタン群
+                Row(
+                  children: [
+                    // ダウンロードボタン
+                    Material(
+                      elevation: 4,
+                      color: Colors.black.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(25),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(25),
+                        onTap: _downloadFile,
+                        child: const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Icon(
+                            Icons.download,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    // 共有ボタン
+                    Material(
+                      elevation: 4,
+                      color: Colors.black.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(25),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(25),
+                        onTap: _shareFile,
+                        child: const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Icon(
+                            Icons.share,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
+            ),
+          ),
+
+          // フッター（ズームヒント）
+          Positioned(
+            bottom: MediaQuery.of(context).padding.bottom + 16,
+            left: 16,
+            right: 16,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'ダブルタップでズーム',
+                  style: GoogleFonts.notoSans(
+                    fontSize: 12,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ),
           ),
         ],

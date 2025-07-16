@@ -8,6 +8,7 @@ import 'package:vrchat/provider/files_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/utils/cache_manager.dart';
+import 'package:vrchat/utils/download_utils.dart';
 import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
@@ -33,7 +34,7 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
   Widget build(BuildContext context) {
     super.build(context);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final stickerFilesAsync = ref.watch(getStickerFilesProvider);
+    final stickerFilesAsync = ref.watch(getFilesByTagProvider('sticker'));
     final vrchatApi = ref.watch(vrchatProvider).value;
 
     final headers = <String, String>{
@@ -89,6 +90,15 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
                 color: isDarkMode ? Colors.white : Colors.black87,
               ),
             ),
+            const SizedBox(height: 16),
+            Text(
+              'VRChatでアップロードしたステッカーがここに表示されます',
+              style: GoogleFonts.notoSans(
+                fontSize: 16,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
@@ -102,7 +112,7 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
   ) {
     return AnimationLimiter(
       child: MasonryGridView.count(
-        crossAxisCount: 2,
+        crossAxisCount: 3,
         padding: const EdgeInsets.all(16),
         itemCount: files.length,
         itemBuilder: (context, index) {
@@ -110,7 +120,7 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
           return AnimationConfiguration.staggeredGrid(
             position: index,
             duration: const Duration(milliseconds: 600),
-            columnCount: 2,
+            columnCount: 3,
             child: SlideAnimation(
               verticalOffset: 50.0,
               child: FadeInAnimation(
@@ -123,13 +133,11 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
     );
   }
 
-  // _buildStickerCardメソッドを修正
   Widget _buildStickerCard(
     File file,
     Map<String, String> headers,
     bool isDarkMode,
   ) {
-    // URLが空の場合はカードを表示しない
     if (file.versions.last.file!.url.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -139,33 +147,43 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 4,
       shadowColor: Colors.black26,
-      child: InkWell(
-        onTap: () => _showFullScreenSticker(file, headers),
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: AspectRatio(
+        aspectRatio: 1.0,
+        child: Stack(
           children: [
-            // ステッカー画像
-            AspectRatio(
-              aspectRatio: 1.2,
-              child: CachedNetworkImage(
-                imageUrl: file.versions.last.file!.url.toString(),
-                fit: BoxFit.cover,
-                width: double.infinity,
-                httpHeaders: headers,
-                cacheManager: JsonCacheManager(),
-                placeholder:
-                    (context, url) => Container(
-                      color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
+            GestureDetector(
+              onTap: () => _showFullScreenImage(file, headers),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors:
+                        isDarkMode
+                            ? [Colors.grey[800]!, Colors.grey[900]!]
+                            : [Colors.grey[100]!, Colors.grey[200]!],
+                  ),
+                ),
+                child: CachedNetworkImage(
+                  imageUrl: file.versions.last.file!.url.toString(),
+                  fit: BoxFit.contain,
+                  width: double.infinity,
+                  height: double.infinity,
+                  httpHeaders: headers,
+                  cacheManager: JsonCacheManager(),
+                  placeholder:
+                      (context, url) => Container(
+                        color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                        child: const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
                       ),
-                    ),
-                errorWidget:
-                    (context, url, error) => Container(
-                      color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                      child: const Icon(Icons.sticky_note_2),
-                    ),
+                  errorWidget:
+                      (context, url, error) => Container(
+                        color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                        child: const Icon(Icons.broken_image),
+                      ),
+                ),
               ),
             ),
           ],
@@ -174,15 +192,17 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
     );
   }
 
-  // フルスクリーンステッカー表示
-  void _showFullScreenSticker(File file, Map<String, String> headers) {
+
+
+
+  void _showFullScreenImage(File file, Map<String, String> headers) {
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.black87,
         pageBuilder:
             (context, animation, secondaryAnimation) =>
-                _FullScreenStickerViewer(file: file, headers: headers),
+                _FullScreenFileViewer(file: file, headers: headers),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
             opacity: animation,
@@ -199,19 +219,18 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
   }
 }
 
-// フルスクリーンステッカービューアー
-class _FullScreenStickerViewer extends StatefulWidget {
+// フルスクリーンファイルビューアー（ステッカー用）
+class _FullScreenFileViewer extends StatefulWidget {
   final File file;
   final Map<String, String> headers;
 
-  const _FullScreenStickerViewer({required this.file, required this.headers});
+  const _FullScreenFileViewer({required this.file, required this.headers});
 
   @override
-  _FullScreenStickerViewerState createState() =>
-      _FullScreenStickerViewerState();
+  _FullScreenFileViewerState createState() => _FullScreenFileViewerState();
 }
 
-class _FullScreenStickerViewerState extends State<_FullScreenStickerViewer>
+class _FullScreenFileViewerState extends State<_FullScreenFileViewer>
     with TickerProviderStateMixin {
   late TransformationController _transformationController;
   late AnimationController _animationController;
@@ -241,7 +260,6 @@ class _FullScreenStickerViewerState extends State<_FullScreenStickerViewer>
 
   void _handleDoubleTap() {
     if (_transformationController.value != Matrix4.identity()) {
-      // ズームアウト
       _animation = Matrix4Tween(
         begin: _transformationController.value,
         end: Matrix4.identity(),
@@ -249,7 +267,6 @@ class _FullScreenStickerViewerState extends State<_FullScreenStickerViewer>
         CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
       );
     } else {
-      // ズームイン
       final position = _doubleTapDetails!.localPosition;
       const scale = 2.5;
       final x = -position.dx * (scale - 1);
@@ -274,13 +291,38 @@ class _FullScreenStickerViewerState extends State<_FullScreenStickerViewer>
     _animationController.forward();
   }
 
+  void _downloadFile() {
+    final url = widget.file.versions.last.file!.url.toString();
+    final extension = DownloadUtils.getFileExtension(url);
+    final fileName = '${widget.file.name}$extension';
+
+    DownloadUtils.downloadFile(
+      context: context,
+      url: url,
+      fileName: fileName,
+      headers: widget.headers,
+    );
+  }
+
+  void _shareFile() {
+    final url = widget.file.versions.last.file!.url.toString();
+    final extension = DownloadUtils.getFileExtension(url);
+    final fileName = '${widget.file.name}$extension';
+
+    DownloadUtils.shareFile(
+      context: context,
+      url: url,
+      fileName: fileName,
+      headers: widget.headers,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          // 背景タップで閉じる
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
             child: Container(
@@ -289,58 +331,62 @@ class _FullScreenStickerViewerState extends State<_FullScreenStickerViewer>
               color: Colors.transparent,
             ),
           ),
-
-          // ステッカービューアー
           Center(
-            child: GestureDetector(
-              onDoubleTapDown: _handleDoubleTapDown,
-              onDoubleTap: _handleDoubleTap,
-              child: InteractiveViewer(
-                transformationController: _transformationController,
-                minScale: 0.5,
-                maxScale: 4.0,
-                child: CachedNetworkImage(
-                  imageUrl: widget.file.versions.last.file!.url.toString(),
-                  httpHeaders: widget.headers,
-                  cacheManager: JsonCacheManager(),
-                  fit: BoxFit.contain,
-                  placeholder:
-                      (context, url) => Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[800],
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  colors: [Colors.grey[800]!, Colors.grey[900]!],
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: GestureDetector(
+                onDoubleTapDown: _handleDoubleTapDown,
+                onDoubleTap: _handleDoubleTap,
+                child: InteractiveViewer(
+                  transformationController: _transformationController,
+                  minScale: 0.5,
+                  maxScale: 4.0,
+                  child: CachedNetworkImage(
+                    imageUrl: widget.file.versions.last.file!.url.toString(),
+                    httpHeaders: widget.headers,
+                    cacheManager: JsonCacheManager(),
+                    fit: BoxFit.contain,
+                    placeholder:
+                        (context, url) => Container(
+                          width: 200,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[800],
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                  errorWidget:
-                      (context, url, error) => Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[800],
-                          borderRadius: BorderRadius.circular(16),
+                    errorWidget:
+                        (context, url, error) => Container(
+                          width: 200,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[800],
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Icon(
+                            Icons.broken_image,
+                            color: Colors.white,
+                            size: 64,
+                          ),
                         ),
-                        child: const Icon(
-                          Icons.sticky_note_2,
-                          color: Colors.white,
-                          size: 64,
-                        ),
-                      ),
+                  ),
                 ),
               ),
             ),
           ),
-
-          // ヘッダー（閉じるボタン）
           Positioned(
             top: MediaQuery.of(context).padding.top + 16,
             left: 16,
@@ -348,7 +394,6 @@ class _FullScreenStickerViewerState extends State<_FullScreenStickerViewer>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // 閉じるボタン
                 Material(
                   elevation: 4,
                   color: Colors.black.withValues(alpha: 0.7),
@@ -362,27 +407,71 @@ class _FullScreenStickerViewerState extends State<_FullScreenStickerViewer>
                     ),
                   ),
                 ),
-
-                // ズームヒント
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.7),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'ダブルタップでズーム',
-                    style: GoogleFonts.notoSans(
-                      fontSize: 12,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
+                Row(
+                  children: [
+                    Material(
+                      elevation: 4,
+                      color: Colors.black.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(25),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(25),
+                        onTap: _downloadFile,
+                        child: const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Icon(
+                            Icons.download,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    Material(
+                      elevation: 4,
+                      color: Colors.black.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(25),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(25),
+                        onTap: _shareFile,
+                        child: const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Icon(
+                            Icons.share,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
+            ),
+          ),
+          Positioned(
+            bottom: MediaQuery.of(context).padding.bottom + 16,
+            left: 16,
+            right: 16,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'ダブルタップでズーム',
+                  style: GoogleFonts.notoSans(
+                    fontSize: 12,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ),
           ),
         ],

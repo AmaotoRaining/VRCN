@@ -8,6 +8,7 @@ import 'package:vrchat/provider/files_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/utils/cache_manager.dart';
+import 'package:vrchat/utils/download_utils.dart';
 import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
@@ -32,7 +33,7 @@ class _EmojiInventoryTabState extends ConsumerState<EmojiInventoryTab>
   Widget build(BuildContext context) {
     super.build(context);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final emojiFilesAsync = ref.watch(getEmojiFilesProvider);
+    final emojiFilesAsync = ref.watch(getFilesByTagProvider('emoji'));
     final vrchatApi = ref.watch(vrchatProvider).value;
 
     final headers = <String, String>{
@@ -88,6 +89,15 @@ class _EmojiInventoryTabState extends ConsumerState<EmojiInventoryTab>
                 color: isDarkMode ? Colors.white : Colors.black87,
               ),
             ),
+            const SizedBox(height: 16),
+            Text(
+              'VRChatでアップロードした絵文字がここに表示されます',
+              style: GoogleFonts.notoSans(
+                fontSize: 16,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
@@ -101,7 +111,7 @@ class _EmojiInventoryTabState extends ConsumerState<EmojiInventoryTab>
   ) {
     return AnimationLimiter(
       child: MasonryGridView.count(
-        crossAxisCount: 3,
+        crossAxisCount: 4,
         padding: const EdgeInsets.all(16),
         itemCount: files.length,
         itemBuilder: (context, index) {
@@ -109,7 +119,7 @@ class _EmojiInventoryTabState extends ConsumerState<EmojiInventoryTab>
           return AnimationConfiguration.staggeredGrid(
             position: index,
             duration: const Duration(milliseconds: 600),
-            columnCount: 3,
+            columnCount: 4,
             child: SlideAnimation(
               verticalOffset: 50.0,
               child: FadeInAnimation(
@@ -127,62 +137,59 @@ class _EmojiInventoryTabState extends ConsumerState<EmojiInventoryTab>
     Map<String, String> headers,
     bool isDarkMode,
   ) {
-
-    // URLが空の場合はカードを表示しない
     if (file.versions.last.file!.url.isEmpty) {
       return const SizedBox.shrink();
     }
 
     return Card(
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 3,
       shadowColor: Colors.black26,
-      child: InkWell(
-        onTap: () => _showFullScreenEmoji(file, headers),
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+      child: AspectRatio(
+        aspectRatio: 1.0,
+        child: Stack(
           children: [
-            ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: CachedNetworkImage(
-                  imageUrl: file.versions.last.file!.url.toString(),
-                  fit: BoxFit.cover,
-                  httpHeaders: headers,
-                  cacheManager: JsonCacheManager(),
-                  placeholder:
-                      (context, url) => Container(
-                        color:
-                            isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                        child: const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
+            GestureDetector(
+              onTap: () => _showFullScreenImage(file, headers),
+              child: CachedNetworkImage(
+                imageUrl: file.versions.last.file!.url.toString(),
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                httpHeaders: headers,
+                cacheManager: JsonCacheManager(),
+                placeholder:
+                    (context, url) => Container(
+                      color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                      child: const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       ),
-                  errorWidget:
-                      (context, url, error) => Container(
-                        color:
-                            isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                        child: const Icon(Icons.emoji_emotions),
-                      ),
-                ),
+                    ),
+                errorWidget:
+                    (context, url, error) => Container(
+                      color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                      child: const Icon(Icons.broken_image, size: 20),
+                    ),
               ),
-
+            ),
           ],
         ),
       ),
     );
   }
 
-  // フルスクリーン絵文字表示
-  void _showFullScreenEmoji(File file, Map<String, String> headers) {
+
+
+
+  void _showFullScreenImage(File file, Map<String, String> headers) {
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.black87,
         pageBuilder:
             (context, animation, secondaryAnimation) =>
-                _FullScreenEmojiViewer(file: file, headers: headers),
+                _FullScreenFileViewer(file: file, headers: headers),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
             opacity: animation,
@@ -199,23 +206,110 @@ class _EmojiInventoryTabState extends ConsumerState<EmojiInventoryTab>
   }
 }
 
-// フルスクリーン絵文字ビューアー
-class _FullScreenEmojiViewer extends StatelessWidget {
+// フルスクリーンファイルビューアー（絵文字用）
+class _FullScreenFileViewer extends StatefulWidget {
   final File file;
   final Map<String, String> headers;
 
-  const _FullScreenEmojiViewer({required this.file, required this.headers});
+  const _FullScreenFileViewer({required this.file, required this.headers});
 
+  @override
+  _FullScreenFileViewerState createState() => _FullScreenFileViewerState();
+}
 
+class _FullScreenFileViewerState extends State<_FullScreenFileViewer>
+    with TickerProviderStateMixin {
+  late TransformationController _transformationController;
+  late AnimationController _animationController;
+  late Animation<Matrix4> _animation;
+  TapDownDetails? _doubleTapDetails;
+
+  @override
+  void initState() {
+    super.initState();
+    _transformationController = TransformationController();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+  }
+
+  @override
+  void dispose() {
+    _transformationController.dispose();
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _handleDoubleTapDown(TapDownDetails details) {
+    _doubleTapDetails = details;
+  }
+
+  void _handleDoubleTap() {
+    if (_transformationController.value != Matrix4.identity()) {
+      _animation = Matrix4Tween(
+        begin: _transformationController.value,
+        end: Matrix4.identity(),
+      ).animate(
+        CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+      );
+    } else {
+      final position = _doubleTapDetails!.localPosition;
+      const scale = 3.0; // 絵文字は小さいので少し大きめにズーム
+      final x = -position.dx * (scale - 1);
+      final y = -position.dy * (scale - 1);
+      final zoomed =
+          Matrix4.identity()
+            ..translate(x, y)
+            ..scale(scale);
+
+      _animation = Matrix4Tween(
+        begin: _transformationController.value,
+        end: zoomed,
+      ).animate(
+        CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+      );
+    }
+
+    _animationController.reset();
+    _animation.addListener(() {
+      _transformationController.value = _animation.value;
+    });
+    _animationController.forward();
+  }
+
+  void _downloadFile() {
+    final url = widget.file.versions.last.file!.url.toString();
+    final extension = DownloadUtils.getFileExtension(url);
+    final fileName = '${widget.file.name}$extension';
+
+    DownloadUtils.downloadFile(
+      context: context,
+      url: url,
+      fileName: fileName,
+      headers: widget.headers,
+    );
+  }
+
+  void _shareFile() {
+    final url = widget.file.versions.last.file!.url.toString();
+    final extension = DownloadUtils.getFileExtension(url);
+    final fileName = '${widget.file.name}$extension';
+
+    DownloadUtils.shareFile(
+      context: context,
+      url: url,
+      fileName: fileName,
+      headers: widget.headers,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          // 背景タップで閉じる
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
             child: Container(
@@ -224,79 +318,137 @@ class _FullScreenEmojiViewer extends StatelessWidget {
               color: Colors.transparent,
             ),
           ),
-
-          // 絵文字表示
           Center(
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child:
-                    file.versions.last.file!.url.isNotEmpty
-                        ? CachedNetworkImage(
-                          imageUrl: file.versions.last.file!.url.toString(),
-                          httpHeaders: headers,
-                          cacheManager: JsonCacheManager(),
-                          fit: BoxFit.cover,
-                          placeholder:
-                              (context, url) => Container(
-                                color: Colors.grey[800],
-                                child: const Center(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          errorWidget:
-                              (context, url, error) => Container(
-                                color: Colors.grey[800],
-                                child: const Icon(
-                                  Icons.emoji_emotions,
-                                  color: Colors.white,
-                                  size: 64,
-                                ),
-                              ),
-                        )
-                        : Container(
+            child: GestureDetector(
+              onDoubleTapDown: _handleDoubleTapDown,
+              onDoubleTap: _handleDoubleTap,
+              child: InteractiveViewer(
+                transformationController: _transformationController,
+                minScale: 0.5,
+                maxScale: 6.0, // 絵文字なので最大ズームを大きめに
+                child: CachedNetworkImage(
+                  imageUrl: widget.file.versions.last.file!.url.toString(),
+                  httpHeaders: widget.headers,
+                  cacheManager: JsonCacheManager(),
+                  fit: BoxFit.contain,
+                  placeholder:
+                      (context, url) => Container(
+                        width: 150,
+                        height: 150,
+                        decoration: BoxDecoration(
                           color: Colors.grey[800],
-                          child: const Icon(
-                            Icons.emoji_emotions,
-                            color: Colors.white,
-                            size: 64,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         ),
+                      ),
+                  errorWidget:
+                      (context, url, error) => Container(
+                        width: 150,
+                        height: 150,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[800],
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Icon(
+                          Icons.broken_image,
+                          color: Colors.white,
+                          size: 48,
+                        ),
+                      ),
+                ),
               ),
             ),
           ),
-
-          // 閉じるボタン
           Positioned(
             top: MediaQuery.of(context).padding.top + 16,
+            left: 16,
             right: 16,
-            child: Material(
-              elevation: 4,
-              color: Colors.black.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(25),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(25),
-                onTap: () => Navigator.of(context).pop(),
-                child: const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: Icon(Icons.close, color: Colors.white, size: 24),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Material(
+                  elevation: 4,
+                  color: Colors.black.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(25),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(25),
+                    onTap: () => Navigator.of(context).pop(),
+                    child: const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: Icon(Icons.close, color: Colors.white, size: 24),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Material(
+                      elevation: 4,
+                      color: Colors.black.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(25),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(25),
+                        onTap: _downloadFile,
+                        child: const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Icon(
+                            Icons.download,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Material(
+                      elevation: 4,
+                      color: Colors.black.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(25),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(25),
+                        onTap: _shareFile,
+                        child: const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Icon(
+                            Icons.share,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            bottom: MediaQuery.of(context).padding.bottom + 16,
+            left: 16,
+            right: 16,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'ダブルタップでズーム',
+                  style: GoogleFonts.notoSans(
+                    fontSize: 12,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),

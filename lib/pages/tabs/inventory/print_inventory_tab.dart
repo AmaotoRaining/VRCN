@@ -9,6 +9,7 @@ import 'package:vrchat/provider/files_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/utils/cache_manager.dart';
+import 'package:vrchat/utils/download_utils.dart';
 import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
@@ -89,6 +90,15 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
                 color: isDarkMode ? Colors.white : Colors.black87,
               ),
             ),
+            const SizedBox(height: 16),
+            Text(
+              'VRChatでアップロードしたプリント画像がここに表示されます',
+              style: GoogleFonts.notoSans(
+                fontSize: 16,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
@@ -123,7 +133,6 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
     );
   }
 
-  // _buildPrintCardメソッドを修正
   Widget _buildPrintCard(
     File file,
     Map<String, String> headers,
@@ -143,30 +152,36 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // プリント画像
-          AspectRatio(
-            aspectRatio: 1.0,
-            child: GestureDetector(
-              onTap: () => _showFullScreenPrint(file, headers),
-              child: CachedNetworkImage(
-                imageUrl: file.versions.last.file!.url.toString(),
-                fit: BoxFit.cover,
-                width: double.infinity,
-                httpHeaders: headers,
-                cacheManager: JsonCacheManager(),
-                placeholder:
-                    (context, url) => Container(
-                      color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                errorWidget:
-                    (context, url, error) => Container(
-                      color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                      child: const Icon(Icons.print),
-                    ),
+          Stack(
+            children: [
+              AspectRatio(
+                aspectRatio: 1.0,
+                child: GestureDetector(
+                  onTap: () => _showFullScreenPrint(file, headers),
+                  child: CachedNetworkImage(
+                    imageUrl: file.versions.last.file!.url.toString(),
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    httpHeaders: headers,
+                    cacheManager: JsonCacheManager(),
+                    placeholder:
+                        (context, url) => Container(
+                          color:
+                              isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                    errorWidget:
+                        (context, url, error) => Container(
+                          color:
+                              isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                          child: const Icon(Icons.print),
+                        ),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
 
           // ファイル情報
@@ -304,6 +319,32 @@ class _FullScreenPrintViewerState extends State<_FullScreenPrintViewer>
     _animationController.forward();
   }
 
+  void _downloadFile() {
+    final url = widget.file.versions.last.file!.url.toString();
+    final extension = DownloadUtils.getFileExtension(url);
+    final fileName = '${widget.file.name}$extension';
+
+    DownloadUtils.downloadFile(
+      context: context,
+      url: url,
+      fileName: fileName,
+      headers: widget.headers,
+    );
+  }
+
+  void _shareFile() {
+    final url = widget.file.versions.last.file!.url.toString();
+    final extension = DownloadUtils.getFileExtension(url);
+    final fileName = '${widget.file.name}$extension';
+
+    DownloadUtils.shareFile(
+      context: context,
+      url: url,
+      fileName: fileName,
+      headers: widget.headers,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -370,7 +411,7 @@ class _FullScreenPrintViewerState extends State<_FullScreenPrintViewer>
             ),
           ),
 
-          // ヘッダー（閉じるボタン）
+          // ヘッダー（閉じるボタンとアクションボタン）
           Positioned(
             top: MediaQuery.of(context).padding.top + 16,
             left: 16,
@@ -393,6 +434,60 @@ class _FullScreenPrintViewerState extends State<_FullScreenPrintViewer>
                   ),
                 ),
 
+                // アクションボタン群
+                Row(
+                  children: [
+                    // ダウンロードボタン
+                    Material(
+                      elevation: 4,
+                      color: Colors.black.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(25),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(25),
+                        onTap: _downloadFile,
+                        child: const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Icon(
+                            Icons.download,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // 共有ボタン
+                    Material(
+                      elevation: 4,
+                      color: Colors.black.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(25),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(25),
+                        onTap: _shareFile,
+                        child: const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Icon(
+                            Icons.share,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // フッター（ズームヒントとファイル情報）
+          Positioned(
+            bottom: MediaQuery.of(context).padding.bottom + 16,
+            left: 16,
+            right: 16,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
                 // ズームヒント
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -412,46 +507,41 @@ class _FullScreenPrintViewerState extends State<_FullScreenPrintViewer>
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-
-          // フッター（ファイル情報）
-          Positioned(
-            bottom: MediaQuery.of(context).padding.bottom + 16,
-            left: 16,
-            right: 16,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.8),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
+                const SizedBox(height: 12),
+                // ファイル情報
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.access_time,
-                        size: 16,
-                        color: Colors.grey[300],
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        DateFormat(
-                          'yyyy/MM/dd HH:mm',
-                        ).format(widget.file.versions.last.createdAt),
-                        style: GoogleFonts.notoSans(
-                          fontSize: 14,
-                          color: Colors.grey[300],
-                        ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            size: 16,
+                            color: Colors.grey[300],
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            DateFormat(
+                              'yyyy/MM/dd HH:mm',
+                            ).format(widget.file.versions.last.createdAt),
+                            style: GoogleFonts.notoSans(
+                              fontSize: 14,
+                              color: Colors.grey[300],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
