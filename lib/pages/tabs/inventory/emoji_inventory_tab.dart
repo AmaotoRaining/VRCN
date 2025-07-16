@@ -49,10 +49,10 @@ class _EmojiInventoryTabState extends ConsumerState<EmojiInventoryTab>
 
           return _buildFilesGrid(files, headers, isDarkMode);
         },
-        loading: () => const LoadingIndicator(message: '絵文字ファイルを読み込み中...'),
+        loading: () => const LoadingIndicator(message: '絵文字を読み込み中...'),
         error:
             (error, stackTrace) => ErrorContainer(
-              message: '絵文字ファイルの取得に失敗しました: $error',
+              message: '絵文字の取得に失敗しました: $error',
               onRetry: _refreshFiles,
             ),
       ),
@@ -81,7 +81,7 @@ class _EmojiInventoryTabState extends ConsumerState<EmojiInventoryTab>
             ),
             const SizedBox(height: 32),
             Text(
-              '絵文字ファイルがありません',
+              '絵文字がありません',
               style: GoogleFonts.notoSans(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,

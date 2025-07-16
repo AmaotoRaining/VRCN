@@ -531,6 +531,7 @@ class AppDrawer extends ConsumerWidget {
 
                 // ユーザーID
                 Text(
+                  // ignore: deprecated_member_use
                   '@${user.username}',
                   style: GoogleFonts.notoSans(
                     fontSize: 14,

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:vrchat/provider/files_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -51,10 +50,10 @@ class _GalleryInventoryTabState extends ConsumerState<GalleryInventoryTab>
 
           return _buildFilesGrid(files, headers, isDarkMode);
         },
-        loading: () => const LoadingIndicator(message: 'ギャラリーファイルを読み込み中...'),
+        loading: () => const LoadingIndicator(message: 'ギャラリーを読み込み中...'),
         error:
             (error, stackTrace) => ErrorContainer(
-              message: 'ギャラリーファイルの取得に失敗しました: $error',
+              message: 'ギャラリーの取得に失敗しました: $error',
               onRetry: _refreshFiles,
             ),
       ),
@@ -83,7 +82,7 @@ class _GalleryInventoryTabState extends ConsumerState<GalleryInventoryTab>
             ),
             const SizedBox(height: 32),
             Text(
-              'ギャラリーファイルがありません',
+              'ギャラリーがありません',
               style: GoogleFonts.notoSans(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -164,34 +163,6 @@ class _GalleryInventoryTabState extends ConsumerState<GalleryInventoryTab>
               ),
             ],
           ),
-
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 作成日時
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 14,
-                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatDate(file.versions.last.createdAt),
-                      style: GoogleFonts.notoSans(
-                        fontSize: 12,
-                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -219,10 +190,6 @@ class _GalleryInventoryTabState extends ConsumerState<GalleryInventoryTab>
         },
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return DateFormat('yyyy/MM/dd').format(date);
   }
 }
 

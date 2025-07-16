@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:vrchat/provider/files_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -12,28 +13,27 @@ import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
-class StickerInventoryTab extends ConsumerStatefulWidget {
-  const StickerInventoryTab({super.key});
+class PrintInventoryTab extends ConsumerStatefulWidget {
+  const PrintInventoryTab({super.key});
 
   @override
-  ConsumerState<StickerInventoryTab> createState() =>
-      _StickerInventoryTabState();
+  ConsumerState<PrintInventoryTab> createState() => _PrintInventoryTabState();
 }
 
-class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
+class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
   Future<void> _refreshFiles() async {
-    ref.invalidate(getFilesByTagProvider('sticker'));
+    ref.invalidate(getFilesByTagProvider('print'));
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final stickerFilesAsync = ref.watch(getStickerFilesProvider);
+    final printFilesAsync = ref.watch(getPrintFilesProvider);
     final vrchatApi = ref.watch(vrchatProvider).value;
 
     final headers = <String, String>{
@@ -42,7 +42,7 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
 
     return RefreshIndicator(
       onRefresh: _refreshFiles,
-      child: stickerFilesAsync.when(
+      child: printFilesAsync.when(
         data: (files) {
           if (files.isEmpty) {
             return _buildEmptyState(isDarkMode);
@@ -50,10 +50,10 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
 
           return _buildFilesGrid(files, headers, isDarkMode);
         },
-        loading: () => const LoadingIndicator(message: 'ステッカーファイルを読み込み中...'),
+        loading: () => const LoadingIndicator(message: 'プリントを読み込み中...'),
         error:
             (error, stackTrace) => ErrorContainer(
-              message: 'ステッカーファイルの取得に失敗しました: $error',
+              message: 'プリントの取得に失敗しました: $error',
               onRetry: _refreshFiles,
             ),
       ),
@@ -75,14 +75,14 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.sticky_note_2_outlined,
+                Icons.print_outlined,
                 size: 60,
                 color: AppTheme.primaryColor.withValues(alpha: 0.7),
               ),
             ),
             const SizedBox(height: 32),
             Text(
-              'ステッカーファイルがありません',
+              'プリントがありません',
               style: GoogleFonts.notoSans(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -114,7 +114,7 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
             child: SlideAnimation(
               verticalOffset: 50.0,
               child: FadeInAnimation(
-                child: _buildStickerCard(file, headers, isDarkMode),
+                child: _buildPrintCard(file, headers, isDarkMode),
               ),
             ),
           );
@@ -123,8 +123,8 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
     );
   }
 
-  // _buildStickerCardメソッドを修正
-  Widget _buildStickerCard(
+  // _buildPrintCardメソッドを修正
+  Widget _buildPrintCard(
     File file,
     Map<String, String> headers,
     bool isDarkMode,
@@ -139,15 +139,14 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 4,
       shadowColor: Colors.black26,
-      child: InkWell(
-        onTap: () => _showFullScreenSticker(file, headers),
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ステッカー画像
-            AspectRatio(
-              aspectRatio: 1.2,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // プリント画像
+          AspectRatio(
+            aspectRatio: 1.0,
+            child: GestureDetector(
+              onTap: () => _showFullScreenPrint(file, headers),
               child: CachedNetworkImage(
                 imageUrl: file.versions.last.file!.url.toString(),
                 fit: BoxFit.cover,
@@ -164,25 +163,53 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
                 errorWidget:
                     (context, url, error) => Container(
                       color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                      child: const Icon(Icons.sticky_note_2),
+                      child: const Icon(Icons.print),
                     ),
               ),
             ),
-          ],
-        ),
+          ),
+
+          // ファイル情報
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.access_time,
+                      size: 14,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _formatDate(file.versions.last.createdAt),
+                      style: GoogleFonts.notoSans(
+                        fontSize: 12,
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  // フルスクリーンステッカー表示
-  void _showFullScreenSticker(File file, Map<String, String> headers) {
+  // フルスクリーンプリント表示
+  void _showFullScreenPrint(File file, Map<String, String> headers) {
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.black87,
         pageBuilder:
             (context, animation, secondaryAnimation) =>
-                _FullScreenStickerViewer(file: file, headers: headers),
+                _FullScreenPrintViewer(file: file, headers: headers),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
             opacity: animation,
@@ -197,21 +224,24 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
       ),
     );
   }
+
+  String _formatDate(DateTime date) {
+    return DateFormat('yyyy/MM/dd HH:mm').format(date);
+  }
 }
 
-// フルスクリーンステッカービューアー
-class _FullScreenStickerViewer extends StatefulWidget {
+// フルスクリーンプリントビューアー
+class _FullScreenPrintViewer extends StatefulWidget {
   final File file;
   final Map<String, String> headers;
 
-  const _FullScreenStickerViewer({required this.file, required this.headers});
+  const _FullScreenPrintViewer({required this.file, required this.headers});
 
   @override
-  _FullScreenStickerViewerState createState() =>
-      _FullScreenStickerViewerState();
+  _FullScreenPrintViewerState createState() => _FullScreenPrintViewerState();
 }
 
-class _FullScreenStickerViewerState extends State<_FullScreenStickerViewer>
+class _FullScreenPrintViewerState extends State<_FullScreenPrintViewer>
     with TickerProviderStateMixin {
   late TransformationController _transformationController;
   late AnimationController _animationController;
@@ -290,7 +320,7 @@ class _FullScreenStickerViewerState extends State<_FullScreenStickerViewer>
             ),
           ),
 
-          // ステッカービューアー
+          // プリントビューアー
           Center(
             child: GestureDetector(
               onDoubleTapDown: _handleDoubleTapDown,
@@ -330,7 +360,7 @@ class _FullScreenStickerViewerState extends State<_FullScreenStickerViewer>
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: const Icon(
-                          Icons.sticky_note_2,
+                          Icons.print,
                           color: Colors.white,
                           size: 64,
                         ),
@@ -383,6 +413,45 @@ class _FullScreenStickerViewerState extends State<_FullScreenStickerViewer>
                   ),
                 ),
               ],
+            ),
+          ),
+
+          // フッター（ファイル情報）
+          Positioned(
+            bottom: MediaQuery.of(context).padding.bottom + 16,
+            left: 16,
+            right: 16,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.8),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: 16,
+                        color: Colors.grey[300],
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        DateFormat(
+                          'yyyy/MM/dd HH:mm',
+                        ).format(widget.file.versions.last.createdAt),
+                        style: GoogleFonts.notoSans(
+                          fontSize: 14,
+                          color: Colors.grey[300],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:vrchat/provider/files_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -13,27 +12,27 @@ import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
-class PrintInventoryTab extends ConsumerStatefulWidget {
-  const PrintInventoryTab({super.key});
+class IconInventoryTab extends ConsumerStatefulWidget {
+  const IconInventoryTab({super.key});
 
   @override
-  ConsumerState<PrintInventoryTab> createState() => _PrintInventoryTabState();
+  ConsumerState<IconInventoryTab> createState() => _IconInventoryTabState();
 }
 
-class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
+class _IconInventoryTabState extends ConsumerState<IconInventoryTab>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
   Future<void> _refreshFiles() async {
-    ref.invalidate(getFilesByTagProvider('print'));
+    ref.invalidate(getIconFilesProvider);
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final printFilesAsync = ref.watch(getFilesByTagProvider('print'));
+    final iconFilesAsync = ref.watch(getIconFilesProvider);
     final vrchatApi = ref.watch(vrchatProvider).value;
 
     final headers = <String, String>{
@@ -42,7 +41,7 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
 
     return RefreshIndicator(
       onRefresh: _refreshFiles,
-      child: printFilesAsync.when(
+      child: iconFilesAsync.when(
         data: (files) {
           if (files.isEmpty) {
             return _buildEmptyState(isDarkMode);
@@ -50,10 +49,10 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
 
           return _buildFilesGrid(files, headers, isDarkMode);
         },
-        loading: () => const LoadingIndicator(message: 'プリントファイルを読み込み中...'),
+        loading: () => const LoadingIndicator(message: 'アイコンを読み込み中...'),
         error:
             (error, stackTrace) => ErrorContainer(
-              message: 'プリントファイルの取得に失敗しました: $error',
+              message: 'アイコンの取得に失敗しました: $error',
               onRetry: _refreshFiles,
             ),
       ),
@@ -75,14 +74,14 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.print_outlined,
+                Icons.account_circle_outlined,
                 size: 60,
                 color: AppTheme.primaryColor.withValues(alpha: 0.7),
               ),
             ),
             const SizedBox(height: 32),
             Text(
-              'プリントファイルがありません',
+              'アイコンがありません',
               style: GoogleFonts.notoSans(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -102,7 +101,9 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
   ) {
     return AnimationLimiter(
       child: MasonryGridView.count(
-        crossAxisCount: 2,
+        crossAxisCount: 3,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
         padding: const EdgeInsets.all(16),
         itemCount: files.length,
         itemBuilder: (context, index) {
@@ -110,11 +111,11 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
           return AnimationConfiguration.staggeredGrid(
             position: index,
             duration: const Duration(milliseconds: 600),
-            columnCount: 2,
+            columnCount: 3,
             child: SlideAnimation(
               verticalOffset: 50.0,
               child: FadeInAnimation(
-                child: _buildPrintCard(file, headers, isDarkMode),
+                child: _buildIconCard(file, headers, isDarkMode),
               ),
             ),
           );
@@ -123,17 +124,11 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
     );
   }
 
-  // _buildPrintCardメソッドを修正
-  Widget _buildPrintCard(
+  Widget _buildIconCard(
     File file,
     Map<String, String> headers,
     bool isDarkMode,
   ) {
-    // URLが空の場合はカードを表示しない
-    if (file.versions.last.file!.url.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
     return Card(
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -142,74 +137,68 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // プリント画像
-          AspectRatio(
-            aspectRatio: 1.0,
-            child: GestureDetector(
-              onTap: () => _showFullScreenPrint(file, headers),
-              child: CachedNetworkImage(
-                imageUrl: file.versions.last.file!.url.toString(),
-                fit: BoxFit.cover,
-                width: double.infinity,
-                httpHeaders: headers,
-                cacheManager: JsonCacheManager(),
-                placeholder:
-                    (context, url) => Container(
-                      color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
+          // アイコン画像
+          Stack(
+            children: [
+              GestureDetector(
+                onTap: () => _showFullScreenImage(file, headers),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors:
+                          isDarkMode
+                              ? [Colors.grey[800]!, Colors.grey[900]!]
+                              : [Colors.grey[200]!, Colors.grey[300]!],
                     ),
-                errorWidget:
-                    (context, url, error) => Container(
-                      color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                      child: const Icon(Icons.print),
-                    ),
-              ),
-            ),
-          ),
-
-          // ファイル情報
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 14,
-                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatDate(file.versions.last.createdAt),
-                      style: GoogleFonts.notoSans(
-                        fontSize: 12,
-                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                      ),
-                    ),
-                  ],
+                  ),
+                  child: CachedNetworkImage(
+                    imageUrl: file.versions.last.file!.url.toString(),
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    httpHeaders: headers,
+                    cacheManager: JsonCacheManager(),
+                    placeholder:
+                        (context, url) => Container(
+                          color:
+                              isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                    errorWidget:
+                        (context, url, error) => Container(
+                          color:
+                              isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                          child: Icon(
+                            Icons.account_circle,
+                            size: 40,
+                            color:
+                                isDarkMode
+                                    ? Colors.grey[600]
+                                    : Colors.grey[500],
+                          ),
+                        ),
+                  ),
                 ),
-                const SizedBox(height: 4),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  // フルスクリーンプリント表示
-  void _showFullScreenPrint(File file, Map<String, String> headers) {
+  // フルスクリーン画像表示
+  void _showFullScreenImage(File file, Map<String, String> headers) {
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.black87,
         pageBuilder:
             (context, animation, secondaryAnimation) =>
-                _FullScreenPrintViewer(file: file, headers: headers),
+                _FullScreenIconViewer(file: file, headers: headers),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
             opacity: animation,
@@ -224,24 +213,20 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
       ),
     );
   }
-
-  String _formatDate(DateTime date) {
-    return DateFormat('yyyy/MM/dd HH:mm').format(date);
-  }
 }
 
-// フルスクリーンプリントビューアー
-class _FullScreenPrintViewer extends StatefulWidget {
+// フルスクリーンアイコンビューアー
+class _FullScreenIconViewer extends StatefulWidget {
   final File file;
   final Map<String, String> headers;
 
-  const _FullScreenPrintViewer({required this.file, required this.headers});
+  const _FullScreenIconViewer({required this.file, required this.headers});
 
   @override
-  _FullScreenPrintViewerState createState() => _FullScreenPrintViewerState();
+  _FullScreenIconViewerState createState() => _FullScreenIconViewerState();
 }
 
-class _FullScreenPrintViewerState extends State<_FullScreenPrintViewer>
+class _FullScreenIconViewerState extends State<_FullScreenIconViewer>
     with TickerProviderStateMixin {
   late TransformationController _transformationController;
   late AnimationController _animationController;
@@ -281,7 +266,7 @@ class _FullScreenPrintViewerState extends State<_FullScreenPrintViewer>
     } else {
       // ズームイン
       final position = _doubleTapDetails!.localPosition;
-      const scale = 2.5;
+      const scale = 3.0; // アイコンは小さいので少し大きめにズーム
       final x = -position.dx * (scale - 1);
       final y = -position.dy * (scale - 1);
       final zoomed =
@@ -320,7 +305,7 @@ class _FullScreenPrintViewerState extends State<_FullScreenPrintViewer>
             ),
           ),
 
-          // プリントビューアー
+          // 画像ビューアー
           Center(
             child: GestureDetector(
               onDoubleTapDown: _handleDoubleTapDown,
@@ -328,43 +313,49 @@ class _FullScreenPrintViewerState extends State<_FullScreenPrintViewer>
               child: InteractiveViewer(
                 transformationController: _transformationController,
                 minScale: 0.5,
-                maxScale: 4.0,
-                child: CachedNetworkImage(
-                  imageUrl: widget.file.versions.last.file!.url.toString(),
-                  httpHeaders: widget.headers,
-                  cacheManager: JsonCacheManager(),
-                  fit: BoxFit.contain,
-                  placeholder:
-                      (context, url) => Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[800],
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
+                maxScale: 6.0,
+                child: Container(
+                  constraints: const BoxConstraints(
+                    maxWidth: 400,
+                    maxHeight: 400,
+                  ),
+                  child: CachedNetworkImage(
+                    imageUrl: widget.file.versions.last.file!.url.toString(),
+                    httpHeaders: widget.headers,
+                    cacheManager: JsonCacheManager(),
+                    fit: BoxFit.contain,
+                    placeholder:
+                        (context, url) => Container(
+                          width: 200,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[800],
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                  errorWidget:
-                      (context, url, error) => Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[800],
-                          borderRadius: BorderRadius.circular(16),
+                    errorWidget:
+                        (context, url, error) => Container(
+                          width: 200,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[800],
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Icon(
+                            Icons.account_circle,
+                            color: Colors.white,
+                            size: 100,
+                          ),
                         ),
-                        child: const Icon(
-                          Icons.print,
-                          color: Colors.white,
-                          size: 64,
-                        ),
-                      ),
+                  ),
                 ),
               ),
             ),
@@ -413,45 +404,6 @@ class _FullScreenPrintViewerState extends State<_FullScreenPrintViewer>
                   ),
                 ),
               ],
-            ),
-          ),
-
-          // フッター（ファイル情報）
-          Positioned(
-            bottom: MediaQuery.of(context).padding.bottom + 16,
-            left: 16,
-            right: 16,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.8),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.access_time,
-                        size: 16,
-                        color: Colors.grey[300],
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        DateFormat(
-                          'yyyy/MM/dd HH:mm',
-                        ).format(widget.file.versions.last.createdAt),
-                        style: GoogleFonts.notoSans(
-                          fontSize: 14,
-                          color: Colors.grey[300],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
             ),
           ),
         ],
