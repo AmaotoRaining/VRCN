@@ -97,66 +97,33 @@ class WorldDetailPage extends ConsumerWidget {
           children: [
             // ワールド画像
             CachedNetworkImage(
-                imageUrl: world.imageUrl,
-                fit: BoxFit.cover,
-                httpHeaders: headers,
-                cacheManager: JsonCacheManager(),
-                placeholder:
-                    (context, url) => Container(
-                      color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.green,
-                          ),
-                        ),
+              imageUrl: world.imageUrl,
+              fit: BoxFit.cover,
+              httpHeaders: headers,
+              cacheManager: JsonCacheManager(),
+              placeholder:
+                  (context, url) => Container(
+                    color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
                       ),
                     ),
-                errorWidget:
-                    (context, url, error) => Container(
-                      color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                      child: const Icon(
-                        Icons.image_not_supported,
-                        color: Colors.green,
-                        size: 40,
-                      ),
+                  ),
+              errorWidget:
+                  (context, url, error) => Container(
+                    color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                    child: const Icon(
+                      Icons.image_not_supported,
+                      color: Colors.green,
+                      size: 40,
                     ),
-              ),
-
-            // グラデーションオーバーレイ
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.6),
-                  ],
-                  stops: const [0.6, 1.0],
-                ),
-              ),
+                  ),
             ),
           ],
         ),
-        title: Text(
-          world.name,
-          style: GoogleFonts.poppins(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            shadows: [
-              Shadow(
-                color: Colors.black.withValues(alpha: 0.8),
-                blurRadius: 5,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-        ),
       ),
-      // _buildAppBar メソッド内の actions 部分を修正
       actions: [
         // 共有ボタン
         IconButton(
@@ -210,6 +177,19 @@ class WorldDetailPage extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          children: [
+            Text(
+              world.name,
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.white70 : Colors.black87,
+              ),
+            ),
+          ],
+        ),
+
         // 作成者情報
         Row(
           children: [
