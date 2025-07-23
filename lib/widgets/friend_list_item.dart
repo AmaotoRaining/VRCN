@@ -101,10 +101,9 @@ class FriendListItem extends ConsumerWidget {
                       child: CircleAvatar(
                         radius: compact ? 16 : 22,
                         backgroundImage:
-                            friend.userIcon != null &&
-                                    friend.userIcon!.isNotEmpty
+                            friend.userIcon.isNotEmpty
                                 ? CachedNetworkImageProvider(
-                                  friend.userIcon!,
+                                  friend.userIcon,
                                   headers: headers,
                                   cacheManager: JsonCacheManager(),
                                 )
@@ -116,15 +115,13 @@ class FriendListItem extends ConsumerWidget {
                                     )
                                     : null),
                         backgroundColor:
-                            (friend.userIcon == null ||
-                                        friend.userIcon!.isEmpty) &&
+                            (friend.userIcon.isEmpty) &&
                                     friend.currentAvatarThumbnailImageUrl ==
                                         null
                                 ? Colors.grey[300]
                                 : null,
                         child:
-                            (friend.userIcon == null ||
-                                        friend.userIcon!.isEmpty) &&
+                            (friend.userIcon.isEmpty) &&
                                     friend.currentAvatarThumbnailImageUrl ==
                                         null
                                 ? Icon(

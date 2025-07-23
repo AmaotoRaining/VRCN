@@ -73,7 +73,10 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
             }
 
             final batch = response.success!.data;
-            onlineFriends.addAll(batch);
+            // LimitedUserFriend から LimitedUser に変換
+            final convertedBatch =
+                batch.map(_convertToLimitedUser).toList();
+            onlineFriends.addAll(convertedBatch);
 
             if (batch.length < 100) {
               hasMore = false;
@@ -111,7 +114,10 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
             }
 
             final batch = response.success!.data;
-            offlineFriends.addAll(batch);
+            // LimitedUserFriend から LimitedUser に変換
+            final convertedBatch =
+                batch.map(_convertToLimitedUser).toList();
+            offlineFriends.addAll(convertedBatch);
 
             // 100件未満なら終了、そうでなければ次の100件を取得
             if (batch.length < 100) {
@@ -137,6 +143,28 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
     }
   }
 
+  // LimitedUserFriend を LimitedUser に変換するヘルパーメソッド
+  LimitedUser _convertToLimitedUser(LimitedUserFriend friend) {
+    return LimitedUser(
+      bio: friend.bio,
+      currentAvatarImageUrl: friend.currentAvatarImageUrl,
+      currentAvatarThumbnailImageUrl: friend.currentAvatarThumbnailImageUrl,
+      developerType: friend.developerType,
+      displayName: friend.displayName,
+      id: friend.id,
+      isFriend: friend.isFriend,
+      lastPlatform: friend.lastPlatform,
+      profilePicOverride: friend.profilePicOverride,
+      status: friend.status,
+      statusDescription: friend.statusDescription,
+      tags: friend.tags,
+      userIcon: friend.userIcon,
+      location: friend.location,
+      friendKey: friend.friendKey,
+      lastLogin: friend.lastLogin,
+    );
+  }
+
   // フレンド情報を更新するメソッド
   void updateFriendState(String userId, {required bool isOnline}) {
     state.whenData((friends) {
@@ -151,7 +179,6 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
                   friend.currentAvatarThumbnailImageUrl,
               developerType: friend.developerType,
               displayName: friend.displayName,
-              fallbackAvatar: friend.fallbackAvatar,
               id: friend.id,
               isFriend: friend.isFriend,
               lastPlatform: friend.lastPlatform,
@@ -184,7 +211,6 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
                   friend.currentAvatarThumbnailImageUrl,
               developerType: friend.developerType,
               displayName: friend.displayName,
-              fallbackAvatar: friend.fallbackAvatar,
               id: friend.id,
               isFriend: friend.isFriend,
               lastPlatform: friend.lastPlatform,
@@ -229,7 +255,6 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
                   friend.currentAvatarThumbnailImageUrl,
               developerType: friend.developerType,
               displayName: friend.displayName,
-              fallbackAvatar: friend.fallbackAvatar,
               id: friend.id,
               isFriend: friend.isFriend,
               lastPlatform: friend.lastPlatform,

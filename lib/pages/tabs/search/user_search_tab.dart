@@ -169,9 +169,9 @@ class _UserSearchTabState extends ConsumerState<UserSearchTab> {
                 ),
                 child: CircleAvatar(
                   backgroundImage:
-                      user.userIcon != null && user.userIcon!.isNotEmpty
+                      user.userIcon.isNotEmpty
                           ? CachedNetworkImageProvider(
-                            user.userIcon!,
+                            user.userIcon,
                             headers: headers,
                             cacheManager: JsonCacheManager(),
                           )
@@ -183,12 +183,12 @@ class _UserSearchTabState extends ConsumerState<UserSearchTab> {
                               )
                               : null),
                   backgroundColor:
-                      (user.userIcon == null || user.userIcon!.isEmpty) &&
+                      (user.userIcon.isEmpty) &&
                               user.currentAvatarThumbnailImageUrl == null
                           ? Colors.grey[300]
                           : null,
                   child:
-                      (user.userIcon == null || user.userIcon!.isEmpty) &&
+                      (user.userIcon.isEmpty) &&
                               user.currentAvatarThumbnailImageUrl == null
                           ? const Icon(Icons.person, color: Colors.grey)
                           : null,
