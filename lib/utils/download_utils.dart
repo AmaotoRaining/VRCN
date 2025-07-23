@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
@@ -16,17 +18,14 @@ class DownloadUtils {
     required String fileName,
     required Map<String, String> headers,
   }) async {
+    // 早期にcontextのmountedをチェック
+    if (!context.mounted) return;
+
     try {
-      // Android 13以上では権限不要、それ以下では権限チェック
-      if (Platform.isAndroid) {
-        final androidInfo = await _getAndroidInfo();
-        if (androidInfo.version.sdkInt < 33) {
-          final permission = await Permission.storage.request();
-          if (!permission.isGranted) {
-            _showErrorSnackBar(context, 'ストレージへのアクセス権限が必要です');
-            return;
-          }
-        }
+      // プラットフォーム別権限チェック
+      final hasPermission = await _checkAndRequestPermissions(context);
+      if (!hasPermission || !context.mounted) {
+        return;
       }
 
       // ダウンロード進行状況を表示
@@ -69,6 +68,8 @@ class DownloadUtils {
     required String fileName,
     required Map<String, String> headers,
   }) async {
+    if (!context.mounted) return;
+
     try {
       _showDownloadDialog(context, fileName, isShare: true);
 
@@ -82,7 +83,7 @@ class DownloadUtils {
         // キャッシュにない場合は一時ファイルとしてダウンロード
         final dio = Dio();
         final tempDir = await getTemporaryDirectory();
-        final tempFile = File('${tempDir.path}/$fileName');
+        final tempFile = File(path.join(tempDir.path, fileName));
 
         await dio.download(
           url,
@@ -94,7 +95,12 @@ class DownloadUtils {
 
       if (context.mounted) {
         Navigator.of(context).pop(); // ダウンロードダイアログを閉じる
-        await Share.shareXFiles([XFile(fileToShare.path)], text: fileName);
+
+        final params = ShareParams(
+          files: [XFile(fileToShare.path)],
+        );
+
+        await SharePlus.instance.share(params);
       }
     } catch (e) {
       if (context.mounted) {
@@ -104,23 +110,174 @@ class DownloadUtils {
     }
   }
 
+  // プラットフォーム別権限チェック
+  static Future<bool> _checkAndRequestPermissions(BuildContext context) async {
+    if (!context.mounted) return false;
+
+    if (Platform.isAndroid) {
+      return await _checkAndroidPermissions(context);
+    } else if (Platform.isIOS) {
+      return await _checkIOSPermissions(context);
+    }
+    return true; // 他のプラットフォームでは権限チェックをスキップ
+  }
+
+  // Android権限チェック
+  static Future<bool> _checkAndroidPermissions(BuildContext context) async {
+    if (!context.mounted) return false;
+
+    try {
+      final deviceInfo = DeviceInfoPlugin();
+      final androidInfo = await deviceInfo.androidInfo;
+
+      // Android 13 (API 33) 以上では写真への保存権限が必要
+      if (androidInfo.version.sdkInt >= 33) {
+        var permission = await Permission.photos.status;
+
+        if (permission.isDenied) {
+          permission = await Permission.photos.request();
+        }
+
+        if (permission.isPermanentlyDenied) {
+          if (context.mounted) {
+            _showPermissionDeniedDialog(context, 'フォト');
+          }
+          return false;
+        }
+
+        if (!permission.isGranted) {
+          if (context.mounted) {
+            _showErrorSnackBar(context, '写真への保存権限が必要です');
+          }
+          return false;
+        }
+      } else {
+        // Android 12以下ではストレージ権限をチェック
+        var permission = await Permission.storage.status;
+
+        if (permission.isDenied) {
+          permission = await Permission.storage.request();
+        }
+
+        if (permission.isPermanentlyDenied) {
+          if (context.mounted) {
+            _showPermissionDeniedDialog(context, 'ストレージ');
+          }
+          return false;
+        }
+
+        if (!permission.isGranted) {
+          if (context.mounted) {
+            _showErrorSnackBar(context, 'ストレージへのアクセス権限が必要です');
+          }
+          return false;
+        }
+      }
+
+      return true;
+    } catch (e) {
+      if (context.mounted) {
+        _showErrorSnackBar(context, '権限チェック中にエラーが発生しました: $e');
+      }
+      return false;
+    }
+  }
+
+  // iOS権限チェック
+  static Future<bool> _checkIOSPermissions(BuildContext context) async {
+    if (!context.mounted) return false;
+
+    try {
+      // iOSでは写真ライブラリへの追加権限をチェック
+      var permission = await Permission.photosAddOnly.status;
+
+      if (permission.isDenied) {
+        permission = await Permission.photosAddOnly.request();
+      }
+
+      // 権限が永続的に拒否されている場合
+      if (permission.isPermanentlyDenied) {
+        if (context.mounted) {
+          _showPermissionDeniedDialog(context, 'フォトライブラリ');
+        }
+        return false;
+      }
+
+      // 権限が付与されていない場合
+      if (!permission.isGranted) {
+        if (context.mounted) {
+          _showErrorSnackBar(context, 'フォトライブラリへの保存権限が必要です');
+        }
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      if (context.mounted) {
+        _showErrorSnackBar(context, '権限チェック中にエラーが発生しました: $e');
+      }
+      return false;
+    }
+  }
+
+  // 権限が永続的に拒否された場合のダイアログ
+  static void _showPermissionDeniedDialog(
+    BuildContext context,
+    String permissionType,
+  ) {
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text(
+              '権限が必要です',
+              style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
+            ),
+            content: Text(
+              '$permissionTypeへの保存権限が拒否されています。\n設定アプリから権限を有効にしてください。',
+              style: GoogleFonts.notoSans(),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('キャンセル', style: GoogleFonts.notoSans()),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  openAppSettings(); // 設定アプリを開く
+                },
+                child: Text('設定を開く', style: GoogleFonts.notoSans()),
+              ),
+            ],
+          ),
+    );
+  }
+
   static Future<void> _saveFile(Uint8List fileBytes, String fileName) async {
     if (Platform.isAndroid) {
-      // Android: Downloads フォルダに保存
-      final downloadsDir = Directory('/storage/emulated/0/Download');
+      // Android: Downloads フォルダに保存（pathパッケージを使用）
+      const storageRoot = '/storage/emulated/0';
+      final downloadsPath = path.join(storageRoot, 'Download');
+      final downloadsDir = Directory(downloadsPath);
+
       if (await downloadsDir.exists()) {
-        final file = File('${downloadsDir.path}/$fileName');
+        final file = File(path.join(downloadsDir.path, fileName));
         await file.writeAsBytes(fileBytes);
       } else {
         // フォールバック: アプリのディレクトリに保存
         final appDir = await getExternalStorageDirectory();
-        final file = File('${appDir!.path}/$fileName');
-        await file.writeAsBytes(fileBytes);
+        if (appDir != null) {
+          final file = File(path.join(appDir.path, fileName));
+          await file.writeAsBytes(fileBytes);
+        }
       }
     } else if (Platform.isIOS) {
       // iOS: Documents フォルダに保存
       final documentsDir = await getApplicationDocumentsDirectory();
-      final file = File('${documentsDir.path}/$fileName');
+      final file = File(path.join(documentsDir.path, fileName));
       await file.writeAsBytes(fileBytes);
     }
   }
@@ -130,6 +287,8 @@ class DownloadUtils {
     String fileName, {
     bool isShare = false,
   }) {
+    if (!context.mounted) return;
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -152,6 +311,8 @@ class DownloadUtils {
   }
 
   static void _showSuccessSnackBar(BuildContext context, String message) {
+    if (!context.mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -169,6 +330,8 @@ class DownloadUtils {
   }
 
   static void _showErrorSnackBar(BuildContext context, String message) {
+    if (!context.mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -183,14 +346,6 @@ class DownloadUtils {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
-  }
-
-  static Future<dynamic> _getAndroidInfo() async {
-    // device_info_plus パッケージを使用してAndroid情報を取得
-    // この部分は実際の実装では device_info_plus を使用してください
-    return {
-      'version': {'sdkInt': 33},
-    }; // ダミーデータ
   }
 
   static String getFileExtension(String url) {
