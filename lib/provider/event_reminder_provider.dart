@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:vrchat/provider/settings_provider.dart';
 
@@ -71,22 +70,9 @@ class EventReminderNotifier extends StateNotifier<List<EventReminder>> {
 
   EventReminderNotifier(this.prefs, this.notifications) : super([]) {
     _loadReminders();
-    _initializeTimezone();
   }
 
-  // タイムゾーンの初期化
-  void _initializeTimezone() {
-    try {
-      tz_data.initializeTimeZones();
-      final tokyo = tz.getLocation('Asia/Tokyo');
-      tz.setLocalLocation(tokyo);
-      debugPrint('タイムゾーンを東京(JST)に設定しました');
-    } catch (e) {
-      debugPrint('タイムゾーン設定エラー: $e');
-      // 代替方法としてデフォルトのローカルタイムゾーンを使用
-      tz_data.initializeTimeZones();
-    }
-  }
+
 
   // リマインダーをロード
   Future<void> _loadReminders() async {

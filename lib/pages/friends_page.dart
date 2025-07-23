@@ -173,7 +173,7 @@ class FriendsPage extends ConsumerWidget {
       friendGroups[location]!.add(friend);
     }
 
-    // ワールド情報の事前取得（同じロケーションにいるフレンドが多い場合に効率的）
+    // ワールド情報の事前取得
     for (final location in friendGroups.keys) {
       ref.read(instanceDetailProvider(location));
     }
@@ -187,7 +187,7 @@ class FriendsPage extends ConsumerWidget {
     // グループ化したフレンドリストを構築
     final groupWidgets = <Widget>[];
 
-    // オンラインワールドグループを人数順に表示（パブリックグループ）
+    // オンラインワールドグループを人数順に表示
     for (final location in sortedLocations) {
       final locationFriends = friendGroups[location]!;
 
@@ -220,7 +220,7 @@ class FriendsPage extends ConsumerWidget {
       );
     }
 
-    // アクティブなオフラインフレンドが存在する場合はプライベートの後に表示（新規追加）
+    // アクティブなオフラインフレンドが存在する場合はプライベートの後に表示
     if (activeOfflineFriends.isNotEmpty) {
       groupWidgets.add(
         FriendLocationGroup(
@@ -230,8 +230,8 @@ class FriendsPage extends ConsumerWidget {
           onTapFriend: (friend) => context.push('/user/${friend.id}'),
           iconColor: Colors.green,
           isOffline: true,
-          isActive: true, // アクティブフラグをオンに
-          compact: false, // コンパクトモードをオフに
+          isActive: true,
+          compact: false,
         ),
       );
     }
@@ -246,7 +246,7 @@ class FriendsPage extends ConsumerWidget {
           onTapFriend: (friend) => context.push('/user/${friend.id}'),
           iconColor: Colors.grey,
           isOffline: true,
-          compact: false, // コンパクトモードをオフに
+          compact: false,
         ),
       );
     }
