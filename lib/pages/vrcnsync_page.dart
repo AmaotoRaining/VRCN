@@ -168,18 +168,23 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
         elevation: 0,
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // エラー表示
               if (syncStatus.errorMessage != null)
-                ErrorContainer(
-                  message: syncStatus.errorMessage!,
-                  onRetry:
-                      () =>
-                          ref.read(vrcnSyncStateProvider.notifier).clearError(),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: ErrorContainer(
+                    message: syncStatus.errorMessage!,
+                    onRetry:
+                        () =>
+                            ref
+                                .read(vrcnSyncStateProvider.notifier)
+                                .clearError(),
+                  ),
                 ),
 
               // サーバーステータス
@@ -187,13 +192,16 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
 
               const SizedBox(height: 16),
 
-              // スキャンボタン
-              _buildScanButton(syncStatus, isDarkMode),
+              // 使用方法カード
+              _buildUsageCard(isDarkMode),
 
               const SizedBox(height: 16),
 
-              // デバイスリスト
-              Expanded(child: _buildDevicesList(syncStatus, isDarkMode)),
+              // 統計情報カード
+              _buildStatsCard(syncStatus, isDarkMode),
+
+              // 下部に余白を追加
+              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -273,7 +281,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
                   children: [
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.photo_album,
                           color: AppTheme.primaryColor,
                           size: 20,
@@ -291,24 +299,107 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.info_outline,
-                          color: AppTheme.primaryColor,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            Platform.isIOS ? 'ポート自動選択で待機中' : 'ポート 49527 で待機中',
-                            style: GoogleFonts.notoSans(
-                              fontSize: 11,
-                              color: AppTheme.primaryColor,
-                            ),
+                    // サーバー情報表示
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isDarkMode ? Colors.grey[800] : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.computer,
+                                color: AppTheme.primaryColor,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'サーバー情報',
+                                style: GoogleFonts.notoSans(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.primaryColor,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.wifi,
+                                color:
+                                    isDarkMode
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                                size: 14,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'IP: ${status.serverIP ?? "取得中..."}',
+                                style: GoogleFonts.notoSans(
+                                  fontSize: 11,
+                                  color:
+                                      isDarkMode
+                                          ? Colors.grey[300]
+                                          : Colors.grey[700],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.settings_ethernet,
+                                color:
+                                    isDarkMode
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                                size: 14,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'ポート: ${status.serverPort ?? "---"}',
+                                style: GoogleFonts.notoSans(
+                                  fontSize: 11,
+                                  color:
+                                      isDarkMode
+                                          ? Colors.grey[300]
+                                          : Colors.grey[700],
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (status.serverIP != null &&
+                              status.serverPort != null) ...[
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryColor.withValues(
+                                  alpha: 0.2,
+                                ),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'http://${status.serverIP}:${status.serverPort}',
+                                style: GoogleFonts.notoSans(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.primaryColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -320,215 +411,220 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
     );
   }
 
-  Widget _buildScanButton(SyncStatus status, bool isDarkMode) {
-    return ElevatedButton.icon(
-      onPressed:
-          status.isScanning
-              ? null
-              : () {
-                if (mounted) {
-                  ref.read(vrcnSyncStateProvider.notifier).startDiscovery();
-                }
-              },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppTheme.primaryColor,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 2,
-      ),
-      icon:
-          status.isScanning
-              ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-              : const Icon(Icons.search, size: 20),
-      label: Text(
-        status.isScanning ? 'デバイスを検索中...' : 'デバイスを検索',
-        style: GoogleFonts.notoSans(fontSize: 16, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
-
-  Widget _buildDevicesList(SyncStatus status, bool isDarkMode) {
-    if (status.devices.isEmpty && !status.isScanning) {
-      return Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        color: isDarkMode ? Colors.grey[850] : Colors.white,
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.devices_other,
-                size: 64,
-                color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'デバイスが見つかりません',
-                style: GoogleFonts.notoSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                Platform.isIOS
-                    ? 'PCでVRCNSyncアプリを起動してから\n検索ボタンを押してください'
-                    : 'PCでVRCNSyncアプリを起動してから\n検索ボタンを押してください\n\n※同じWiFiネットワークに接続している必要があります',
-                style: GoogleFonts.notoSans(
-                  fontSize: 14,
-                  color: isDarkMode ? Colors.grey[500] : Colors.grey[500],
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
+  Widget _buildUsageCard(bool isDarkMode) {
     return Card(
+      elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       color: isDarkMode ? Colors.grey[850] : Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
                 const Icon(
-                  Icons.devices,
+                  Icons.help_outline,
                   color: AppTheme.primaryColor,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '検出されたデバイス',
+                  '使用方法',
                   style: GoogleFonts.notoSans(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: isDarkMode ? Colors.white : Colors.black87,
                   ),
                 ),
-                const Spacer(),
-                if (status.devices.isNotEmpty)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${status.devices.length}',
-                      style: GoogleFonts.notoSans(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryColor,
-                      ),
-                    ),
-                  ),
               ],
             ),
-          ),
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.only(bottom: 16),
-              itemCount: status.devices.length,
-              separatorBuilder:
-                  (context, index) => Divider(
-                    height: 1,
-                    color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
-                    indent: 16,
-                    endIndent: 16,
-                  ),
-              itemBuilder: (context, index) {
-                final device = status.devices[index];
-                return _buildDeviceListItem(device, isDarkMode);
-              },
+            const SizedBox(height: 12),
+            _buildUsageStep(
+              '1',
+              'PCでVRCNSyncアプリを起動',
+              'デスクトップ版のVRCNSyncアプリを起動してください',
+              Icons.computer,
+              isDarkMode,
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            _buildUsageStep(
+              '2',
+              '同じWiFiネットワークに接続',
+              'PC・モバイル端末を同じWiFiネットワークに接続してください',
+              Icons.wifi,
+              isDarkMode,
+            ),
+            const SizedBox(height: 8),
+            _buildUsageStep(
+              '3',
+              '接続先にモバイル端末を指定',
+              'PCアプリで上記のIPアドレスとポートを指定してください',
+              Icons.settings_ethernet,
+              isDarkMode,
+            ),
+            const SizedBox(height: 8),
+            _buildUsageStep(
+              '4',
+              '写真を送信',
+              'PCから写真を送信すると、自動的にVRCNアルバムに保存されます',
+              Icons.photo_album,
+              isDarkMode,
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildDeviceListItem(DeviceInfo device, bool isDarkMode) {
-    IconData deviceIcon;
-    Color iconColor;
-
-    switch (device.type) {
-      case 'mdns':
-        deviceIcon = Icons.wifi;
-        iconColor = Colors.blue;
-      case 'http':
-        deviceIcon = Icons.desktop_windows;
-        iconColor = Colors.green;
-      default:
-        deviceIcon = Icons.device_unknown;
-        iconColor = Colors.grey;
-    }
-
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: iconColor.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(8),
+  Widget _buildUsageStep(
+    String stepNumber,
+    String title,
+    String description,
+    IconData icon,
+    bool isDarkMode,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: AppTheme.primaryColor,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: Text(
+              stepNumber,
+              style: GoogleFonts.notoSans(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
         ),
-        child: Icon(deviceIcon, color: iconColor, size: 24),
-      ),
-      title: Text(
-        device.name,
-        style: GoogleFonts.notoSans(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: isDarkMode ? Colors.white : Colors.black87,
+        const SizedBox(width: 12),
+        Icon(icon, color: AppTheme.primaryColor, size: 20),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.notoSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                description,
+                style: GoogleFonts.notoSans(
+                  fontSize: 12,
+                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsCard(SyncStatus status, bool isDarkMode) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: isDarkMode ? Colors.grey[850] : Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.analytics, color: AppTheme.primaryColor, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  '接続状況',
+                  style: GoogleFonts.notoSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? Colors.white : Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatItem(
+                    'サーバー状態',
+                    status.isServerRunning ? '実行中' : '停止中',
+                    status.isServerRunning ? Icons.check_circle : Icons.cancel,
+                    status.isServerRunning ? Colors.green : Colors.red,
+                    isDarkMode,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildStatItem(
+                    'ネットワーク',
+                    status.serverIP != null ? '接続済み' : '未接続',
+                    status.serverIP != null ? Icons.wifi : Icons.wifi_off,
+                    status.serverIP != null ? Colors.blue : Colors.grey,
+                    isDarkMode,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  }
+
+  Widget _buildStatItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+    bool isDarkMode,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
         children: [
-          const SizedBox(height: 4),
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 8),
           Text(
-            '${device.ip}:${device.port}',
+            label,
             style: GoogleFonts.notoSans(
-              fontSize: 14,
+              fontSize: 12,
               color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
             ),
           ),
-          const SizedBox(height: 2),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              device.type.toUpperCase(),
-              style: GoogleFonts.notoSans(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: iconColor,
-              ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: GoogleFonts.notoSans(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: color,
             ),
           ),
         ],
       ),
-      trailing: const Icon(Icons.sync, color: Colors.green, size: 20),
     );
   }
 }

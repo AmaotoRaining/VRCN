@@ -5,7 +5,7 @@ import 'package:gal/gal.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class PhotoSaveService {
-  static const String albumName = 'VRCN';
+  static const albumName = 'VRCN';
 
   /// 写真をVRCNアルバムに保存
   static Future<bool> saveToVRCNAlbum(File imageFile) async {

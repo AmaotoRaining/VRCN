@@ -47,12 +47,16 @@ class SyncStatus {
   final bool isScanning;
   final List<DeviceInfo> devices;
   final String? errorMessage;
+  final String? serverIP; // サーバーIPアドレス
+  final int? serverPort; // サーバーポート
 
   const SyncStatus({
     this.isServerRunning = false,
     this.isScanning = false,
     this.devices = const [],
     this.errorMessage,
+    this.serverIP,
+    this.serverPort,
   });
 
   SyncStatus copyWith({
@@ -60,12 +64,16 @@ class SyncStatus {
     bool? isScanning,
     List<DeviceInfo>? devices,
     String? errorMessage,
+    String? serverIP,
+    int? serverPort,
   }) {
     return SyncStatus(
       isServerRunning: isServerRunning ?? this.isServerRunning,
       isScanning: isScanning ?? this.isScanning,
       devices: devices ?? this.devices,
       errorMessage: errorMessage,
+      serverIP: serverIP ?? this.serverIP,
+      serverPort: serverPort ?? this.serverPort,
     );
   }
 }

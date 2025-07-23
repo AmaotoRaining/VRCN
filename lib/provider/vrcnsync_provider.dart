@@ -65,15 +65,6 @@ class VrcnSyncNotifier extends StateNotifier<SyncStatus> {
     }
   }
 
-  // デバイス検索を開始
-  Future<void> startDiscovery() async {
-    try {
-      state = state.copyWith(isScanning: true, devices: [], errorMessage: null);
-      await _service.startDiscovery();
-    } catch (e) {
-      state = state.copyWith(isScanning: false, errorMessage: 'デバイス検索エラー: $e');
-    }
-  }
 
   // エラーメッセージをクリア
   void clearError() {

@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:network_info_plus/network_info_plus.dart';
+import 'package:nsd/nsd.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -17,14 +18,17 @@ final vrcnSyncServiceProvider = Provider<VrcnSyncService>((ref) {
 
 class VrcnSyncService {
   HttpServer? _server;
+  Registration? _bonjourService; // Bonjourサービス登録
   final StreamController<List<DeviceInfo>> _devicesController =
       StreamController.broadcast();
-  final List<DeviceInfo> _discoveredDevices = [];
   var _isServerRunning = false;
   String? _myIPAddress; // 自分のIPアドレスを保存
+  int? _serverPort; // サーバーのポート番号を保存
 
   Stream<List<DeviceInfo>> get devicesStream => _devicesController.stream;
   bool get isServerRunning => _isServerRunning;
+  String? get serverIPAddress => _myIPAddress; // IPアドレスを取得
+  int? get serverPort => _serverPort; // ポート番号を取得
 
   // 権限のリクエスト
   Future<bool> requestPermissions() async {
@@ -97,11 +101,15 @@ class VrcnSyncService {
       }
 
       _server = server;
+      _serverPort = port; // ポート番号を保存
       _isServerRunning = true;
 
       _server!.listen((request) async {
         await _handleRequest(request, onPhotoReceived);
       });
+
+      // Bonjourサービスを公開
+      await _startBonjourService();
 
       debugPrint('VRCNSyncサーバーがポート$portで開始されました');
       debugPrint('自分のIPアドレス: $_myIPAddress');
@@ -109,7 +117,69 @@ class VrcnSyncService {
     } catch (e) {
       debugPrint('サーバー開始エラー: $e');
       _isServerRunning = false;
+      _serverPort = null;
       return false;
+    }
+  }
+
+  // Bonjourサービスの開始
+  Future<void> _startBonjourService() async {
+    try {
+      if (_serverPort == null) return;
+
+      // デバイス名を生成（iOS/Android + デバイス情報）
+      String deviceName;
+      if (Platform.isIOS) {
+        deviceName = 'VRCN-iOS';
+      } else if (Platform.isAndroid) {
+        deviceName = 'VRCN-Android';
+      } else {
+        deviceName = 'VRCN-Mobile';
+      }
+
+      // 一意性を保つためにランダムな識別子を追加
+      final uniqueId = DateTime.timestamp().millisecondsSinceEpoch % 10000;
+      deviceName = '$deviceName-$uniqueId';
+
+      // TXTレコードをUint8Listに変換
+      final txtRecords = <String, Uint8List?>{
+        'version': _stringToUint8List('1.0.0'),
+        'platform': _stringToUint8List(Platform.operatingSystem),
+        'capabilities': _stringToUint8List('photo_receive'),
+        'device_type': _stringToUint8List('mobile'),
+        'app': _stringToUint8List('VRCN'),
+      };
+
+      // Bonjourサービスを登録
+      final service = Service(
+        name: deviceName,
+        type: '_vrcnsync._tcp',
+        port: _serverPort!,
+        txt: txtRecords,
+      );
+
+      _bonjourService = await register(service);
+      debugPrint('Bonjourサービスを公開しました: $deviceName (ポート: $_serverPort)');
+    } catch (e) {
+      debugPrint('Bonjour公開エラー: $e');
+      // Bonjourが失敗してもサーバーは動作させる
+    }
+  }
+
+  // 文字列をUint8Listに変換
+  Uint8List _stringToUint8List(String str) {
+    return Uint8List.fromList(utf8.encode(str));
+  }
+  // Bonjourサービスの停止
+  Future<void> _stopBonjourService() async {
+    try {
+      if (_bonjourService != null) {
+        await unregister(_bonjourService!);
+        _bonjourService = null;
+        debugPrint('Bonjourサービスを停止しました');
+      }
+    } catch (e) {
+      debugPrint('Bonjour停止エラー: $e');
     }
   }
 
@@ -128,137 +198,20 @@ class VrcnSyncService {
   // HTTPサーバーの停止
   Future<void> stopServer() async {
     try {
+      // Bonjourサービスを先に停止
+      await _stopBonjourService();
+
       await _server?.close(force: true);
       _server = null;
       _isServerRunning = false;
+      _serverPort = null; // ポート番号をクリア
       debugPrint('VRCNSyncサーバーが停止されました');
     } catch (e) {
       debugPrint('サーバー停止エラー: $e');
     }
   }
 
-  // デバイス検索の開始
-  Future<void> startDiscovery() async {
-    try {
-      _discoveredDevices.clear();
 
-      // 自分のIPアドレスを更新
-      await _getMyIPAddress();
-
-      // iOSではmDNSライブラリが不安定なため、HTTPスキャンのみ使用
-      if (Platform.isIOS) {
-        await _scanLocalNetwork();
-      } else {
-        // Androidでは両方試行
-        await _scanLocalNetwork();
-        // mDNSスキャンは除外（ライブラリが不安定）
-      }
-    } catch (e) {
-      debugPrint('デバイス検索エラー: $e');
-    }
-  }
-
-  // ローカルネットワークスキャン
-  Future<void> _scanLocalNetwork() async {
-    try {
-      final info = NetworkInfo();
-      final wifiIP = await info.getWifiIP();
-      if (wifiIP == null) {
-        debugPrint('WiFi IPアドレスを取得できません');
-        return;
-      }
-
-      final subnet = wifiIP.substring(0, wifiIP.lastIndexOf('.'));
-      debugPrint('ネットワークスキャン開始: $subnet.x');
-      debugPrint('自分のIP: $wifiIP をスキップします');
-
-      // 同時接続数を制限してiOSでの安定性を向上
-      final maxConcurrent = Platform.isIOS ? 5 : 20;
-
-      for (var i = 1; i <= 254; i += maxConcurrent) {
-        final futures = <Future>[];
-        final endIndex = (i + maxConcurrent - 1).clamp(1, 254);
-
-        for (var j = i; j <= endIndex; j++) {
-          final ip = '$subnet.$j';
-
-          // 自分のIPアドレスはスキップ
-          if (ip == _myIPAddress || ip == wifiIP) {
-            debugPrint('自分のIPアドレス $ip をスキップしました');
-            continue;
-          }
-
-          futures.add(_checkDevice(ip, 49527));
-        }
-
-        await Future.wait(futures);
-
-        // iOSでは少し待機
-        if (Platform.isIOS) {
-          await Future.delayed(const Duration(milliseconds: 100));
-        }
-      }
-    } catch (e) {
-      debugPrint('ローカルネットワークスキャンエラー: $e');
-    }
-  }
-
-  // 特定のIPアドレスでVRCNSyncサービスをチェック
-  Future<void> _checkDevice(String ip, int port) async {
-    try {
-      // 自分のIPアドレスとの二重チェック
-      if (ip == _myIPAddress) {
-        return;
-      }
-
-      final client = HttpClient();
-      client.connectionTimeout = const Duration(seconds: 1);
-
-      final request = await client.getUrl(Uri.parse('http://$ip:$port/ping'));
-      request.headers.set('User-Agent', 'VRCN-Mobile');
-
-      final response = await request.close().timeout(
-        const Duration(seconds: 2),
-      );
-
-      if (response.statusCode == 200) {
-        final responseBody = await response.transform(utf8.decoder).join();
-        final data = jsonDecode(responseBody);
-
-        if (data['service'] == 'vrcnsync') {
-          // 自分自身のサービスかチェック（プラットフォームとnameで判断）
-          final devicePlatform = data['platform'] as String?;
-          final deviceName = data['name'] as String?;
-
-          // モバイルプラットフォーム（android/ios）で名前がVRCNの場合は自分自身
-          if ((devicePlatform == 'android' || devicePlatform == 'ios') &&
-              deviceName == 'VRCN') {
-            debugPrint('自分自身のサービス $ip:$port を検出したため除外しました');
-            return;
-          }
-
-          final device = DeviceInfo(
-            name: deviceName ?? 'VRCNSync Device',
-            ip: ip,
-            port: port,
-            type: 'http',
-          );
-
-          if (!_discoveredDevices.any((d) => d.ip == device.ip)) {
-            _discoveredDevices.add(device);
-            _devicesController.add(List.from(_discoveredDevices));
-            debugPrint(
-              'デバイス発見: ${device.name} (${device.ip}) - ${devicePlatform ?? 'unknown'}',
-            );
-          }
-        }
-      }
-
-      client.close();
-    } catch (e) {
-      // タイムアウトや接続エラーは正常（デバイスがない）
-    }
-  }
 
   // HTTPリクエストの処理
   Future<void> _handleRequest(
@@ -356,7 +309,7 @@ class VrcnSyncService {
 
       // 一時ディレクトリに保存
       final tempDir = await getTemporaryDirectory();
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final timestamp = DateTime.timestamp().millisecondsSinceEpoch;
       final filename = 'vrcnsync_temp_$timestamp.jpg';
       final tempFile = File(path.join(tempDir.path, filename));
 
@@ -364,7 +317,9 @@ class VrcnSyncService {
       debugPrint('一時ファイルに写真を保存: ${tempFile.path}');
 
       // VRCNアルバムに保存
-      final savedToAlbum = await PhotoSaveService.saveReceivedPhotoToAlbum(tempFile);
+      final savedToAlbum = await PhotoSaveService.saveReceivedPhotoToAlbum(
+        tempFile,
+      );
 
       if (savedToAlbum) {
         debugPrint('写真をVRCNアルバムに保存しました');
