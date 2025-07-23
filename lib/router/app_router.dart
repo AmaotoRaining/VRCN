@@ -22,6 +22,7 @@ import 'package:vrchat/pages/profile_page.dart';
 import 'package:vrchat/pages/search_page.dart';
 import 'package:vrchat/pages/settings_page.dart';
 import 'package:vrchat/pages/terms_agreement_page.dart';
+import 'package:vrchat/pages/vrcnsync_page.dart';
 import 'package:vrchat/pages/world_detail_page.dart';
 import 'package:vrchat/provider/search_providers.dart';
 import 'package:vrchat/provider/user_provider.dart';
@@ -369,6 +370,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           _setCurrentScreen(ref, 'OSCコントローラー');
           return const OscPage();
+        },
+      ),
+      GoRoute(
+        path: '/vrcnsync',
+        name: 'vrcnsync',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'VRCNSync');
+          return const VrcnSyncPage();
         },
       ),
       GoRoute(

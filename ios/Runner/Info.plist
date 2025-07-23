@@ -2,10 +2,18 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSPhotoLibraryUsageDescription</key>
+	<key>NSFaceIDUsageDescription</key>
+	<string>アプリへのアクセスを安全に保つために生体認証を使用します</string>
+  <key>NSPhotoLibraryUsageDescription</key>
 	<string>VRChatのプリントを写真に保存するために使用します</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>VRChatのプリントを写真に保存するために使用します</string>
+  <key>NSLocalNetworkUsageDescription</key>
+  <string>VRChatの写真を保存するために使用します。</string>
+  <key>NSBonjourServices</key>
+  <array>
+    <string>_vrcnsync._tcp.</string>
+  </array>
 	<key>FlutterDeepLinkingEnabled</key>
 	<false/>
 	<key>CFBundleURLTypes</key>
@@ -394,8 +402,6 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSFaceIDUsageDescription</key>
-	<string>アプリへのアクセスを安全に保つために生体認証を使用します</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

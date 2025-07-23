@@ -191,6 +191,18 @@ class AppDrawer extends ConsumerWidget {
                           isDarkMode: isDarkMode,
                           items: [
                             _MenuItem(
+                              imagePath:
+                                  'assets/images/icon.png',
+                              title: 'VRCNSync',
+                              isSelected:
+                                  GoRouterState.of(context).uri.path ==
+                                  '/vrcnsync',
+                              onTap: () {
+                                context.push('/vrcnsync');
+                                Navigator.pop(context);
+                              },
+                            ),
+                            _MenuItem(
                               icon: Icons.feedback_outlined,
                               title: 'フィードバック',
                               isSelected: false,
@@ -254,33 +266,11 @@ class AppDrawer extends ConsumerWidget {
     );
   }
 
-  // ナビゲーションセクション
-  Widget _buildNavigationSection({
-    required BuildContext context,
-    required bool isDarkMode,
-    required List<_MenuItem> items,
-  }) {
-    return Column(
-      children:
-          items
-              .map(
-                (item) => _buildAnimatedMenuItem(
-                  context: context,
-                  icon: item.icon,
-                  title: item.title,
-                  isSelected: item.isSelected,
-                  onTap: item.onTap,
-                  isDarkMode: isDarkMode,
-                ),
-              )
-              .toList(),
-    );
-  }
-
   // アニメーション付きメニュー項目
   Widget _buildAnimatedMenuItem({
     required BuildContext context,
-    required IconData icon,
+    required IconData? icon,
+    String? imagePath,
     required String title,
     required bool isSelected,
     required VoidCallback onTap,
@@ -313,7 +303,7 @@ class AppDrawer extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: Row(
               children: [
-                // アイコン
+                // アイコンまたは画像
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.all(8),
@@ -336,11 +326,21 @@ class AppDrawer extends ConsumerWidget {
                             ]
                             : null,
                   ),
-                  child: Icon(
-                    icon,
-                    color: isSelected ? Colors.white : unselectedIconColor,
-                    size: 22,
-                  ),
+                  child:
+                      imagePath != null
+                          ? Image.asset(
+                            imagePath,
+                            width: 22,
+                            height: 22,
+                            color:
+                                isSelected ? Colors.white : unselectedIconColor,
+                          )
+                          : Icon(
+                            icon!,
+                            color:
+                                isSelected ? Colors.white : unselectedIconColor,
+                            size: 22,
+                          ),
                 ),
 
                 const SizedBox(width: 10),
@@ -379,6 +379,30 @@ class AppDrawer extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  // ナビゲーションセクション
+  Widget _buildNavigationSection({
+    required BuildContext context,
+    required bool isDarkMode,
+    required List<_MenuItem> items,
+  }) {
+    return Column(
+      children:
+          items
+              .map(
+                (item) => _buildAnimatedMenuItem(
+                  context: context,
+                  icon: item.icon,
+                  imagePath: item.imagePath,
+                  title: item.title,
+                  isSelected: item.isSelected,
+                  onTap: item.onTap,
+                  isDarkMode: isDarkMode,
+                ),
+              )
+              .toList(),
     );
   }
 
@@ -731,15 +755,20 @@ class AppDrawer extends ConsumerWidget {
 // メニュー項目データクラス
 @immutable
 class _MenuItem {
-  final IconData icon;
+  final IconData? icon;
+  final String? imagePath;
   final String title;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _MenuItem({
-    required this.icon,
+    this.icon,
+    this.imagePath,
     required this.title,
     required this.isSelected,
     required this.onTap,
-  });
+  }) : assert(
+         icon != null || imagePath != null,
+         'icon または imagePath のいずれかが必要です',
+       );
 }

@@ -155,7 +155,6 @@ final instanceBasicInfoProvider = FutureProvider.family<String?, String>((
       return null;
     }
 
-    final params = InstanceParams.fromLocation(location);
     final instance = await ref.watch(instanceDetailProvider(location).future);
 
     return instance.name;
