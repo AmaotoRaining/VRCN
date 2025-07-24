@@ -47,8 +47,10 @@ class SyncStatus {
   final bool isScanning;
   final List<DeviceInfo> devices;
   final String? errorMessage;
-  final String? serverIP; // サーバーIPアドレス
-  final int? serverPort; // サーバーポート
+  final String? serverIP;
+  final int? serverPort;
+  final int receivedPhotosCount; // 受信した写真数
+  final DateTime? lastReceived; // 最後に受信した時刻
 
   const SyncStatus({
     this.isServerRunning = false,
@@ -57,6 +59,8 @@ class SyncStatus {
     this.errorMessage,
     this.serverIP,
     this.serverPort,
+    this.receivedPhotosCount = 0,
+    this.lastReceived,
   });
 
   SyncStatus copyWith({
@@ -66,6 +70,8 @@ class SyncStatus {
     String? errorMessage,
     String? serverIP,
     int? serverPort,
+    int? receivedPhotosCount,
+    DateTime? lastReceived,
   }) {
     return SyncStatus(
       isServerRunning: isServerRunning ?? this.isServerRunning,
@@ -74,6 +80,8 @@ class SyncStatus {
       errorMessage: errorMessage,
       serverIP: serverIP ?? this.serverIP,
       serverPort: serverPort ?? this.serverPort,
+      receivedPhotosCount: receivedPhotosCount ?? this.receivedPhotosCount,
+      lastReceived: lastReceived ?? this.lastReceived,
     );
   }
 }

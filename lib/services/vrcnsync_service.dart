@@ -76,7 +76,7 @@ class VrcnSyncService {
       // 自分のIPアドレスを取得して保存
       await _getMyIPAddress();
 
-      // iOSでは利用可能なポートを動的に見つける
+      // 利用可能なポートを動的に見つける
       var port = 49527;
       HttpServer? server;
 
@@ -134,11 +134,11 @@ class VrcnSyncService {
       } else if (Platform.isAndroid) {
         deviceName = 'VRCN-Android';
       } else {
-        deviceName = 'VRCN-Mobile';
+        deviceName = 'VRCN';
       }
 
       // 一意性を保つためにランダムな識別子を追加
-      final uniqueId = DateTime.timestamp().millisecondsSinceEpoch % 10000;
+      final uniqueId = DateTime.now().millisecondsSinceEpoch % 10000;
       deviceName = '$deviceName-$uniqueId';
 
       // TXTレコードをUint8Listに変換
@@ -170,6 +170,7 @@ class VrcnSyncService {
   Uint8List _stringToUint8List(String str) {
     return Uint8List.fromList(utf8.encode(str));
   }
+
   // Bonjourサービスの停止
   Future<void> _stopBonjourService() async {
     try {
@@ -186,8 +187,22 @@ class VrcnSyncService {
   // 自分のIPアドレスを取得
   Future<void> _getMyIPAddress() async {
     try {
+      // NetworkInfoPlusを使用
       final info = NetworkInfo();
-      _myIPAddress = await info.getWifiIP();
+      String? wifiIP = await info.getWifiIP();
+
+      if (wifiIP == null || wifiIP.isEmpty) {
+        // フォールバック: ソケット接続でIPを取得
+        try {
+          final socket = await Socket.connect('8.8.8.8', 80);
+          wifiIP = socket.address.address;
+          socket.destroy();
+        } catch (e) {
+          debugPrint('フォールバックIP取得エラー: $e');
+        }
+      }
+
+      _myIPAddress = wifiIP;
       debugPrint('自分のIPアドレスを取得: $_myIPAddress');
     } catch (e) {
       debugPrint('IPアドレス取得エラー: $e');
@@ -210,8 +225,6 @@ class VrcnSyncService {
       debugPrint('サーバー停止エラー: $e');
     }
   }
-
-
 
   // HTTPリクエストの処理
   Future<void> _handleRequest(
@@ -309,7 +322,7 @@ class VrcnSyncService {
 
       // 一時ディレクトリに保存
       final tempDir = await getTemporaryDirectory();
-      final timestamp = DateTime.timestamp().millisecondsSinceEpoch;
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
       final filename = 'vrcnsync_temp_$timestamp.jpg';
       final tempFile = File(path.join(tempDir.path, filename));
 

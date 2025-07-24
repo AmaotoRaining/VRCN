@@ -20,6 +20,7 @@ import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/provider/streaming_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
+import 'package:vrchat/services/vrcnsync_background_service.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 
@@ -89,6 +90,9 @@ Future<void> main() async {
   } catch (e) {
     debugPrint('リマインダーのクリーンアップ中にエラーが発生しました: $e');
   }
+
+  // VRCNSyncバックグラウンドサービスの初期化
+  await VrcnSyncBackgroundService.initializeService();
 
   runApp(
     UncontrolledProviderScope(container: container, child: const VRChatApp()),
