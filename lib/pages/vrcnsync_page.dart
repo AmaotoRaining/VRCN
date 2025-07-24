@@ -48,20 +48,8 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
     }
   }
 
-  // サーバーを再開始
-  Future<void> _restartServer() async {
-    try {
-      final notifier = ref.read(vrcnSyncStateProvider.notifier);
-      await notifier.restartServer();
-      _showRestartNotification();
-    } catch (e) {
-      debugPrint('サーバー再開始エラー: $e');
-      _showErrorMessage('サーバーの再開始に失敗しました: $e');
-    }
-  }
-
   // サーバーを停止
-  Future<void> _stopServer() async {
+  Future<void> stopServer() async {
     try {
       final notifier = ref.read(vrcnSyncStateProvider.notifier);
       await notifier.stopServer();
@@ -78,6 +66,17 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
       await notifier.updateServerInfo();
     } catch (e) {
       debugPrint('サーバー情報更新エラー: $e');
+    }
+  }
+
+  Future<void> _toggleServer(bool value) async {
+    try {
+      final notifier = ref.read(vrcnSyncStateProvider.notifier);
+      await notifier.toggleServer(value);
+      _showServerToggleNotification(value);
+    } catch (e) {
+      debugPrint('サーバー切り替えエラー: $e');
+      _showErrorMessage('サーバーの切り替えに失敗しました: $e');
     }
   }
 
@@ -438,77 +437,118 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
               ],
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                // 再開始ボタン
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _restartServer,
-                    icon: const Icon(Icons.refresh, color: Colors.white),
-                    label: Text(
-                      '再開始',
-                      style: GoogleFonts.notoSans(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+
+            // サーバー状態表示とスイッチ
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color:
+                    status.isServerRunning
+                        ? Colors.green.withValues(alpha: 0.1)
+                        : Colors.grey.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color:
+                      status.isServerRunning
+                          ? Colors.green.withValues(alpha: 0.3)
+                          : Colors.grey.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  // ステータスアイコン
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color:
+                          status.isServerRunning
+                              ? Colors.green.withValues(alpha: 0.2)
+                              : Colors.grey.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      elevation: 2,
+                    child: Icon(
+                      status.isServerRunning
+                          ? Icons.play_circle_filled
+                          : Icons.pause_circle_filled,
+                      color:
+                          status.isServerRunning
+                              ? Colors.green
+                              : Colors.grey[600],
+                      size: 20,
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                // 停止ボタン（一時的）
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _stopServer,
-                    icon: const Icon(Icons.pause, color: Colors.white),
-                    label: Text(
-                      '一時停止',
-                      style: GoogleFonts.notoSans(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      elevation: 2,
+                  const SizedBox(width: 12),
+
+                  // ステータステキスト
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'VRCNSyncサーバー',
+                          style: GoogleFonts.notoSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: isDarkMode ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          status.isServerRunning ? '実行中 - 写真受信待機' : '停止中',
+                          style: GoogleFonts.notoSans(
+                            fontSize: 12,
+                            color:
+                                status.isServerRunning
+                                    ? Colors.green
+                                    : Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+
+                  // スイッチ
+                  Transform.scale(
+                    scale: 1.1,
+                    child: Switch(
+                      value: status.isServerRunning,
+                      onChanged: (value) => _toggleServer(value),
+                      activeColor: Colors.green,
+                      activeTrackColor: Colors.green.withValues(alpha: 0.3),
+                      inactiveThumbColor: Colors.grey[600],
+                      inactiveTrackColor: Colors.grey.withValues(alpha: 0.3),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
+         ],
         ),
       ),
     );
   }
 
-  void _showRestartNotification() {
+  // サーバー切り替え通知
+  void _showServerToggleNotification(bool isStarted) {
+    final message = isStarted ? 'サーバーを開始しました' : 'サーバーを停止しました';
+    final color = isStarted ? Colors.green.shade600 : Colors.orange.shade600;
+    final icon =
+        isStarted ? Icons.play_circle_filled : Icons.pause_circle_filled;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.refresh, color: Colors.white),
+            Icon(icon, color: Colors.white),
             const SizedBox(width: 12),
-            Expanded(
-              child: Text('サーバーを再開始しました', style: GoogleFonts.notoSans()),
-            ),
+            Expanded(child: Text(message, style: GoogleFonts.notoSans())),
           ],
         ),
-        backgroundColor: Colors.blue.shade600,
+        backgroundColor: color,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 2),
       ),
     );
   }

@@ -16,6 +16,7 @@ final vrcnSyncServiceProvider = Provider<VrcnSyncService>((ref) {
   return VrcnSyncService();
 });
 
+@pragma('vm:entry-point')
 class VrcnSyncService {
   HttpServer? _server;
   Registration? _bonjourService;
@@ -31,12 +32,30 @@ class VrcnSyncService {
   int? get serverPort => _serverPort;
 
   // 初期化
+  @pragma('vm:entry-point')
   Future<void> initialize() async {
     // 初期化時にIPアドレスを取得
     await _getMyIPAddress();
     debugPrint(
       '初期化完了: IP=$_myIPAddress, Port=$_serverPort, Running=$_isServerRunning',
     );
+  }
+
+  // 現在のサーバー情報を取得（デバッグ用）
+  @pragma('vm:entry-point')
+  Map<String, dynamic> getCurrentServerInfo() {
+    return {
+      'server_ip': _myIPAddress,
+      'server_port': _serverPort,
+      'server_running': _isServerRunning,
+    };
+  }
+
+  // サーバー情報を更新（外部から呼び出し可能）
+  @pragma('vm:entry-point')
+  Future<void> updateServerInfo() async {
+    await _getMyIPAddress();
+    debugPrint('サーバー情報更新完了: IP=$_myIPAddress, Port=$_serverPort');
   }
 
   // 権限のリクエスト
@@ -148,7 +167,7 @@ class VrcnSyncService {
         deviceName = 'VRCN';
       }
 
-      final uniqueId = DateTime.now().millisecondsSinceEpoch % 10000;
+      final uniqueId = DateTime.timestamp().millisecondsSinceEpoch % 10000;
       deviceName = '$deviceName-$uniqueId';
 
       final txtRecords = <String, Uint8List?>{
@@ -380,21 +399,6 @@ class VrcnSyncService {
         // エラーレスポンス送信に失敗してもクラッシュを防ぐ
       }
     }
-  }
-
-  // サーバー情報を更新（外部から呼び出し可能）
-  Future<void> updateServerInfo() async {
-    await _getMyIPAddress();
-    debugPrint('サーバー情報更新完了: IP=$_myIPAddress, Port=$_serverPort');
-  }
-
-  // 現在のサーバー情報を取得（デバッグ用）
-  Map<String, dynamic> getCurrentServerInfo() {
-    return {
-      'server_ip': _myIPAddress,
-      'server_port': _serverPort,
-      'server_running': _isServerRunning,
-    };
   }
 
   void dispose() {
