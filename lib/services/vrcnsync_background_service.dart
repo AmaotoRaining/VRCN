@@ -9,11 +9,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vrchat/services/vrcnsync_service.dart';
 
 class VrcnSyncBackgroundService {
-  static const String _isRunningKey = 'vrcnsync_running';
-  static const String _photoCountKey = 'vrcnsync_photo_count';
+  static const _isRunningKey = 'vrcnsync_running';
+  static const _photoCountKey = 'vrcnsync_photo_count';
 
   static FlutterLocalNotificationsPlugin? _notificationsPlugin;
-  static bool _isInitialized = false;
+  static var _isInitialized = false;
 
   // サービスの初期化
   static Future<void> initializeService() async {
@@ -21,15 +21,11 @@ class VrcnSyncBackgroundService {
 
     final service = FlutterBackgroundService();
 
-    // 通知プラグインの初期化
     _notificationsPlugin = FlutterLocalNotificationsPlugin();
 
-    // Android通知設定
     const androidInitSettings = AndroidInitializationSettings(
       '@mipmap/ic_launcher',
     );
-
-    // iOS通知設定
     const iosInitSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -46,15 +42,15 @@ class VrcnSyncBackgroundService {
     // バックグラウンドサービスの設定
     await service.configure(
       iosConfiguration: IosConfiguration(
-        autoStart: false,
+        autoStart: true,
         onForeground: onStart,
         onBackground: onIosBackground,
       ),
       androidConfiguration: AndroidConfiguration(
         onStart: onStart,
-        autoStart: false,
+        autoStart: true,
         isForegroundMode: true,
-        autoStartOnBoot: false,
+        autoStartOnBoot: true,
         notificationChannelId: 'vrcnsync_channel',
         initialNotificationTitle: 'VRCNSync',
         initialNotificationContent: 'バックグラウンドでサーバーが実行中です',
@@ -75,12 +71,13 @@ class VrcnSyncBackgroundService {
 
       if (isRunning) {
         debugPrint('VRCNSyncサービスは既に実行中です');
+        // 既に実行中でもサーバー情報を更新
+        service.invoke('update_server_info');
         return true;
       }
 
       await service.startService();
 
-      // 状態を保存
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_isRunningKey, true);
 
@@ -98,7 +95,6 @@ class VrcnSyncBackgroundService {
       final service = FlutterBackgroundService();
       service.invoke('stop');
 
-      // 状態を保存
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_isRunningKey, false);
 
@@ -126,11 +122,10 @@ class VrcnSyncBackgroundService {
       final currentCount = prefs.getInt(_photoCountKey) ?? 0;
       await prefs.setInt(_photoCountKey, currentCount + 1);
 
-      // フォアグラウンドアプリに通知
       final service = FlutterBackgroundService();
-       service.invoke('photo_received', {
+      service.invoke('photo_received', {
         'count': currentCount + 1,
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
+        'timestamp': DateTime.timestamp().millisecondsSinceEpoch,
       });
     } catch (e) {
       debugPrint('写真カウント更新エラー: $e');
@@ -163,13 +158,67 @@ class VrcnSyncBackgroundService {
       );
 
       await _notificationsPlugin!.show(
-        DateTime.now().millisecondsSinceEpoch.remainder(100000),
+        DateTime.timestamp().millisecondsSinceEpoch.remainder(100000),
         'VRCNSync',
         '写真を受信しました: $filename',
         notificationDetails,
       );
     } catch (e) {
       debugPrint('通知表示エラー: $e');
+    }
+  }
+
+  // サーバー情報を取得（タイムアウトとリトライを追加）
+  static Future<Map<String, dynamic>?> getServerInfo() async {
+    try {
+      final service = FlutterBackgroundService();
+
+      // 複数回試行
+      for (var attempt = 0; attempt < 3; attempt++) {
+        final completer = Completer<Map<String, dynamic>?>();
+
+        // リスナーを一時的に設定
+        late StreamSubscription subscription;
+        subscription = service.on('server_info_response').listen((event) {
+          subscription.cancel();
+          debugPrint('サーバー情報レスポンス受信 (試行${attempt + 1}): $event');
+          if (event is Map<String, dynamic>) {
+            completer.complete(event);
+          } else {
+            completer.complete(null);
+          }
+        });
+
+        // タイムアウト設定（試行ごとに短くする）
+        Timer(Duration(seconds: 2 + attempt), () {
+          if (!completer.isCompleted) {
+            subscription.cancel();
+            debugPrint('サーバー情報取得タイムアウト (試行${attempt + 1})');
+            completer.complete(null);
+          }
+        });
+
+        // サーバー情報をリクエスト
+        debugPrint('サーバー情報リクエスト送信 (試行${attempt + 1})');
+        service.invoke('get_server_info');
+
+        final result = await completer.future;
+        if (result != null) {
+          debugPrint('サーバー情報取得成功: $result');
+          return result;
+        }
+
+        // 失敗した場合は少し待ってから次の試行
+        if (attempt < 2) {
+          await Future.delayed(const Duration(milliseconds: 500));
+        }
+      }
+
+      debugPrint('すべての試行が失敗しました');
+      return null;
+    } catch (e) {
+      debugPrint('サーバー情報取得エラー: $e');
+      return null;
     }
   }
 
@@ -184,12 +233,14 @@ class VrcnSyncBackgroundService {
     Timer? heartbeatTimer;
 
     try {
-      // VRCNSyncサービスの初期化
       syncService = VrcnSyncService();
+      await syncService.initialize();
+
+      debugPrint('初期化後のサーバー情報: ${syncService.getCurrentServerInfo()}');
 
       // サーバーの開始
       final success = await syncService.startServer(
-        onPhotoReceived: (File file, bool savedToAlbum) async {
+        onPhotoReceived: (file, savedToAlbum) async {
           await incrementPhotoCount();
           await showPhotoReceivedNotification(file.path.split('/').last);
 
@@ -203,19 +254,33 @@ class VrcnSyncBackgroundService {
         return;
       }
 
-      // 通知を更新（サーバー情報を含める）
+      debugPrint('サーバー開始後のサーバー情報: ${syncService.getCurrentServerInfo()}');
+
+      // 通知を更新
       await _updateForegroundNotification(syncService);
 
-      // ハートビートタイマー（サービス生存確認）
-      heartbeatTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
-        debugPrint('VRCNSyncバックグラウンドサービス: ハートビート');
+      // ハートビートタイマー（より頻繁に送信）
+      heartbeatTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+        final serverInfo = syncService?.getCurrentServerInfo();
+        debugPrint('ハートビート送信: $serverInfo');
 
         service.invoke('heartbeat', {
-          'timestamp': DateTime.now().millisecondsSinceEpoch,
+          'timestamp': DateTime.timestamp().millisecondsSinceEpoch,
           'server_running': syncService?.isServerRunning ?? false,
           'server_ip': syncService?.serverIPAddress,
           'server_port': syncService?.serverPort,
         });
+      });
+
+      // 即座にハートビートを送信
+      final initialInfo = syncService.getCurrentServerInfo();
+      debugPrint('初期ハートビート送信: $initialInfo');
+
+      service.invoke('heartbeat', {
+        'timestamp': DateTime.timestamp().millisecondsSinceEpoch,
+        'server_running': syncService.isServerRunning,
+        'server_ip': syncService.serverIPAddress,
+        'server_port': syncService.serverPort,
       });
 
       // サービス停止リクエストの監視
@@ -226,6 +291,49 @@ class VrcnSyncBackgroundService {
         await service.stopSelf();
       });
 
+      // サーバー情報更新要求の監視
+      service.on('update_server_info').listen((event) async {
+        debugPrint('サーバー情報更新要求を受信');
+        await syncService?.updateServerInfo();
+        await _updateForegroundNotification(syncService!);
+
+        // 更新後のハートビートを送信
+        final updatedInfo = syncService.getCurrentServerInfo();
+        debugPrint('更新後ハートビート送信: $updatedInfo');
+
+        service.invoke('heartbeat', {
+          'timestamp': DateTime.timestamp().millisecondsSinceEpoch,
+          'server_running': syncService.isServerRunning,
+          'server_ip': syncService.serverIPAddress,
+          'server_port': syncService.serverPort,
+        });
+      });
+
+      // サーバー情報取得要求の監視（レスポンスを確実に送信）
+      service.on('get_server_info').listen((event) async {
+        debugPrint('サーバー情報取得要求を受信');
+
+        // 最新情報を取得してから返す
+        await syncService?.updateServerInfo();
+
+        final responseInfo = {
+          'server_running': syncService?.isServerRunning ?? false,
+          'server_ip': syncService?.serverIPAddress,
+          'server_port': syncService?.serverPort,
+          'timestamp': DateTime.timestamp().millisecondsSinceEpoch,
+        };
+
+        debugPrint('サーバー情報レスポンス送信: $responseInfo');
+
+        // レスポンスを確実に送信するため、少し遅延を入れる
+        await Future.delayed(const Duration(milliseconds: 100));
+        service.invoke('server_info_response', responseInfo);
+
+        // 念のため、もう一度送信
+        await Future.delayed(const Duration(milliseconds: 100));
+        service.invoke('server_info_response', responseInfo);
+      });
+
       // 統計リセット要求の監視
       service.on('reset_stats').listen((event) async {
         final prefs = await SharedPreferences.getInstance();
@@ -234,6 +342,9 @@ class VrcnSyncBackgroundService {
       });
 
       debugPrint('VRCNSyncバックグラウンドサービス: 初期化完了');
+      debugPrint(
+        'サーバー情報: IP=${syncService.serverIPAddress}, Port=${syncService.serverPort}',
+      );
     } catch (e) {
       debugPrint('VRCNSyncバックグラウンドサービスエラー: $e');
       heartbeatTimer?.cancel();
@@ -252,10 +363,12 @@ class VrcnSyncBackgroundService {
         final ip = syncService.serverIPAddress ?? '取得中...';
         final port = syncService.serverPort ?? 0;
 
-         service.invoke('setAsForeground', {
-          'title': 'VRCNSync - 実行中',
-          'content': 'サーバー: $ip:$port\nタップして詳細を表示',
+        service.invoke('setAsForeground', {
+          'title': 'VRCNSync - 常時実行中',
+          'content': 'サーバー: $ip:$port\n写真受信待機中',
         });
+
+        debugPrint('フォアグラウンド通知を更新: $ip:$port');
       } catch (e) {
         debugPrint('フォアグラウンド通知更新エラー: $e');
       }
