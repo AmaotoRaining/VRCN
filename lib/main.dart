@@ -258,10 +258,12 @@ class _VRChatAppState extends ConsumerState<VRChatApp>
   }) {
     // 共通の設定
     MediaQuery appBuilder(BuildContext context, Widget? child) {
+      final mediaQueryData = MediaQuery.of(context);
+
       return MediaQuery(
-        data: MediaQuery.of(
-          context,
-        ).copyWith(textScaler: const TextScaler.linear(1.0)),
+        data: mediaQueryData.copyWith(
+          textScaler: const TextScaler.linear(1.0),
+        ),
         child: child!,
       );
     }

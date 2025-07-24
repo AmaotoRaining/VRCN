@@ -18,12 +18,6 @@
   <array>
   <string>dev.flutter.background.refresh</string>
   </array>
-  <key>UIBackgroundModes</key>
-    <array>
-        <string>background-processing</string>
-        <string>background-fetch</string>
-        <string>audio</string>
-    </array>
 	<key>FlutterDeepLinkingEnabled</key>
 	<false/>
 	<key>CFBundleURLTypes</key>

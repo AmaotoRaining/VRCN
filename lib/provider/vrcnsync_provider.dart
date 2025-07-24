@@ -61,7 +61,7 @@ class VrcnSyncNotifier extends StateNotifier<SyncStatus> {
 
     // ハートビート監視
     service.on('heartbeat').listen((event) {
-      final data = event as Map<String, dynamic>?;
+      final data = event;
       if (data != null) {
         final serverRunning = data['server_running'] as bool? ?? false;
         final serverIP = data['server_ip'] as String?;
@@ -77,7 +77,7 @@ class VrcnSyncNotifier extends StateNotifier<SyncStatus> {
 
     // 写真受信イベント監視
     service.on('photo_received').listen((event) {
-      final data = event as Map<String, dynamic>?;
+      final data = event;
       if (data != null) {
         final count = data['count'] as int? ?? 0;
         final timestamp = data['timestamp'] as int?;
