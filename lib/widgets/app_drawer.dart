@@ -117,6 +117,17 @@ class AppDrawer extends ConsumerWidget {
                                 Navigator.pop(context);
                               },
                             ),
+                            // _MenuItem(
+                            //   icon: Icons.notifications,
+                            //   title: 'フレンドログ',
+                            //   isSelected: GoRouterState.of(
+                            //     context,
+                            //   ).uri.path.startsWith('/notifications'),
+                            //   onTap: () {
+                            //     context.push('/notifications');
+                            //     Navigator.pop(context);
+                            //   },
+                            // ),
                             _MenuItem(
                               icon: Icons.calendar_month,
                               title: 'イベントカレンダー',
@@ -191,9 +202,8 @@ class AppDrawer extends ConsumerWidget {
                           isDarkMode: isDarkMode,
                           items: [
                             _MenuItem(
-                              imagePath:
-                                  'assets/images/icon.png',
-                              title: 'VRCNSync',
+                              imagePath: 'assets/images/logo.png',
+                              title: 'VRCNSync (β)',
                               isSelected:
                                   GoRouterState.of(context).uri.path ==
                                   '/vrcnsync',

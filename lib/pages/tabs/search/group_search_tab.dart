@@ -649,33 +649,6 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
               color: isDarkMode ? Colors.grey[500] : Colors.grey[700],
             ),
           ),
-          const SizedBox(height: 32),
-          Container(
-            width: 200,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.search,
-                  size: 20,
-                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '検索してみよう',
-                  style: GoogleFonts.notoSans(
-                    fontSize: 14,
-                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );

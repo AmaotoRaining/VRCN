@@ -291,19 +291,6 @@ class _FullScreenFileViewerState extends State<_FullScreenFileViewer>
     _animationController.forward();
   }
 
-  void _downloadFile() {
-    final url = widget.file.versions.last.file!.url.toString();
-    final extension = DownloadUtils.getFileExtension(url);
-    final fileName = '${widget.file.name}$extension';
-
-    DownloadUtils.downloadFile(
-      context: context,
-      url: url,
-      fileName: fileName,
-      headers: widget.headers,
-    );
-  }
-
   void _shareFile() {
     final url = widget.file.versions.last.file!.url.toString();
     final extension = DownloadUtils.getFileExtension(url);
@@ -409,24 +396,6 @@ class _FullScreenFileViewerState extends State<_FullScreenFileViewer>
                 ),
                 Row(
                   children: [
-                    Material(
-                      elevation: 4,
-                      color: Colors.black.withValues(alpha: 0.7),
-                      borderRadius: BorderRadius.circular(25),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(25),
-                        onTap: _downloadFile,
-                        child: const Padding(
-                          padding: EdgeInsets.all(12),
-                          child: Icon(
-                            Icons.download,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
                     Material(
                       elevation: 4,
                       color: Colors.black.withValues(alpha: 0.7),

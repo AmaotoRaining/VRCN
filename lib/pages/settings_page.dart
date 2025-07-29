@@ -203,13 +203,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                               buttonColor: buttonColor,
                               isDarkMode: isDarkMode,
                               children: [
-                                _buildApiUrlSetting(
-                                  context,
-                                  ref,
-                                  isDarkMode,
-                                  textColor,
-                                  secondaryTextColor,
-                                ),
                                 _buildSwitchSetting(
                                   icon: Icons.search,
                                   iconColor: const Color(0xFFE76F51),
@@ -226,6 +219,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                   textColor: textColor,
                                   secondaryTextColor: secondaryTextColor,
                                   isDarkMode: isDarkMode,
+                                ),
+                                _buildApiSetting(
+                                  context,
+                                  ref,
+                                  isDarkMode,
+                                  textColor,
+                                  secondaryTextColor,
                                 ),
                               ],
                             )
@@ -815,7 +815,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
   }
 
   // API URL設定
-  Widget _buildApiUrlSetting(
+  Widget _buildApiSetting(
     BuildContext context,
     WidgetRef ref,
     bool isDarkMode,
@@ -838,7 +838,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     borderRadius: BorderRadius.circular(20),
                   ),
                   title: Text(
-                    'アバター検索API URL',
+                    'アバター検索API',
                     style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
                   ),
                   content: TextField(
@@ -909,7 +909,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'アバター検索 API URL',
+                    'アバター検索API',
                     style: GoogleFonts.notoSans(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,

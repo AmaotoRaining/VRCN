@@ -1,7 +1,7 @@
 name: vrchat
 description: "VRCN"
 publish_to: "none"
-version: 1.2.0+90
+version: 1.2.0+94
 
 environment:
   sdk: ^3.7.2
@@ -10,61 +10,67 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # 多言語対応
   flutter_localizations:
     sdk: flutter
 
   # VRChat API
   vrchat_dart: ^3.6.0
 
-  # パス
+  # ファイルシステムパス取得 (ドキュメントディレクトリなど)
   path_provider: ^2.1.5
-  # フィードバック
+  # デバイス情報取得 (フィードバック機能用)
   device_info_plus: ^11.5.0
+  # Apple製品の正式名称取得
   apple_product_name: ^3.6.0
 
+  # Key-Valueストア (簡単なデータ保存)
   shared_preferences: ^2.5.3
 
-  # Keychain
+  # Keychain/Keystore (安全なデータ保存)
   flutter_secure_storage: ^9.2.4
 
+  # 状態管理
   flutter_riverpod: ^2.6.1
   riverpod_annotation: ^2.6.1
 
-  # 環境変数
+  # .envファイルからの環境変数読み込み
   flutter_dotenv: ^5.2.1
 
-  # アプリ情報
+  # アプリ情報 (バージョン名など)
   package_info_plus: ^8.0.0
 
-  # キャッシュ
+  # ネットワーク画像のキャッシュ
   cached_network_image: ^3.4.1
+  # ファイルキャッシュ管理
   flutter_cache_manager: ^3.4.1
 
-  # フォント
+  # Google Fonts
   google_fonts: ^6.2.1
 
-  # アイコン
+  # アプリアイコン生成
   flutter_launcher_icons: ^0.14.3
+  # アプリアイコンの動的変更
   flutter_dynamic_icon_plus: ^1.3.1
 
   # Firebase
   firebase_core: ^3.13.0
   firebase_analytics: ^11.5.2
   firebase_performance: ^0.10.1+9
-  # firebase_crashlytics: ^4.3.9
 
-  # スプラッシュ
+  # ネイティブスプラッシュスクリーン
   flutter_native_splash: ^2.4.6
 
+  # URL起動
   url_launcher: ^6.3.1
 
   # ローカル通知
   flutter_local_notifications: ^19.1.0
 
-  # 画面遷移
+  # 画面遷移 (ルーティング)
   go_router: ^15.1.1
 
-  # フォーマット
+  # 国際化対応 (日付・数値フォーマット)
   intl: ^0.20.2
 
   # 共有
@@ -72,62 +78,66 @@ dependencies:
 
   # アニメーション
   flutter_animate: ^4.5.2
-
-  # グリッドレイアウト
   flutter_staggered_grid_view: ^0.7.0
   flutter_staggered_animations: ^1.1.1
 
-  # ローディング
+  # ローディングエフェクト
   shimmer: ^3.0.0
 
-  # ファビコン
+  # ファビコン取得
   favicon: ^1.1.2
 
+  # HTTP通信
   http: ^1.4.0
-
-  # パレットジェネレーター
   palette_generator: ^0.3.3+6
+  dio: ^5.8.0+1 # httpより高機能なHTTPクライアント
+  http_parser: ^4.1.2 # HTTPメッセージ解析
+
+  # 認証
   local_auth: ^2.3.0
 
   # OSC
   osc: ^1.0.0
 
-  # Deeplink
+  # ディープリンク (カスタムURLスキーム)
   app_links: ^6.4.0
 
+  # タイムゾーン
   timezone: ^0.10.1
 
   # バッジ
   flutter_app_badge_control: ^0.0.2
 
+  # バックグラウンド処理
   flutter_background_service: ^5.1.0
   flutter_background_service_android: ^6.3.0
   flutter_background_service_ios: ^5.0.3
 
-  # Shorebird
+  # OTAアップデート (Shorebird)
   shorebird_code_push: ^2.0.4
 
-  dio: ^5.8.0+1
-
-  # ファイル
+  # ファイル・メディア
   file_picker: ^10.2.0
-
-  # 権限管理
   permission_handler: ^12.0.1
-
   image_picker: ^1.1.2
-  http_parser: ^4.1.2
   path: ^1.9.1
-  network_info_plus: ^6.1.4
-  mime: ^2.0.0
   gal: ^2.3.2
+  mime: ^2.0.0 # MIMEタイプ判別
+
+  # ネットワーク
+  network_info_plus: ^6.1.4 # Wi-Fi IPアドレス等
   nsd: ^4.0.3
 
 dev_dependencies:
+  # テスト
   flutter_test:
     sdk: flutter
+
+  # 静的解析 (Linter)
   flutter_lints: ^5.0.0
   rexios_lints: ^11.0.4
+
+  # コード生成
   build_runner: ^2.4.15
   riverpod_generator: ^2.6.5
 
@@ -143,18 +153,6 @@ flutter:
       flavors:
         - dev
     - shorebird.yaml
-
-  # fonts:
-  #   - family: LINESeedJP
-  #     fonts:
-  #       - asset: assets/fonts/LINESeedJP/LINESeedJP_A_TTF_Th.ttf
-  #         weight: 100
-  #       - asset: assets/fonts/LINESeedJP/LINESeedJP_A_TTF_Rg.ttf
-  #         weight: 400
-  #       - asset: assets/fonts/LINESeedJP/LINESeedJP_A_TTF_Bd.ttf
-  #         weight: 700
-  #       - asset: assets/fonts/LINESeedJP/LINESeedJP_A_TTF_Eb.ttf
-  #         weight: 900
 
 flutter_icons:
   image_path_android: assets/launcher_icon/android_icon.png
@@ -177,3 +175,4 @@ flutter_native_splash:
     image: assets/images/splash.png
     icon_background_color_dark: "#262626"
     image_dark: assets/images/splash.png
+    fullscreen: false

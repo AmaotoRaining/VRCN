@@ -240,19 +240,19 @@ final routerProvider = Provider<GoRouter>((ref) {
               );
             },
           ),
-          GoRoute(
-            path: '/notifications',
-            name: 'notifications',
-            pageBuilder: (context, state) {
-              _setCurrentScreen(ref, '通知画面');
-              final immediate =
-                  (state.extra as Map<String, dynamic>?)?['immediate'] == true;
-              if (immediate) {
-                return const NoTransitionPage(child: NotificationsPage());
-              }
-              return const MaterialPage(child: NotificationsPage());
-            },
-          ),
+          // GoRoute(
+          //   path: '/notifications',
+          //   name: 'notifications',
+          //   pageBuilder: (context, state) {
+          //     _setCurrentScreen(ref, '通知画面');
+          //     final immediate =
+          //         (state.extra as Map<String, dynamic>?)?['immediate'] == true;
+          //     if (immediate) {
+          //       return const NoTransitionPage(child: NotificationsPage());
+          //     }
+          //     return const MaterialPage(child: NotificationsPage());
+          //   },
+          // ),
         ],
       ),
       GoRoute(
@@ -331,7 +331,19 @@ final routerProvider = Provider<GoRouter>((ref) {
           return const FavoritesPage();
         },
       ),
-
+      GoRoute(
+        path: '/notifications',
+        name: 'notifications',
+        pageBuilder: (context, state) {
+          _setCurrentScreen(ref, '通知画面');
+          final immediate =
+              (state.extra as Map<String, dynamic>?)?['immediate'] == true;
+          if (immediate) {
+            return const NoTransitionPage(child: NotificationsPage());
+          }
+          return const MaterialPage(child: NotificationsPage());
+        },
+      ),
       GoRoute(
         path: '/groups',
         name: 'groups',

@@ -156,15 +156,27 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
     return Scaffold(
       backgroundColor: isDarkMode ? const Color(0xFF151515) : Colors.grey[50],
       appBar: AppBar(
-        title: Text(
-          'VRCNSync',
-          style: GoogleFonts.notoSans(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
+        title: RichText(
+          text: TextSpan(
+            style: GoogleFonts.notoSans(
+              color: isDarkMode ? Colors.grey[50] : const Color(0xFF151515),
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+            children: [
+              const TextSpan(text: 'VRCNSync'),
+              TextSpan(
+                text: ' (β)',
+                style: TextStyle(
+                  color: AppTheme.primaryColor.withValues(alpha:0.8),
+                  fontSize: 16,
+                ),
+              ),
+            ],
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: isDarkMode ? const Color(0xFF151515) : Colors.grey[50],
         elevation: 0,
       ),
       body: SafeArea(
@@ -173,6 +185,11 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // ベータ版の警告
+              _buildBetaWarningCard(isDarkMode),
+
+              const SizedBox(height: 16),
+
               // エラー表示
               if (syncStatus.errorMessage != null)
                 Padding(
@@ -204,6 +221,59 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
               const SizedBox(height: 16),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBetaWarningCard(bool isDarkMode) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.orange.withValues(alpha: .5)),
+      ),
+      color:
+          isDarkMode
+              ? Colors.orange.withValues(alpha:0.15)
+              : Colors.orange.withValues(alpha:0.05),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(
+              Icons.science_outlined,
+              color: Colors.orange.shade700,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'ベータ版機能',
+                    style: GoogleFonts.notoSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange.shade800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'この機能は開発中のベータ版です。予期せぬ問題が発生する可能性があります。',
+                    style: GoogleFonts.notoSans(
+                      fontSize: 13,
+                      color:
+                          isDarkMode
+                              ? Colors.orange.shade300
+                              : Colors.orange.shade900,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -363,7 +433,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                'ポート: ${status.serverPort ?? "---"}',
+                                'ポート: ${status.serverPort ?? "49527"}',
                                 style: GoogleFonts.notoSans(
                                   fontSize: 11,
                                   color:
@@ -443,7 +513,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
             _buildUsageStep(
               '1',
               'PCでVRCNSyncアプリを起動',
-              'デスクトップ版のVRCNSyncアプリを起動してください',
+              'PCでVRCNSyncアプリを起動してください',
               Icons.computer,
               isDarkMode,
             ),
@@ -547,7 +617,11 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
           children: [
             Row(
               children: [
-                const Icon(Icons.analytics, color: AppTheme.primaryColor, size: 20),
+                const Icon(
+                  Icons.analytics,
+                  color: AppTheme.primaryColor,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   '接続状況',

@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vrchat/config/app_config.dart';
 import 'package:vrchat/provider/event_filter_provider.dart';
 import 'package:vrchat/provider/event_reminder_provider.dart';
 import 'package:vrchat/provider/settings_provider.dart';
@@ -19,7 +20,7 @@ import 'package:vrchat/widgets/reminder_dialog.dart';
 
 // イベントデータを取得するためのプロバイダー
 final eventDataProvider = FutureProvider<EventData>((ref) async {
-  final response = await http.get(Uri.parse('https://vrceve.poly.jp/events'));
+  final response = await http.get(Uri.parse(AppConfig.eventCalender));
   if (response.statusCode == 200) {
     return EventData.fromJson(jsonDecode(response.body));
   } else {
