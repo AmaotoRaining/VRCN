@@ -12,29 +12,30 @@ enum AppThemeMode {
 
 // アプリアイコンタイプ
 enum AppIconType {
-  nullbase,
+  nullbase, // あのめあ
   vrcn_icon,
   vrcn_logo,
-  nullkalne,
-  annobu,
+  nullkalne, // カルネ
+  annobu, // ラスク
   kazkiller,
-  miyamoto,
-  le0yuki,
-  ray,
-  hare,
-  aihuru,
-  rea,
-  masukawa,
-  abuki,
-  enadori,
-  roize,
-  r4in,
-  etoeto,
-  pampy,
-  yume,
+  miyamoto, // しなの
+  le0yuki, // 水瀬
+  ray, //
+  hare, // しなの
+  aihuru, // ベルセリナ
+  rea, // るるね
+  masukawa, // 真央
+  abuki, // 銀杏
+  enadori, // マヌカ
+  roize, // しなの
+  r4in, // しなの
+  etoeto, // イルネル
+  pampy, // sio
+  yume, // キプフェル
+  kabi_lun, // Shuan
 }
 
-// アイコン名のマッピング
+// アイコンマッピング
 Map<AppIconType, String> appIconNameMap = {
   AppIconType.nullbase: 'default',
   AppIconType.vrcn_icon: 'vrcn_icon',
@@ -56,6 +57,7 @@ Map<AppIconType, String> appIconNameMap = {
   AppIconType.etoeto: 'etoeto',
   AppIconType.pampy: 'pampy',
   AppIconType.yume: 'yume',
+  AppIconType.kabi_lun: 'kabi_lun',
 };
 
 // 設定データモデル
