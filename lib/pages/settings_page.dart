@@ -60,15 +60,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).colorScheme.primary;
-    final headerColor =
-        isDarkMode
-            ? HSLColor.fromColor(
-              primaryColor,
-            ).withLightness(0.25).withSaturation(0.6).toColor()
-            : HSLColor.fromColor(
-              primaryColor,
-            ).withLightness(0.92).withSaturation(0.3).toColor();
 
     // 背景色グラデーション
     final gradientColors =
@@ -115,18 +106,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: textColor,
-                    ),
-                  ),
-                  background: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          headerColor.withValues(alpha: 0.6),
-                          headerColor.withValues(alpha: 0),
-                        ],
-                      ),
                     ),
                   ),
                 ),
@@ -1375,7 +1354,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   _buildAppIconOption(
                     context: context,
                     ref: ref,
-                    iconType: AppIconType.yume,
+                    iconType: AppIconType.kabi_lun,
                     label: 'kabi_lun',
                     assetPath: 'assets/icons/kabi_lun@3x.png',
                     isSelected: settings.appIcon == AppIconType.kabi_lun,

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:vrchat/analytics_repository.dart';
 import 'package:vrchat/pages/avatar_detail_page.dart';
 import 'package:vrchat/pages/avatars_page.dart';
+import 'package:vrchat/pages/business_card_page.dart';
 import 'package:vrchat/pages/credits_page.dart';
 import 'package:vrchat/pages/event_calendar_page.dart';
 import 'package:vrchat/pages/favorites_page.dart';
@@ -19,6 +20,7 @@ import 'package:vrchat/pages/login_page.dart';
 import 'package:vrchat/pages/notifications_page.dart';
 import 'package:vrchat/pages/osc_page.dart';
 import 'package:vrchat/pages/profile_page.dart';
+import 'package:vrchat/pages/qr_scanner_page.dart';
 import 'package:vrchat/pages/search_page.dart';
 import 'package:vrchat/pages/settings_page.dart';
 import 'package:vrchat/pages/terms_agreement_page.dart';
@@ -240,19 +242,19 @@ final routerProvider = Provider<GoRouter>((ref) {
               );
             },
           ),
-          // GoRoute(
-          //   path: '/notifications',
-          //   name: 'notifications',
-          //   pageBuilder: (context, state) {
-          //     _setCurrentScreen(ref, '通知画面');
-          //     final immediate =
-          //         (state.extra as Map<String, dynamic>?)?['immediate'] == true;
-          //     if (immediate) {
-          //       return const NoTransitionPage(child: NotificationsPage());
-          //     }
-          //     return const MaterialPage(child: NotificationsPage());
-          //   },
-          // ),
+          GoRoute(
+            path: '/notifications',
+            name: 'notifications',
+            pageBuilder: (context, state) {
+              _setCurrentScreen(ref, '通知画面');
+              final immediate =
+                  (state.extra as Map<String, dynamic>?)?['immediate'] == true;
+              if (immediate) {
+                return const NoTransitionPage(child: NotificationsPage());
+              }
+              return const MaterialPage(child: NotificationsPage());
+            },
+          ),
         ],
       ),
       GoRoute(
@@ -331,19 +333,19 @@ final routerProvider = Provider<GoRouter>((ref) {
           return const FavoritesPage();
         },
       ),
-      GoRoute(
-        path: '/notifications',
-        name: 'notifications',
-        pageBuilder: (context, state) {
-          _setCurrentScreen(ref, '通知画面');
-          final immediate =
-              (state.extra as Map<String, dynamic>?)?['immediate'] == true;
-          if (immediate) {
-            return const NoTransitionPage(child: NotificationsPage());
-          }
-          return const MaterialPage(child: NotificationsPage());
-        },
-      ),
+      // GoRoute(
+      //   path: '/notifications',
+      //   name: 'notifications',
+      //   pageBuilder: (context, state) {
+      //     _setCurrentScreen(ref, '通知画面');
+      //     final immediate =
+      //         (state.extra as Map<String, dynamic>?)?['immediate'] == true;
+      //     if (immediate) {
+      //       return const NoTransitionPage(child: NotificationsPage());
+      //     }
+      //     return const MaterialPage(child: NotificationsPage());
+      //   },
+      // ),
       GoRoute(
         path: '/groups',
         name: 'groups',
@@ -398,6 +400,22 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           _setCurrentScreen(ref, 'クレジット画面');
           return const CreditsPage();
+        },
+      ),
+      GoRoute(
+        path: '/business_card',
+        name: 'business_card',
+        builder: (context, state) {
+          _setCurrentScreen(ref, '名刺画面');
+          return const BusinessCardPage();
+        },
+      ),
+      GoRoute(
+        path: '/qr_scanner',
+        name: 'qr_scanner',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'QRスキャナー画面');
+          return const QrScannerPage();
         },
       ),
     ],

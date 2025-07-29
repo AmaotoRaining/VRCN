@@ -85,6 +85,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_2_outlined),
+            onPressed: () => context.push('/business_card'),
+            tooltip: '名刺',
+          ),
           currentUserAsync.when(
             data:
                 (user) => IconButton(
