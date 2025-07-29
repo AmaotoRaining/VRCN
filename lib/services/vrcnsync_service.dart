@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:network_info_plus/network_info_plus.dart';
@@ -34,15 +35,16 @@ class VrcnSyncService {
   Future<bool> requestPermissions() async {
     try {
       if (Platform.isAndroid) {
+        final deviceInfo = await DeviceInfoPlugin().androidInfo;
+        final sdkInt = deviceInfo.version.sdkInt;
         final permissions = <Permission>[];
 
-        // 基本的な権限
-        permissions.addAll([Permission.storage]);
-
-        // Android 13以降では写真権限を使用
-        if (Platform.version.contains('API 33') ||
-            Platform.version.contains('API 34')) {
+        if (sdkInt >= 33) {
+          // Android 13 (API 33) 以降
           permissions.add(Permission.photos);
+        } else {
+          // Android 12 (API 32) 以前
+          permissions.add(Permission.storage);
         }
 
         final statuses = await permissions.request();
@@ -51,18 +53,13 @@ class VrcnSyncService {
         );
       } else if (Platform.isIOS) {
         // iOSでは写真ライブラリの追加権限のみ
-        final permissions = [Permission.photosAddOnly];
-
-        final statuses = await permissions.request();
-        return statuses.values.every(
-          (status) => status.isGranted || status.isLimited,
-        );
+        final status = await Permission.photosAddOnly.request();
+        return status.isGranted || status.isLimited;
       }
       return true;
     } catch (e) {
       debugPrint('権限リクエストエラー: $e');
-      // 権限エラーでもアプリがクラッシュしないように
-      return true;
+      return false;
     }
   }
 
@@ -170,6 +167,7 @@ class VrcnSyncService {
   Uint8List _stringToUint8List(String str) {
     return Uint8List.fromList(utf8.encode(str));
   }
+
   // Bonjourサービスの停止
   Future<void> _stopBonjourService() async {
     try {
@@ -210,8 +208,6 @@ class VrcnSyncService {
       debugPrint('サーバー停止エラー: $e');
     }
   }
-
-
 
   // HTTPリクエストの処理
   Future<void> _handleRequest(

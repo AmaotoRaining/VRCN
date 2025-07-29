@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:vrchat/models/vrcnsync_models.dart';
 import 'package:vrchat/provider/vrcnsync_provider.dart';
 import 'package:vrchat/services/photo_save_service.dart';
@@ -115,7 +116,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                Platform.isIOS ? 'フォトライブラリへのアクセス権限が必要です' : '必要な権限が付与されていません',
+                Platform.isIOS ? 'フォトライブラリへのアクセス権限が必要です' : 'ストレージへのアクセス権限が必要です',
                 style: GoogleFonts.notoSans(),
               ),
             ),
@@ -124,6 +125,14 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
         backgroundColor: Colors.red.shade600,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        action: SnackBarAction(
+          label: '設定を開く',
+          textColor: Colors.white,
+          onPressed: () {
+            openAppSettings();
+          },
+        ),
+        duration: const Duration(seconds: 6),
       ),
     );
   }
@@ -168,7 +177,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
               TextSpan(
                 text: ' (β)',
                 style: TextStyle(
-                  color: AppTheme.primaryColor.withValues(alpha:0.8),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.8),
                   fontSize: 16,
                 ),
               ),
@@ -235,8 +244,8 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
       ),
       color:
           isDarkMode
-              ? Colors.orange.withValues(alpha:0.15)
-              : Colors.orange.withValues(alpha:0.05),
+              ? Colors.orange.withValues(alpha: 0.15)
+              : Colors.orange.withValues(alpha: 0.05),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(

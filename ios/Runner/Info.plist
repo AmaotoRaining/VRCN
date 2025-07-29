@@ -5,9 +5,10 @@
 		<key>NSFaceIDUsageDescription</key>
 		<string>アプリへのアクセスを安全に保つために生体認証を使用します</string>
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>VRChatのプリントを写真に保存するために使用します</string>
+		<string>写真に保存するために使用します</string>
 		<key>NSPhotoLibraryAddUsageDescription</key>
-		<string>VRChatのプリントを写真に保存するために使用します</string>
+		<string>写真に保存するために使用します</string>
+
 		<key>NSLocalNetworkUsageDescription</key>
 		<string>VRChatの写真を保存するために使用します。</string>
 		<key>NSBonjourServices</key>
