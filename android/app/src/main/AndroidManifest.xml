@@ -20,7 +20,6 @@
         <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
         <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
       </intent-filter>
-      <!-- カスタムURLスキーム用 -->
       <intent-filter>
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
@@ -28,6 +27,7 @@
         <data android:scheme="vrcn"/>
       </intent-filter>
     </receiver>
+    <service android:name="id.flutter.flutter_background_service.BackgroundService" android:foregroundServiceType="dataSync"/>
   </application>
   <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
