@@ -18,16 +18,12 @@ class FriendsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final friendsAsync = ref.watch(friendsProvider);
     ref.watch(friendFilterProvider);
-    // 並び替え状態を監視
-    final sortType = ref.watch(friendSortTypeProvider);
-    final sortDirection = ref.watch(friendSortDirectionProvider);
+    final sortedFriends = ref.watch(sortedFriendsProvider);
 
     return Scaffold(
       drawer: const AppDrawer(),
       body: friendsAsync.when(
         data: (friends) {
-          // 並び替えたフレンドリストを使用
-          final sortedFriends = _sortFriends(friends, sortType, sortDirection);
           return _buildFriendsList(context, sortedFriends, ref);
         },
         loading: () => const LoadingIndicator(message: 'フレンド情報を読み込み中...'),
@@ -38,70 +34,6 @@ class FriendsPage extends ConsumerWidget {
             ),
       ),
     );
-  }
-
-  /// フレンドリストを並び替える
-  List<LimitedUser> _sortFriends(
-    List<LimitedUser> friends,
-    FriendSortType sortType,
-    SortDirection direction,
-  ) {
-    final sortedList = List<LimitedUser>.from(friends);
-
-    switch (sortType) {
-      case FriendSortType.status:
-        // オンライン状態でソート
-        sortedList.sort((a, b) {
-          final weightA = _getStatusWeight(a.status);
-          final weightB = _getStatusWeight(b.status);
-          final comparison = weightB.compareTo(weightA);
-          return direction == SortDirection.ascending
-              ? comparison
-              : -comparison;
-        });
-
-      case FriendSortType.name:
-        // 名前でソート
-        sortedList.sort((a, b) {
-          final comparison = a.displayName.compareTo(b.displayName);
-          return direction == SortDirection.ascending
-              ? comparison
-              : -comparison;
-        });
-
-      case FriendSortType.lastLogin:
-        // 最終ログイン順でソート
-        sortedList.sort((a, b) {
-          final lastLoginA =
-              a.lastLogin ?? DateTime.fromMillisecondsSinceEpoch(0);
-          final lastLoginB =
-              b.lastLogin ?? DateTime.fromMillisecondsSinceEpoch(0);
-          final comparison = lastLoginB.compareTo(lastLoginA);
-          return direction == SortDirection.ascending
-              ? comparison
-              : -comparison;
-        });
-    }
-
-    return sortedList;
-  }
-
-  // オンライン状態の重み付け（ソート用）
-  int _getStatusWeight(UserStatus? status) {
-    if (status == null) return 0;
-
-    switch (status) {
-      case UserStatus.joinMe:
-        return 5;
-      case UserStatus.active:
-        return 3;
-      case UserStatus.askMe:
-        return 2;
-      case UserStatus.busy:
-        return 1;
-      default:
-        return 0;
-    }
   }
 
   Widget _buildFriendsList(

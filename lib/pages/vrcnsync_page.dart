@@ -128,9 +128,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
         action: SnackBarAction(
           label: '設定を開く',
           textColor: Colors.white,
-          onPressed: () {
-            openAppSettings();
-          },
+          onPressed: openAppSettings,
         ),
         duration: const Duration(seconds: 6),
       ),

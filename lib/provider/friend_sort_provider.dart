@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vrchat/provider/favorite_provider.dart'; // 追加
 import 'package:vrchat/provider/friends_provider.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vrchat/provider/favorite_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
@@ -9,6 +10,7 @@ enum FriendFilter {
   all, // すべてのフレンド
   online, // オンラインのみ
   offline, // オフラインのみ
+  favorite, // お気に入りのみ
 }
 
 // 現在のフィルター状態を管理するプロバイダー
@@ -74,8 +76,7 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
 
             final batch = response.success!.data;
             // LimitedUserFriend から LimitedUser に変換
-            final convertedBatch =
-                batch.map(_convertToLimitedUser).toList();
+            final convertedBatch = batch.map(_convertToLimitedUser).toList();
             onlineFriends.addAll(convertedBatch);
 
             if (batch.length < 100) {
@@ -115,8 +116,7 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
 
             final batch = response.success!.data;
             // LimitedUserFriend から LimitedUser に変換
-            final convertedBatch =
-                batch.map(_convertToLimitedUser).toList();
+            final convertedBatch = batch.map(_convertToLimitedUser).toList();
             offlineFriends.addAll(convertedBatch);
 
             // 100件未満なら終了、そうでなければ次の100件を取得
@@ -132,6 +132,71 @@ class FriendsNotifier extends AsyncNotifier<List<LimitedUser>> {
         } catch (e) {
           debugPrint('オフラインフレンド取得エラー: $e');
         }
+      }
+
+      // --- お気に入りのみ ---
+      if (filter == FriendFilter.favorite) {
+        // すべてのフレンドを取得
+        final allFriends = <LimitedUser>[];
+
+        // オンライン
+        try {
+          final onlineFriends = <LimitedUser>[];
+          var offset = 0;
+          var hasMore = true;
+          while (hasMore) {
+            final response =
+                await rawApi
+                    .getFriendsApi()
+                    .getFriends(offline: false, n: 100, offset: offset)
+                    .validateVrc();
+            if (response.success == null) break;
+            final batch = response.success!.data;
+            onlineFriends.addAll(batch.map(_convertToLimitedUser));
+            if (batch.length < 100) {
+              hasMore = false;
+            } else {
+              offset += 100;
+            }
+          }
+          allFriends.addAll(onlineFriends);
+        } catch (_) {}
+
+        // オフライン
+        try {
+          final offlineFriends = <LimitedUser>[];
+          var offset = 0;
+          var hasMore = true;
+          while (hasMore) {
+            final response =
+                await rawApi
+                    .getFriendsApi()
+                    .getFriends(offline: true, n: 100, offset: offset)
+                    .validateVrc();
+            if (response.success == null) break;
+            final batch = response.success!.data;
+            offlineFriends.addAll(batch.map(_convertToLimitedUser));
+            if (batch.length < 100) {
+              hasMore = false;
+            } else {
+              offset += 100;
+            }
+          }
+          allFriends.addAll(offlineFriends);
+        } catch (_) {}
+
+        // お気に入りIDリスト取得
+        final favoriteFriendsAsync = await ref.watch(
+          favoriteFriendsProvider.future,
+        );
+        final favoriteIds =
+            favoriteFriendsAsync.map((f) => f.favoriteId).toSet();
+
+        // フレンドリストをお気に入りIDでフィルタ
+        final filtered =
+            allFriends.where((u) => favoriteIds.contains(u.id)).toList();
+        debugPrint('お気に入りフレンド: ${filtered.length}人');
+        return filtered;
       }
 
       debugPrint('フレンド取得完了: 合計${allFriends.length}人');

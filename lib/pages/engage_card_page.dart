@@ -36,7 +36,7 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
   double? _oldBrightness;
   late AnimationController _controller;
   final _extraInfo = CardExtraInfo.none;
-  bool _showAppBar = true;
+  var _showAppBar = true;
   Timer? _hideAppBarTimer;
 
   @override
