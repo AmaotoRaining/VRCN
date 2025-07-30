@@ -144,11 +144,20 @@ dependencies:
   # 画面輝度制御
   screen_brightness: ^2.1.5
   # すりガラスUI
-  liquid_glass_renderer: ^0.1.1-dev.10
+  liquid_glass_renderer:
   # 高機能画像表示
   extended_image: ^10.0.1
   # 画像トリミング
   image_cropper: ^9.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  rexios_lints: ^11.0.4
+  build_runner: ^2.4.15
+  riverpod_generator: ^2.6.5
+  flutter_launcher_icons: ^0.14.3
 
 flutter:
   uses-material-design: true
