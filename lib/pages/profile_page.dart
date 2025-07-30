@@ -87,8 +87,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
         actions: [
           IconButton(
             icon: const Icon(Icons.qr_code_2_outlined),
-            onPressed: () => context.push('/business_card'),
-            tooltip: '名刺',
+            onPressed: () => context.push('/engage_card'),
+            tooltip: 'エンゲージカード',
           ),
           currentUserAsync.when(
             data:

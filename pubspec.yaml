@@ -123,6 +123,7 @@ dependencies:
 
   mobile_scanner: ^7.0.1
   screen_brightness: ^2.1.5
+  liquid_glass_renderer: ^0.1.1-dev.10
 dev_dependencies:
   flutter_test:
     sdk: flutter

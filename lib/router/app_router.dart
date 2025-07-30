@@ -7,8 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:vrchat/analytics_repository.dart';
 import 'package:vrchat/pages/avatar_detail_page.dart';
 import 'package:vrchat/pages/avatars_page.dart';
-import 'package:vrchat/pages/business_card_page.dart';
 import 'package:vrchat/pages/credits_page.dart';
+import 'package:vrchat/pages/engage_card_page.dart';
 import 'package:vrchat/pages/event_calendar_page.dart';
 import 'package:vrchat/pages/favorites_page.dart';
 import 'package:vrchat/pages/friend_detail_page.dart';
@@ -403,11 +403,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/business_card',
-        name: 'business_card',
+        path: '/engage_card',
+        name: 'engage_card',
         builder: (context, state) {
-          _setCurrentScreen(ref, '名刺画面');
-          return const BusinessCardPage();
+          _setCurrentScreen(ref, 'オフ会用画面');
+          return const EngageCardPage();
         },
       ),
       GoRoute(

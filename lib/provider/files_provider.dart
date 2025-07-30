@@ -45,7 +45,6 @@ final getFilesProvider = FutureProvider.family<List<File>, FileSearchParams>((
   try {
     final response = await filesApi.getFiles(
       tag: params.tag,
-      // ignore: deprecated_member_use
       userId: params.userId,
       n: params.n,
       offset: params.offset,
