@@ -120,10 +120,12 @@ dependencies:
   gal: ^2.3.2
   nsd: ^4.0.3
   qr_flutter: ^4.1.0
-
   mobile_scanner: ^7.0.1
   screen_brightness: ^2.1.5
   liquid_glass_renderer: ^0.1.1-dev.10
+  extended_image: ^10.0.1
+  image_cropper: ^9.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
