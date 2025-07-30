@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -35,6 +36,8 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
   double? _oldBrightness;
   late AnimationController _controller;
   final _extraInfo = CardExtraInfo.none;
+  bool _showAppBar = true;
+  Timer? _hideAppBarTimer;
 
   @override
   void initState() {
@@ -45,11 +48,24 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
+    _startHideAppBarTimer();
+  }
+
+  void _startHideAppBarTimer() {
+    _hideAppBarTimer?.cancel();
+    _showAppBar = true;
+    setState(() {});
+    _hideAppBarTimer = Timer(const Duration(seconds: 3), () {
+      setState(() {
+        _showAppBar = false;
+      });
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _hideAppBarTimer?.cancel();
     if (_oldBrightness != null) {
       ScreenBrightness().setApplicationScreenBrightness(_oldBrightness!);
     }
@@ -91,6 +107,25 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
     }
   }
 
+  // 背景画像削除
+  Future<void> _removeBackgroundImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_backgroundImageKey);
+    if (mounted) {
+      ref.read(backgroundImageProvider.notifier).state = null;
+    }
+  }
+
+  // タップや操作時にAppBarを再表示
+  void _onUserInteraction() {
+    if (!_showAppBar) {
+      setState(() {
+        _showAppBar = true;
+      });
+    }
+    _startHideAppBarTimer();
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUserAsync = ref.watch(currentUserProvider);
@@ -100,67 +135,95 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
       'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
     };
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.photo_library_outlined),
-            onPressed: _pickImage,
-            tooltip: '背景画像を選択',
-          ),
-          IconButton(
-            icon: const Icon(Icons.qr_code_scanner),
-            onPressed: () => context.push('/qr_scanner'),
-            tooltip: 'QRコードをスキャン',
-          ),
-        ],
-      ),
-      body: currentUserAsync.when(
-        data: (user) {
-          return Stack(
-            children: [
-              // 背景
-              Container(
-                decoration: BoxDecoration(
-                  image:
-                      backgroundImage != null
-                          ? DecorationImage(
-                            image: FileImage(backgroundImage),
-                            fit: BoxFit.cover,
-                          )
-                          : null,
-                  gradient:
-                      backgroundImage == null
-                          ? const LinearGradient(
-                            colors: [Color(0xFF23243B), Color(0xFF3B8D99)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          )
-                          : null,
-                ),
-              ),
-              // カード本体（画面下部に寄せる）
-              SafeArea(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: _buildEngageCardFront(
-                    context,
-                    user,
-                    headers,
-                    backgroundImage,
-                    _extraInfo,
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: _onUserInteraction,
+      onPanDown: (_) => _onUserInteraction(),
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar:
+            _showAppBar
+                ? AppBar(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  iconTheme: const IconThemeData(color: Colors.white),
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.photo_library_outlined),
+                      onPressed: _pickImage,
+                      tooltip: '背景画像を選択',
+                    ),
+                    if (backgroundImage != null)
+                      IconButton(
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          color: Colors.redAccent,
+                        ),
+                        onPressed: _removeBackgroundImage,
+                        tooltip: '背景画像を削除',
+                      ),
+                    IconButton(
+                      icon: const Icon(Icons.qr_code_scanner),
+                      onPressed: () => context.push('/qr_scanner'),
+                      tooltip: 'QRコードをスキャン',
+                    ),
+                  ],
+                )
+                : null,
+        body: currentUserAsync.when(
+          data: (user) {
+            return Stack(
+              children: [
+                // 背景
+                if (backgroundImage != null)
+                  Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: FileImage(backgroundImage),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  )
+                else
+                  // 背景画像が未選択時のメッセージ
+                  Container(
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF23243B), Color(0xFF3B8D99)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Text(
+                      '背景画像が選択されていません\n右上のボタンから設定できます',
+                      style: GoogleFonts.notoSans(
+                        color: Colors.white70,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                // カード本体（画面下部に寄せる）
+                SafeArea(
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: _buildEngageCardFront(
+                      context,
+                      user,
+                      headers,
+                      backgroundImage,
+                      _extraInfo,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          );
-        },
-        loading: () => const LoadingIndicator(),
-        error: (err, stack) => Center(child: Text('エラー: $err')),
+              ],
+            );
+          },
+          loading: () => const LoadingIndicator(),
+          error: (err, stack) => Center(child: Text('エラー: $err')),
+        ),
       ),
     );
   }
