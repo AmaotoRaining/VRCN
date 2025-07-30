@@ -38,6 +38,7 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
   final _extraInfo = CardExtraInfo.none;
   var _showAppBar = true;
   Timer? _hideAppBarTimer;
+  var _showAvatar = true; // アバター表示/非表示フラグ
 
   @override
   void initState() {
@@ -167,6 +168,18 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
                       onPressed: () => context.push('/qr_scanner'),
                       tooltip: 'QRコードをスキャン',
                     ),
+                    IconButton(
+                      icon: Icon(
+                        _showAvatar ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.white,
+                      ),
+                      tooltip: _showAvatar ? 'アバターを非表示' : 'アバターを表示',
+                      onPressed: () {
+                        setState(() {
+                          _showAvatar = !_showAvatar;
+                        });
+                      },
+                    ),
                   ],
                 )
                 : null,
@@ -281,39 +294,43 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
-                  padding: const EdgeInsets.only(
-                    top: 16.0,
-                    bottom: 16.0,
-                    left: 16.0,
-                    right: 16.0,
-                  ),
+                  padding: const EdgeInsets.all(16.0),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment:
+                        _showAvatar
+                            ? MainAxisAlignment.center
+                            : MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      CircleAvatar(
-                        radius: 32,
-                        backgroundImage:
-                            user.userIcon.isNotEmpty
-                                ? CachedNetworkImageProvider(
-                                  user.userIcon,
-                                  headers: headers,
-                                  cacheManager: JsonCacheManager(),
-                                )
-                                : user.currentAvatarThumbnailImageUrl.isNotEmpty
-                                ? CachedNetworkImageProvider(
-                                  user.currentAvatarThumbnailImageUrl,
-                                  headers: headers,
-                                  cacheManager: JsonCacheManager(),
-                                )
-                                : const AssetImage('assets/icons/default.png')
-                                    as ImageProvider,
-                        backgroundColor: Colors.white24,
-                      ),
-                      const SizedBox(width: 16),
+                      if (_showAvatar)
+                        CircleAvatar(
+                          radius: 32,
+                          backgroundImage:
+                              user.userIcon.isNotEmpty
+                                  ? CachedNetworkImageProvider(
+                                    user.userIcon,
+                                    headers: headers,
+                                    cacheManager: JsonCacheManager(),
+                                  )
+                                  : user
+                                      .currentAvatarThumbnailImageUrl
+                                      .isNotEmpty
+                                  ? CachedNetworkImageProvider(
+                                    user.currentAvatarThumbnailImageUrl,
+                                    headers: headers,
+                                    cacheManager: JsonCacheManager(),
+                                  )
+                                  : const AssetImage('assets/icons/default.png')
+                                      as ImageProvider,
+                          backgroundColor: Colors.white24,
+                        ),
+                      if (_showAvatar) const SizedBox(width: 16),
                       Expanded(
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment:
+                              _showAvatar
+                                  ? CrossAxisAlignment.start
+                                  : CrossAxisAlignment.center, // ← ここを切り替え
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             FittedBox(
@@ -325,30 +342,8 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
                                   color: Colors.white,
                                   shadows: [
                                     Shadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.3,
-                                      ),
+                                      color: Colors.black.withValues(alpha: .3),
                                       blurRadius: 8,
-                                    ),
-                                  ],
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            FittedBox(
-                              child: Text(
-                                '@${user.username}',
-                                style: GoogleFonts.notoSans(
-                                  fontSize: 14,
-                                  color: Colors.white70,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                      blurRadius: 6,
                                     ),
                                   ],
                                 ),
