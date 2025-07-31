@@ -47,4 +47,19 @@ class InstanceHelper {
         return type ?? '不明';
     }
   }
+
+  static String regionEmoji(String region) {
+    switch (region.toLowerCase()) {
+      case 'us':
+        return '🇺🇸';
+      case 'use':
+        return '🇺🇸';
+      case 'eu':
+        return '🇪🇺';
+      case 'jp':
+        return '🇯🇵';
+      default:
+        return '';
+    }
+  }
 }

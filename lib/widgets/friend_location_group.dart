@@ -12,6 +12,7 @@ import 'package:material_color_utilities/material_color_utilities.dart';
 import 'package:vrchat/provider/instance_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
+import 'package:vrchat/utils/instance_helper.dart';
 import 'package:vrchat/widgets/friend_list_item.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
@@ -169,6 +170,7 @@ class FriendLocationGroup extends ConsumerWidget {
     String? effectiveWorldId;
     String? instanceName;
     String? instanceRegion;
+    String? instanceType;
 
     instanceAsync?.whenData((instance) {
       displayName = instance.world.name;
@@ -178,6 +180,7 @@ class FriendLocationGroup extends ConsumerWidget {
       effectiveWorldId = instance.worldId.toString();
       instanceName = instance.name;
       instanceRegion = instance.region.value;
+      instanceType = instance.type.value;
     });
 
     // サムネイル画像のパレットを取得
@@ -247,6 +250,7 @@ class FriendLocationGroup extends ConsumerWidget {
                     occupantCount,
                     instanceName,
                     instanceRegion,
+                    instanceType,
                   ),
                   // フレンドのリスト
                   _buildFriendList(isDarkMode),
@@ -275,6 +279,7 @@ class FriendLocationGroup extends ConsumerWidget {
     String? occupantCount,
     String? instanceName,
     String? instanceRegion,
+    String? instanceType,
   ) {
     // サムネイルからカラーパレットを取得
     final dominantColor =
@@ -366,34 +371,43 @@ class FriendLocationGroup extends ConsumerWidget {
                       // 人数情報を横並びに表示
                       Row(
                         children: [
-                          // ワールドにいるフレンド数/総人数バッジ
-                          if (occupantCount != null && !isPrivate && !isOffline)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: _buildFriendsAndOccupantsBadge(
-                                '$occupantCount/$capacityCount (${friends.length})',
-                                dominantColor,
-                                isDarkMode,
-                                Icons.group,
-                              ),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                // ワールドにいるフレンド数/総人数バッジ
+                                if (occupantCount != null &&
+                                    !isPrivate &&
+                                    !isOffline)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: _buildFriendsAndOccupantsBadge(
+                                      '$occupantCount/$capacityCount (${friends.length})',
+                                      dominantColor,
+                                      isDarkMode,
+                                      Icons.group,
+                                    ),
+                                  ),
+                                // インスタンス名
+                                if (instanceName != null)
+                                  Container(
+                                    child: _buildFriendsAndOccupantsBadge(
+                                      '$instanceName ${InstanceHelper.getInstanceTypeText(instanceType)} ${InstanceHelper.regionEmoji(instanceRegion ?? '')}',
+                                      dominantColor,
+                                      isDarkMode,
+                                      Icons.tag_sharp,
+                                    ),
+                                  ),
+                                if (occupantCount == null ||
+                                    isPrivate ||
+                                    isOffline)
+                                  _buildStatusBadge(
+                                    statusText,
+                                    dominantColor,
+                                    isDarkMode,
+                                  ),
+                              ],
                             ),
-                          // インスタンス名
-                          if (instanceName != null)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: _buildFriendsAndOccupantsBadge(
-                                '$instanceName ${_regionEmoji(instanceRegion ?? '')}',
-                                dominantColor,
-                                isDarkMode,
-                                Icons.tag,
-                              ),
-                            ),
-                          if (occupantCount == null || isPrivate || isOffline)
-                            _buildStatusBadge(
-                              statusText,
-                              dominantColor,
-                              isDarkMode,
-                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -625,7 +639,7 @@ class FriendLocationGroup extends ConsumerWidget {
 
   // フレンド数/総人数バッジ
   Widget _buildFriendsAndOccupantsBadge(
-    String memberCount,
+    String message,
     Color accentColor,
     bool isDarkMode,
     IconData icon,
@@ -674,9 +688,9 @@ class FriendLocationGroup extends ConsumerWidget {
                         accentColor,
                       ).withLightness(isDarkMode ? 0.75 : 0.35).toColor(),
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: 2),
                 Text(
-                  memberCount,
+                  message,
                   style: GoogleFonts.notoSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -686,6 +700,8 @@ class FriendLocationGroup extends ConsumerWidget {
                         ).withLightness(isDarkMode ? 0.75 : 0.35).toColor(),
                     letterSpacing: 0.1,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ],
             ),
@@ -903,20 +919,5 @@ class FriendLocationGroup extends ConsumerWidget {
         ),
       ),
     );
-  }
-}
-
-String _regionEmoji(String region) {
-  switch (region.toLowerCase()) {
-    case 'us':
-      return '🇺🇸';
-    case 'use':
-      return '🇺🇸';
-    case 'eu':
-      return '🇪🇺';
-    case 'jp':
-      return '🇯🇵';
-    default:
-      return '';
   }
 }
