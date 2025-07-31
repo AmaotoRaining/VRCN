@@ -847,7 +847,6 @@ Widget _buildEnhancedFriendItem(
                       friend.statusDescription,
                       style: GoogleFonts.notoSans(
                         fontSize: 14,
-                        fontStyle: FontStyle.italic,
                         color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                       ),
                       maxLines: 1,

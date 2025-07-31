@@ -164,14 +164,20 @@ class FriendLocationGroup extends ConsumerWidget {
     // ワールド情報の展開
     var displayName = locationName;
     String? thumbnailUrl;
+    String? capacityCount;
     String? occupantCount;
     String? effectiveWorldId;
+    String? instanceName;
+    String? instanceRegion;
 
     instanceAsync?.whenData((instance) {
       displayName = instance.world.name;
       thumbnailUrl = instance.world.thumbnailImageUrl;
+      capacityCount = instance.capacity.toString();
       occupantCount = instance.userCount.toString();
       effectiveWorldId = instance.worldId.toString();
+      instanceName = instance.name;
+      instanceRegion = instance.region.value;
     });
 
     // サムネイル画像のパレットを取得
@@ -237,9 +243,11 @@ class FriendLocationGroup extends ConsumerWidget {
                     statusText,
                     worldPalette,
                     ref,
+                    capacityCount,
                     occupantCount,
+                    instanceName,
+                    instanceRegion,
                   ),
-
                   // フレンドのリスト
                   _buildFriendList(isDarkMode),
                 ],
@@ -262,8 +270,11 @@ class FriendLocationGroup extends ConsumerWidget {
     String? effectiveWorldId,
     String statusText,
     AsyncValue<CorePalette?>? worldPalette,
-    WidgetRef ref, // ★ refパラメータを追加
+    WidgetRef ref,
+    String? capacityCount,
     String? occupantCount,
+    String? instanceName,
+    String? instanceRegion,
   ) {
     // サムネイルからカラーパレットを取得
     final dominantColor =
@@ -355,22 +366,33 @@ class FriendLocationGroup extends ConsumerWidget {
                       // 人数情報を横並びに表示
                       Row(
                         children: [
-                          // ステータステキスト（友達の数）
-                          _buildStatusBadge(
-                            statusText,
-                            dominantColor,
-                            isDarkMode,
-                          ),
-
-                          // 総人数を表示（非プライベート、オンラインの場合のみ）
+                          // ワールドにいるフレンド数/総人数バッジ
                           if (occupantCount != null && !isPrivate && !isOffline)
                             Padding(
-                              padding: const EdgeInsets.only(left: 8),
-                              child: _buildOccupantsBadge(
-                                occupantCount,
+                              padding: const EdgeInsets.only(right: 8),
+                              child: _buildFriendsAndOccupantsBadge(
+                                '$occupantCount/$capacityCount (${friends.length})',
                                 dominantColor,
                                 isDarkMode,
+                                Icons.group,
                               ),
+                            ),
+                          // インスタンス名
+                          if (instanceName != null)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: _buildFriendsAndOccupantsBadge(
+                                '$instanceName ${_regionEmoji(instanceRegion ?? '')}',
+                                dominantColor,
+                                isDarkMode,
+                                Icons.tag,
+                              ),
+                            ),
+                          if (occupantCount == null || isPrivate || isOffline)
+                            _buildStatusBadge(
+                              statusText,
+                              dominantColor,
+                              isDarkMode,
                             ),
                         ],
                       ),
@@ -382,77 +404,6 @@ class FriendLocationGroup extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-
-  // ワールド内の総人数を表示するバッジ
-  Widget _buildOccupantsBadge(
-    String occupantCount,
-    Color accentColor,
-    bool isDarkMode,
-  ) {
-    final badgeGradient = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [
-        HSLColor.fromColor(
-          accentColor,
-        ).withLightness(0.7).toColor().withValues(alpha: 0.3),
-        HSLColor.fromColor(
-          accentColor,
-        ).withLightness(0.5).toColor().withValues(alpha: 0.2),
-      ],
-    );
-
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 800),
-      tween: Tween<double>(begin: 0.0, end: 1.0),
-      curve: Curves.elasticOut,
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: value,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              gradient: badgeGradient,
-              boxShadow: [
-                BoxShadow(
-                  color: accentColor.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.group,
-                  size: 12,
-                  color:
-                      HSLColor.fromColor(
-                        accentColor,
-                      ).withLightness(isDarkMode ? 0.75 : 0.35).toColor(),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  occupantCount,
-                  style: GoogleFonts.notoSans(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color:
-                        HSLColor.fromColor(
-                          accentColor,
-                        ).withLightness(isDarkMode ? 0.75 : 0.35).toColor(),
-                    letterSpacing: 0.1,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -672,6 +623,78 @@ class FriendLocationGroup extends ConsumerWidget {
     );
   }
 
+  // フレンド数/総人数バッジ
+  Widget _buildFriendsAndOccupantsBadge(
+    String memberCount,
+    Color accentColor,
+    bool isDarkMode,
+    IconData icon,
+  ) {
+    final badgeGradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        HSLColor.fromColor(
+          accentColor,
+        ).withLightness(0.7).toColor().withValues(alpha: 0.3),
+        HSLColor.fromColor(
+          accentColor,
+        ).withLightness(0.5).toColor().withValues(alpha: 0.2),
+      ],
+    );
+
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 800),
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      curve: Curves.elasticOut,
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: value,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: badgeGradient,
+              boxShadow: [
+                BoxShadow(
+                  color: accentColor.withValues(alpha: 0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: 12,
+                  color:
+                      HSLColor.fromColor(
+                        accentColor,
+                      ).withLightness(isDarkMode ? 0.75 : 0.35).toColor(),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  memberCount,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color:
+                        HSLColor.fromColor(
+                          accentColor,
+                        ).withLightness(isDarkMode ? 0.75 : 0.35).toColor(),
+                    letterSpacing: 0.1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildFriendList(bool isDarkMode) {
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -880,5 +903,20 @@ class FriendLocationGroup extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+String _regionEmoji(String region) {
+  switch (region.toLowerCase()) {
+    case 'us':
+      return '🇺🇸';
+    case 'use':
+      return '🇺🇸';
+    case 'eu':
+      return '🇪🇺';
+    case 'jp':
+      return '🇯🇵';
+    default:
+      return '';
   }
 }

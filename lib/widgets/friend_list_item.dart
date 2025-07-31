@@ -186,7 +186,6 @@ class FriendListItem extends ConsumerWidget {
                                 isDarkMode
                                     ? Colors.grey[400]
                                     : Colors.grey[600],
-                            fontStyle: FontStyle.italic,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -226,8 +225,6 @@ class FriendListItem extends ConsumerWidget {
                             ],
                           ),
                         ] else if (userDetailAsync != null) ...[
-                          // 既存のユーザー詳細情報表示コード
-                          // ...
                         ],
                       ],
                     ],
