@@ -537,6 +537,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
+  firebase_crashlytics:
+    dependency: "direct main"
+    description:
+      name: firebase_crashlytics
+      sha256: "95b6871850b1a7e3b09c284c59a0c71fafcad3eee8ac1b6f06aaf8979290cbb8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.0"
+  firebase_crashlytics_platform_interface:
+    dependency: transitive
+    description:
+      name: firebase_crashlytics_platform_interface
+      sha256: ba5b7a916f1ebedc6db35b33abdc618f202fc25e0792088dfba698e19fec9c09
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.8.11"
   firebase_performance:
     dependency: "direct main"
     description:
@@ -658,10 +674,10 @@ packages:
     dependency: "direct dev"
     description:
       name: flutter_lints
-      sha256: "5398f14efa795ffb7a33e9b6a08798b26a180edac4ad7db3f231e40f82ce11e1"
+      sha256: "3105dc8492f6183fb076ccf1f351ac3d60564bff92e20bfc4af9cc1651f4e7e1"
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.0"
+    version: "6.0.0"
   flutter_local_notifications:
     dependency: "direct main"
     description:
@@ -1013,6 +1029,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.1+1"
+  in_app_review:
+    dependency: "direct main"
+    description:
+      name: in_app_review
+      sha256: "36a06771b88fb0e79985b15e7f2ac0f1142e903fe72517f3c055d78bc3bc1819"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.10"
+  in_app_review_platform_interface:
+    dependency: transitive
+    description:
+      name: in_app_review_platform_interface
+      sha256: fed2c755f2125caa9ae10495a3c163aa7fab5af3585a9c62ef4a6920c5b45f10
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.5"
   intl:
     dependency: "direct main"
     description:
@@ -1073,10 +1105,10 @@ packages:
     dependency: transitive
     description:
       name: lints
-      sha256: c35bb79562d980e9a453fc715854e1ed39e24e7d0297a880ef54e17f9874a9d7
+      sha256: a5e2b223cb7c9c8efdc663ef484fdd95bb243bff242ef5b13e26883547fce9a0
       url: "https://pub.dev"
     source: hosted
-    version: "5.1.1"
+    version: "6.0.0"
   liquid_glass_renderer:
     dependency: "direct main"
     description:
@@ -1142,7 +1174,7 @@ packages:
     source: hosted
     version: "0.12.17"
   material_color_utilities:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: material_color_utilities
       sha256: f7142bb1154231d7ea5f96bc7bde4bda2a0945d2806bb11670e30b850d56bdec
@@ -1293,14 +1325,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.0"
-  palette_generator:
-    dependency: "direct main"
-    description:
-      name: palette_generator
-      sha256: "4420f7ccc3f0a4a906144e73f8b6267cd940b64f57a7262e95cb8cec3a8ae0ed"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.3.3+7"
   path:
     dependency: "direct main"
     description:
@@ -1489,10 +1513,10 @@ packages:
     dependency: "direct dev"
     description:
       name: rexios_lints
-      sha256: "5dacb8b599b30965b48e38d0069b0d268d5807d48f5aef9d5db4e71f41c828b1"
+      sha256: "6afed41c6daefb449bb342959b8a5bf5d957e331263a987adf50f02a5e809ee7"
       url: "https://pub.dev"
     source: hosted
-    version: "11.0.6"
+    version: "14.0.0"
   riverpod:
     dependency: transitive
     description:

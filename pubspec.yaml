@@ -1,7 +1,7 @@
 name: vrchat
 description: "VRCN for VRChat"
 publish_to: "none"
-version: 1.2.1+110
+version: 1.2.2+111
 
 environment:
   sdk: ^3.7.2
@@ -55,7 +55,8 @@ dependencies:
   firebase_analytics: ^12.0.0
   # Firebaseパフォーマンス
   firebase_performance: ^0.11.0
-  # firebase_crashlytics: ^4.3.9
+  # Firebaseクラッシュ
+  firebase_crashlytics: ^5.0.0
 
   # スプラッシュ画面
   flutter_native_splash: ^2.4.6
@@ -92,7 +93,8 @@ dependencies:
   http: ^1.4.0
 
   # パレット抽出
-  palette_generator: ^0.3.3+6
+  material_color_utilities: ^0.13.0
+
   # 生体認証
   local_auth: ^2.3.0
 
@@ -149,6 +151,8 @@ dependencies:
   extended_image: ^10.0.1
   # 画像トリミング
   image_cropper: ^9.1.0
+  # レビュー
+  in_app_review: ^2.0.10
 
 dev_dependencies:
   flutter_test:

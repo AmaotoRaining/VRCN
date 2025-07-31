@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:palette_generator/palette_generator.dart';
+import 'package:material_color_utilities/material_color_utilities.dart';
 import 'package:vrchat/provider/instance_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
@@ -14,7 +16,7 @@ import 'package:vrchat/widgets/friend_list_item.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
 // サムネイルからのパレットプロバイダー
-final worldPaletteProvider = FutureProvider.family<PaletteGenerator?, String>((
+final worldPaletteProvider = FutureProvider.family<CorePalette?, String>((
   ref,
   imageUrl,
 ) async {
@@ -22,16 +24,36 @@ final worldPaletteProvider = FutureProvider.family<PaletteGenerator?, String>((
 
   try {
     final headers = <String, String>{'User-Agent': 'VRChat/1.0'};
-    final paletteGenerator = await PaletteGenerator.fromImageProvider(
-      CachedNetworkImageProvider(
-        imageUrl,
-        cacheManager: JsonCacheManager(),
-        headers: headers,
-      ),
-      size: const Size(100, 100),
-      maximumColorCount: 8,
+    final imageProvider = CachedNetworkImageProvider(
+      imageUrl,
+      cacheManager: JsonCacheManager(),
+      headers: headers,
     );
-    return paletteGenerator;
+    final completer = Completer<ui.Image>();
+    final stream = imageProvider.resolve(const ImageConfiguration());
+    late ImageStreamListener listener;
+    listener = ImageStreamListener((info, _) {
+      completer.complete(info.image);
+      stream.removeListener(listener);
+    });
+    stream.addListener(listener);
+    final uiImage = await completer.future;
+
+    // 画像のピクセルデータを取得
+    final byteData = await uiImage.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
+    if (byteData == null) return null;
+    final pixels = byteData.buffer.asUint32List();
+
+    // quantizeImageで色抽出
+    final quantized = await QuantizerCelebi().quantize(pixels, 16);
+    final ranked = Score.score(quantized.colorToCount, desired: 1);
+    final topColor = ranked.isNotEmpty ? ranked.first : 0xFF888888;
+
+    // CorePaletteを生成
+    final palette = CorePalette.of(topColor);
+    return palette;
   } catch (e) {
     return null;
   }
@@ -239,7 +261,7 @@ class FriendLocationGroup extends ConsumerWidget {
     String displayName,
     String? effectiveWorldId,
     String statusText,
-    AsyncValue<PaletteGenerator?>? worldPalette,
+    AsyncValue<CorePalette?>? worldPalette,
     WidgetRef ref, // ★ refパラメータを追加
     String? occupantCount,
   ) {
@@ -248,14 +270,8 @@ class FriendLocationGroup extends ConsumerWidget {
         worldPalette?.maybeWhen(
           data: (palette) {
             if (palette == null) return accentColor;
-
-            // 最適な色を選択（ビビッドな色が望ましい）
-            final color =
-                palette.vibrantColor?.color ??
-                palette.dominantColor?.color ??
-                palette.lightVibrantColor?.color ??
-                accentColor;
-
+            // CorePaletteのprimaryから色を取得
+            final color = Color(palette.primary.get(40));
             // 明るさを調整
             final hslColor = HSLColor.fromColor(color);
             return hslColor
@@ -655,7 +671,6 @@ class FriendLocationGroup extends ConsumerWidget {
       },
     );
   }
-
 
   Widget _buildFriendList(bool isDarkMode) {
     return DecoratedBox(
