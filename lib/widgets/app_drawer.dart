@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -23,6 +24,8 @@ class AppDrawer extends ConsumerWidget {
     final headers = <String, String>{
       'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
     };
+
+    final inAppReview = InAppReview.instance;
 
     return Drawer(
       backgroundColor: Colors.transparent,
@@ -210,6 +213,15 @@ class AppDrawer extends ConsumerWidget {
                               onTap: () {
                                 context.push('/vrcnsync');
                                 Navigator.pop(context);
+                              },
+                            ),
+                                    _MenuItem(
+                              icon: Icons.star_outlined,
+                              title: 'レビュー',
+                              isSelected: false,
+                              onTap: () {
+                                Navigator.pop(context);
+                                inAppReview.requestReview();
                               },
                             ),
                             _MenuItem(
@@ -563,8 +575,9 @@ class AppDrawer extends ConsumerWidget {
 
                 const SizedBox(height: 2),
 
-                // ユーザーID
                 Text(
+
+                  // ユーザーID
                   // ignore: deprecated_member_use
                   '@${user.username}',
                   style: GoogleFonts.notoSans(
