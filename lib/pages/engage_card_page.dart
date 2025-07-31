@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -50,6 +51,9 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
       vsync: this,
     );
     _startHideAppBarTimer();
+
+    // ステータスバー等を非表示
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
   }
 
   void _startHideAppBarTimer() {
@@ -70,6 +74,8 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
     if (_oldBrightness != null) {
       ScreenBrightness().setApplicationScreenBrightness(_oldBrightness!);
     }
+    // ページ離脱時にUIモードを元に戻す
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 
