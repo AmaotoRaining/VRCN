@@ -55,8 +55,6 @@ dependencies:
   firebase_analytics: ^12.0.0
   # Firebaseパフォーマンス
   firebase_performance: ^0.11.0
-  # Firebaseクラッシュ
-  firebase_crashlytics: ^5.0.0
 
   # スプラッシュ画面
   flutter_native_splash: ^2.4.6
@@ -71,7 +69,7 @@ dependencies:
   go_router: ^16.0.0
 
   # 日付・数値フォーマット
-  intl: ^0.20.2
+  intl: any
 
   # 共有
   share_plus: ^11.0.0
@@ -153,6 +151,8 @@ dependencies:
   image_cropper: ^9.1.0
   # レビュー
   in_app_review: ^2.0.10
+  # ウォレット
+  # flutter_wallet_card: ^4.0.4
 
 dev_dependencies:
   flutter_test:

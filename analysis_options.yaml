@@ -1,1 +1,4 @@
 include: package:rexios_lints/flutter/core_extra.yaml
+analyzer:
+  errors:
+    constant_identifier_names: ignore

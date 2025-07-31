@@ -125,7 +125,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
         backgroundColor: Colors.red.shade600,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        action: SnackBarAction(
+        action: const SnackBarAction(
           label: '設定を開く',
           textColor: Colors.white,
           onPressed: openAppSettings,

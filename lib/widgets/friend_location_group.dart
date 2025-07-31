@@ -730,67 +730,70 @@ class FriendLocationGroup extends ConsumerWidget {
   ) {
     // サムネイルURLがあり、プライベートでなく、オフラインでもない場合
     if (thumbnailUrl != null && !isPrivate && !isOffline) {
-      return Container(
-        width: 60,
+      return SizedBox(
         height: 60,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: accentColor.withValues(alpha: 0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+        child: AspectRatio(
+          aspectRatio: 4 / 3,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: accentColor.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+                BoxShadow(
+                  color: isDarkMode ? Colors.black38 : Colors.black26,
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            BoxShadow(
-              color: isDarkMode ? Colors.black38 : Colors.black26,
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: ShaderMask(
-            shaderCallback: (rect) {
-              return LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.transparent,
-                  HSLColor.fromColor(
-                    accentColor,
-                  ).withLightness(0.6).toColor().withValues(alpha: 0.3),
-                ],
-              ).createShader(rect);
-            },
-            blendMode: BlendMode.srcATop,
-            child: TweenAnimationBuilder<double>(
-              duration: const Duration(seconds: 10),
-              tween: Tween<double>(begin: 1.0, end: 1.05),
-              builder: (context, value, child) {
-                return Transform.scale(
-                  scale: value,
-                  child: CachedNetworkImage(
-                    key: ValueKey(thumbnailUrl), // キーを追加して強制的に再描画
-                    imageUrl: thumbnailUrl,
-                    httpHeaders: headers,
-                    cacheManager: JsonCacheManager(),
-                    fit: BoxFit.cover,
-                    placeholder:
-                        (context, url) => _buildImagePlaceholder(isDarkMode),
-                    errorWidget: (context, url, error) {
-                      // エラー時のログ追加
-                      debugPrint('画像読み込みエラー: $url - $error');
-                      return _buildImageError(isDarkMode, accentColor);
-                    },
-                    // キャッシュポリシーを調整
-                    cacheKey: '$thumbnailUrl-${DateTime.timestamp().day}',
-                    memCacheHeight: 120,
-                    memCacheWidth: 120,
-                  ),
-                );
-              },
-              onEnd: () {},
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: ShaderMask(
+                shaderCallback: (rect) {
+                  return LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.transparent,
+                      HSLColor.fromColor(
+                        accentColor,
+                      ).withLightness(0.6).toColor().withValues(alpha: 0.3),
+                    ],
+                  ).createShader(rect);
+                },
+                blendMode: BlendMode.srcATop,
+                child: TweenAnimationBuilder<double>(
+                  duration: const Duration(seconds: 10),
+                  tween: Tween<double>(begin: 1.0, end: 1.05),
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: value,
+                      child: CachedNetworkImage(
+                        key: ValueKey(thumbnailUrl),
+                        imageUrl: thumbnailUrl,
+                        httpHeaders: headers,
+                        cacheManager: JsonCacheManager(),
+                        fit: BoxFit.cover,
+                        placeholder:
+                            (context, url) =>
+                                _buildImagePlaceholder(isDarkMode),
+                        errorWidget: (context, url, error) {
+                          debugPrint('画像読み込みエラー: $url - $error');
+                          return _buildImageError(isDarkMode, accentColor);
+                        },
+                        cacheKey: '$thumbnailUrl-${DateTime.timestamp().day}',
+                        memCacheHeight: 120,
+                        memCacheWidth: 120,
+                      ),
+                    );
+                  },
+                  onEnd: () {},
+                ),
+              ),
             ),
           ),
         ),

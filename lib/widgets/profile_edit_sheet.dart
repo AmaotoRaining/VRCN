@@ -610,7 +610,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
         ),
         const SizedBox(height: 20),
 
-        // 現在のユーザー情報表示（読み取り専用）
+        // 現在のユーザー情報表示
         _buildInfoItem(
           'ユーザー名',
           widget.user.username.toString(),
