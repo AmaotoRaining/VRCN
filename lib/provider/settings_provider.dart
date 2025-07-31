@@ -33,6 +33,7 @@ enum AppIconType {
   pampy, // sio
   yume, // キプフェル
   kabi_lun, // Shuan
+  sasami_st // くうた
 }
 
 // アイコンマッピング
@@ -58,6 +59,8 @@ Map<AppIconType, String> appIconNameMap = {
   AppIconType.pampy: 'pampy',
   AppIconType.yume: 'yume',
   AppIconType.kabi_lun: 'kabi_lun',
+  AppIconType.sasami_st: 'sasami_st',
+
 };
 
 // 設定データモデル

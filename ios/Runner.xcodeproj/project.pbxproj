@@ -89,6 +89,10 @@
 		261F43CA2E391738007EC37F /* kabi_lun@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 261F43C52E391738007EC37F /* kabi_lun@2x.png */; };
 		261F43CB2E391738007EC37F /* kabi_lun@3x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 261F43C82E391738007EC37F /* kabi_lun@3x~ipad.png */; };
 		261F43CC2E391738007EC37F /* kabi_lun@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 261F43C72E391738007EC37F /* kabi_lun@3x.png */; };
+		261F43D12E3B5155007EC37F /* sasami_st@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 261F43CD2E3B5155007EC37F /* sasami_st@2x.png */; };
+		261F43D22E3B5155007EC37F /* sasami_st@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 261F43CF2E3B5155007EC37F /* sasami_st@3x.png */; };
+		261F43D32E3B5155007EC37F /* sasami_st@3x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 261F43D02E3B5155007EC37F /* sasami_st@3x~ipad.png */; };
+		261F43D42E3B5155007EC37F /* sasami_st@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 261F43CE2E3B5155007EC37F /* sasami_st@2x~ipad.png */; };
 		268F4BB62DC122750060165E /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 268F4BB52DC122750060165E /* InfoPlist.xcstrings */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
@@ -209,6 +213,10 @@
 		261F43C62E391738007EC37F /* kabi_lun@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "kabi_lun@2x~ipad.png"; sourceTree = "<group>"; };
 		261F43C72E391738007EC37F /* kabi_lun@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "kabi_lun@3x.png"; sourceTree = "<group>"; };
 		261F43C82E391738007EC37F /* kabi_lun@3x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "kabi_lun@3x~ipad.png"; sourceTree = "<group>"; };
+		261F43CD2E3B5155007EC37F /* sasami_st@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "sasami_st@2x.png"; sourceTree = "<group>"; };
+		261F43CE2E3B5155007EC37F /* sasami_st@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "sasami_st@2x~ipad.png"; sourceTree = "<group>"; };
+		261F43CF2E3B5155007EC37F /* sasami_st@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "sasami_st@3x.png"; sourceTree = "<group>"; };
+		261F43D02E3B5155007EC37F /* sasami_st@3x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "sasami_st@3x~ipad.png"; sourceTree = "<group>"; };
 		264F94FFAA083ACF613C160A /* Pods-RunnerTests.release-production.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release-production.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release-production.xcconfig"; sourceTree = "<group>"; };
 		268F4BB02DC113F20060165E /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Main.strings; sourceTree = "<group>"; };
 		268F4BB12DC113F20060165E /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
@@ -260,6 +268,10 @@
 		260FE9BC2DBFD92A00E1BDC5 /* Icons */ = {
 			isa = PBXGroup;
 			children = (
+				261F43CD2E3B5155007EC37F /* sasami_st@2x.png */,
+				261F43CE2E3B5155007EC37F /* sasami_st@2x~ipad.png */,
+				261F43CF2E3B5155007EC37F /* sasami_st@3x.png */,
+				261F43D02E3B5155007EC37F /* sasami_st@3x~ipad.png */,
 				261F43C52E391738007EC37F /* kabi_lun@2x.png */,
 				261F43C62E391738007EC37F /* kabi_lun@2x~ipad.png */,
 				261F43C72E391738007EC37F /* kabi_lun@3x.png */,
@@ -595,6 +607,10 @@
 				261F43B32E2590D6007EC37F /* aihuru@2x~ipad.png in Resources */,
 				261F43B42E2590D6007EC37F /* annobu@2x~ipad.png in Resources */,
 				261F43B52E2590D6007EC37F /* miyamoto@2x.png in Resources */,
+				261F43D12E3B5155007EC37F /* sasami_st@2x.png in Resources */,
+				261F43D22E3B5155007EC37F /* sasami_st@3x.png in Resources */,
+				261F43D32E3B5155007EC37F /* sasami_st@3x~ipad.png in Resources */,
+				261F43D42E3B5155007EC37F /* sasami_st@2x~ipad.png in Resources */,
 				261F43B62E2590D6007EC37F /* aihuru@3x.png in Resources */,
 				261F43B72E2590D6007EC37F /* roize@2x~ipad.png in Resources */,
 				261F43B82E2590D6007EC37F /* vrcn_logo@2x.png in Resources */,
@@ -640,9 +656,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -657,9 +677,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

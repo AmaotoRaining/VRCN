@@ -223,6 +223,15 @@
 				<key>UIPrerenderedIcon</key>
 				<false/>
 			</dict>
+      <key>sasami_st</key>
+			<dict>
+				<key>CFBundleIconFiles</key>
+				<array>
+					<string>sasami_st</string>
+				</array>
+				<key>UIPrerenderedIcon</key>
+				<false/>
+			</dict>
 		</dict>
 		<key>CFBundleIcons~ipad</key>
 		<dict>
@@ -402,6 +411,15 @@
 				<key>CFBundleIconFiles</key>
 				<array>
 					<string>kabi_lun</string>
+				</array>
+				<key>UIPrerenderedIcon</key>
+				<false/>
+			</dict>
+      <key>sasami_st</key>
+			<dict>
+				<key>CFBundleIconFiles</key>
+				<array>
+					<string>sasami_st</string>
 				</array>
 				<key>UIPrerenderedIcon</key>
 				<false/>
