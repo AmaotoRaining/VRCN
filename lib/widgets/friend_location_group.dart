@@ -688,7 +688,6 @@ class FriendLocationGroup extends ConsumerWidget {
                         accentColor,
                       ).withLightness(isDarkMode ? 0.75 : 0.35).toColor(),
                 ),
-                const SizedBox(width: 2),
                 Text(
                   message,
                   style: GoogleFonts.notoSans(

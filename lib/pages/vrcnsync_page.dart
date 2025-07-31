@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/models/vrcnsync_models.dart';
 import 'package:vrchat/provider/vrcnsync_provider.dart';
 import 'package:vrchat/services/photo_save_service.dart';
@@ -197,6 +198,57 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
 
               const SizedBox(height: 16),
 
+              // Githubリンクカードを追加
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                color: isDarkMode ? Colors.grey[850] : Colors.white,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () async {
+                    const url = 'https://github.com/null-base/VRCNSync';
+                    if (await canLaunchUrl(Uri.parse(url))) {
+                      await launchUrl(
+                        Uri.parse(url),
+                        mode: LaunchMode.externalApplication,
+                      );
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.link,
+                          color: AppTheme.primaryColor,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'VRCNSyncのGitHubページ',
+                            style: GoogleFonts.notoSans(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.primaryColor,
+                            ),
+                          ),
+                        ),
+                        const Icon(
+                          Icons.open_in_new,
+                          color: AppTheme.primaryColor,
+                          size: 18,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
               // エラー表示
               if (syncStatus.errorMessage != null)
                 Padding(
@@ -268,7 +320,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'この機能は開発中のベータ版です。予期せぬ問題が発生する可能性があります。',
+                    'この機能は開発中のベータ版です。予期せぬ問題が発生する可能性があります。\n現在はローカルのみの実装ですが、クラウド版が需要があれば実装します。',
                     style: GoogleFonts.notoSans(
                       fontSize: 13,
                       color:
