@@ -391,24 +391,21 @@ class FriendDetailPage extends ConsumerWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Hero(
-          tag: 'avatar-${user.id}',
-          child: Container(
-            width: 130,
-            height: 130,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: statusColor, width: 4),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 15,
-                  offset: Offset(0, 5),
-                ),
-              ],
-            ),
-            child: ClipOval(child: _buildUserAvatar(user)),
+        Container(
+          width: 130,
+          height: 130,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: statusColor, width: 4),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 15,
+                offset: Offset(0, 5),
+              ),
+            ],
           ),
+          child: ClipOval(child: _buildUserAvatar(user)),
         ),
         const SizedBox(height: 16),
         Text(

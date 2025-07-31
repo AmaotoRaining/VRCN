@@ -65,6 +65,28 @@ class UserSearchParams {
   int get hashCode => Object.hash(search, n, offset);
 }
 
+// LimitedUserSearchをLimitedUserに変換するヘルパー関数
+LimitedUser _convertSearchUserToLimitedUser(LimitedUserSearch searchUser) {
+  return LimitedUser(
+    bio: searchUser.bio,
+    currentAvatarImageUrl: searchUser.currentAvatarImageUrl,
+    currentAvatarThumbnailImageUrl: searchUser.currentAvatarThumbnailImageUrl,
+    developerType: searchUser.developerType,
+    displayName: searchUser.displayName,
+    id: searchUser.id,
+    isFriend: searchUser.isFriend,
+    lastPlatform: searchUser.lastPlatform,
+    profilePicOverride: searchUser.profilePicOverride,
+    status: searchUser.status,
+    statusDescription: searchUser.statusDescription,
+    tags: searchUser.tags,
+    userIcon: searchUser.userIcon,
+    location: null, // LimitedUserSearchにはlocationフィールドがない場合
+    friendKey: null, // LimitedUserSearchにはfriendKeyフィールドがない場合
+    lastLogin: null, // LimitedUserSearchにはlastLoginフィールドがない場合
+  );
+}
+
 // ユーザー検索プロバイダー
 final userSearchProvider =
     FutureProvider.family<List<LimitedUser>, UserSearchParams>((
@@ -83,7 +105,11 @@ final userSearchProvider =
         if (response.data == null) {
           return [];
         }
-        return response.data!;
+
+        // LimitedUserSearchをLimitedUserに変換
+        return response.data!
+            .map(_convertSearchUserToLimitedUser)
+            .toList();
       } catch (e) {
         throw Exception('ユーザー検索に失敗しました: $e');
       }

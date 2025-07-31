@@ -6,9 +6,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vrchat/config/app_config.dart';
 import 'package:vrchat/provider/event_filter_provider.dart';
 import 'package:vrchat/provider/event_reminder_provider.dart';
 import 'package:vrchat/provider/settings_provider.dart';
@@ -20,13 +20,34 @@ import 'package:vrchat/widgets/reminder_dialog.dart';
 
 // イベントデータを取得するためのプロバイダー
 final eventDataProvider = FutureProvider<EventData>((ref) async {
-  final response = await http.get(Uri.parse('https://vrceve.poly.jp/events'));
+  final response = await http.get(Uri.parse(AppConfig.eventCalender));
   if (response.statusCode == 200) {
     return EventData.fromJson(jsonDecode(response.body));
   } else {
     throw Exception('イベントデータの取得に失敗しました');
   }
 });
+
+// 日本時間のDateTimeを作成するヘルパー関数
+DateTime _parseJapanTime(String dateString) {
+  try {
+    // タイムゾーン情報を含む日時文字列をパース
+    final parsedDateTime = DateTime.parse(dateString);
+
+    // パースされた時間がUTCの場合、日本時間に変換
+    if (parsedDateTime.isUtc) {
+      // UTCとして解釈された場合、9時間を加算して日本時間に戻す
+      return parsedDateTime.add(const Duration(hours: 9));
+    } else {
+      // ローカル時間として解釈された場合はそのまま返す
+      return parsedDateTime;
+    }
+  } catch (e) {
+    debugPrint('日時解析エラー: $e, 入力: $dateString');
+    // フォールバック: 現在時刻を返す
+    return DateTime.timestamp();
+  }
+}
 
 // イベントデータモデル
 @immutable
@@ -81,12 +102,8 @@ class Event {
       id: json['id'] ?? '',
       quest: json['quest'] ?? false,
       title: json['title'] ?? '',
-      start: DateTime.parse(
-        json['start'] ?? DateTime.timestamp().toIso8601String(),
-      ),
-      end: DateTime.parse(
-        json['end'] ?? DateTime.timestamp().toIso8601String(),
-      ),
+      start: _parseJapanTime(json['start'] ?? ''),
+      end: _parseJapanTime(json['end'] ?? ''),
       author: json['author'] ?? '',
       body: json['body'] ?? '',
       genres: List<String>.from(json['genres'] ?? []),
@@ -116,9 +133,6 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-
-    // 日本語ロケールを初期化
-    initializeDateFormatting('ja', null);
   }
 
   @override
@@ -374,7 +388,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
     );
   }
 
-  // _buildEventListメソッドを修正してフィルター適用
+  // 以下のメソッドは変更なし（_buildEventListから最後まで）
   Widget _buildEventList(
     BuildContext context,
     EventData eventData,
@@ -691,7 +705,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
     Color accentColor,
     int index,
   ) {
-    // 時間をフォーマット
+    // 時間をフォーマット（日本時間として表示）
     final startTime = DateFormat('HH:mm').format(event.start);
     final endTime = DateFormat('HH:mm').format(event.end);
 
@@ -1271,31 +1285,6 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
 
   // ジャンル名から色を取得するヘルパーメソッド
   Color _getGenreColor(String genre, Color defaultColor, bool isDarkMode) {
-    final genreColors = <String, MaterialColor>{
-      'トーク': Colors.blue,
-      'ゲーム': Colors.green,
-      'ライブ': Colors.purple,
-      'お祭り': Colors.orange,
-      'クラブ': Colors.pink,
-      'アート': Colors.teal,
-      'レース': Colors.red,
-      'セミナー': Colors.indigo,
-      '初心者歓迎': Colors.cyan,
-      'フリー': Colors.amber,
-      'お酒': Colors.deepOrange,
-      '音楽': Colors.deepPurple,
-      'アニメ': Colors.lightBlue,
-      'ビジネス': Colors.blueGrey,
-      'コスプレ': Colors.lightGreen,
-    };
-
-    // ジャンル名に部分一致する色を探す
-    for (final entry in genreColors.entries) {
-      if (genre.contains(entry.key)) {
-        return isDarkMode ? entry.value[300]! : entry.value[600]!;
-      }
-    }
-
     // マッチしない場合はハッシュ値をもとに色を生成
     final hash = genre.hashCode.abs() % 5;
     final fallbackColors = <Color>[

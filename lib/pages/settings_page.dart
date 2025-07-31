@@ -60,15 +60,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).colorScheme.primary;
-    final headerColor =
-        isDarkMode
-            ? HSLColor.fromColor(
-              primaryColor,
-            ).withLightness(0.25).withSaturation(0.6).toColor()
-            : HSLColor.fromColor(
-              primaryColor,
-            ).withLightness(0.92).withSaturation(0.3).toColor();
 
     // 背景色グラデーション
     final gradientColors =
@@ -115,18 +106,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: textColor,
-                    ),
-                  ),
-                  background: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          headerColor.withValues(alpha: 0.6),
-                          headerColor.withValues(alpha: 0),
-                        ],
-                      ),
                     ),
                   ),
                 ),
@@ -203,15 +182,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                               buttonColor: buttonColor,
                               isDarkMode: isDarkMode,
                               children: [
-                                _buildApiUrlSetting(
-                                  context,
-                                  ref,
-                                  isDarkMode,
-                                  textColor,
-                                  secondaryTextColor,
-                                ),
                                 _buildSwitchSetting(
-                                  icon: Icons.warning_amber_outlined,
+                                  icon: Icons.search,
                                   iconColor: const Color(0xFFE76F51),
                                   title: '検索機能を有効',
                                   subtitle:
@@ -226,6 +198,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                   textColor: textColor,
                                   secondaryTextColor: secondaryTextColor,
                                   isDarkMode: isDarkMode,
+                                ),
+                                _buildApiSetting(
+                                  context,
+                                  ref,
+                                  isDarkMode,
+                                  textColor,
+                                  secondaryTextColor,
                                 ),
                               ],
                             )
@@ -815,7 +794,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
   }
 
   // API URL設定
-  Widget _buildApiUrlSetting(
+  Widget _buildApiSetting(
     BuildContext context,
     WidgetRef ref,
     bool isDarkMode,
@@ -838,13 +817,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     borderRadius: BorderRadius.circular(20),
                   ),
                   title: Text(
-                    'アバター検索 API URL',
+                    'アバター検索API',
                     style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
                   ),
                   content: TextField(
                     controller: controller,
                     decoration: InputDecoration(
-                      hintText: 'https://api.example.com/avatar/search',
+                      hintText: 'https://null-base.com/',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -909,7 +888,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'アバター検索 API URL',
+                    'アバター検索API',
                     style: GoogleFonts.notoSans(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -1177,7 +1156,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ref: ref,
                     iconType: AppIconType.nullbase,
                     label: 'デフォルト',
-                    assetPath: 'assets/images/default.png',
+                    assetPath: 'assets/icons/default.png',
                     isSelected: settings.appIcon == AppIconType.nullbase,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
@@ -1187,7 +1166,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ref: ref,
                     iconType: AppIconType.vrcn_icon,
                     label: 'アイコン',
-                    assetPath: 'assets/images/vrcn_icon@3x.png',
+                    assetPath: 'assets/icons/vrcn_icon@3x.png',
                     isSelected: settings.appIcon == AppIconType.vrcn_icon,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
@@ -1197,7 +1176,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ref: ref,
                     iconType: AppIconType.vrcn_logo,
                     label: 'ロゴ',
-                    assetPath: 'assets/images/vrcn_logo@3x.png',
+                    assetPath: 'assets/icons/vrcn_logo@3x.png',
                     isSelected: settings.appIcon == AppIconType.vrcn_logo,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
@@ -1207,7 +1186,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ref: ref,
                     iconType: AppIconType.nullkalne,
                     label: 'null_base',
-                    assetPath: 'assets/images/nullkalne@3x.png',
+                    assetPath: 'assets/icons/nullkalne@3x.png',
                     isSelected: settings.appIcon == AppIconType.nullkalne,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
@@ -1217,7 +1196,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ref: ref,
                     iconType: AppIconType.annobu,
                     label: 'annobu',
-                    assetPath: 'assets/images/annobu@3x.png',
+                    assetPath: 'assets/icons/annobu@3x.png',
                     isSelected: settings.appIcon == AppIconType.annobu,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
@@ -1227,7 +1206,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ref: ref,
                     iconType: AppIconType.kazkiller,
                     label: 'KAZkiller',
-                    assetPath: 'assets/images/kazkiller@3x.png',
+                    assetPath: 'assets/icons/kazkiller@3x.png',
                     isSelected: settings.appIcon == AppIconType.kazkiller,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
@@ -1236,8 +1215,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     context: context,
                     ref: ref,
                     iconType: AppIconType.miyamoto,
-                    label: 'Miyamoto_',
-                    assetPath: 'assets/images/miyamoto@3x.png',
+                    label: 'lonely縷縷',
+                    assetPath: 'assets/icons/miyamoto@3x.png',
                     isSelected: settings.appIcon == AppIconType.miyamoto,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
@@ -1247,7 +1226,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ref: ref,
                     iconType: AppIconType.le0yuki,
                     label: 'Le0yuki',
-                    assetPath: 'assets/images/le0yuki@3x.png',
+                    assetPath: 'assets/icons/le0yuki@3x.png',
                     isSelected: settings.appIcon == AppIconType.le0yuki,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
@@ -1257,7 +1236,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ref: ref,
                     iconType: AppIconType.ray,
                     label: 'Ray',
-                    assetPath: 'assets/images/ray@3x.png',
+                    assetPath: 'assets/icons/ray@3x.png',
                     isSelected: settings.appIcon == AppIconType.ray,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
@@ -1267,7 +1246,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ref: ref,
                     iconType: AppIconType.hare,
                     label: 'Hare',
-                    assetPath: 'assets/images/hare@3x.png',
+                    assetPath: 'assets/icons/hare@3x.png',
                     isSelected: settings.appIcon == AppIconType.hare,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
@@ -1277,7 +1256,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ref: ref,
                     iconType: AppIconType.aihuru,
                     label: 'アイフル',
-                    assetPath: 'assets/images/aihuru@3x.png',
+                    assetPath: 'assets/icons/aihuru@3x.png',
                     isSelected: settings.appIcon == AppIconType.aihuru,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
@@ -1287,7 +1266,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ref: ref,
                     iconType: AppIconType.rea,
                     label: 'Rea',
-                    assetPath: 'assets/images/rea@3x.png',
+                    assetPath: 'assets/icons/rea@3x.png',
                     isSelected: settings.appIcon == AppIconType.rea,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
@@ -1297,7 +1276,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ref: ref,
                     iconType: AppIconType.masukawa,
                     label: 'ますかわ',
-                    assetPath: 'assets/images/masukawa@3x.png',
+                    assetPath: 'assets/icons/masukawa@3x.png',
                     isSelected: settings.appIcon == AppIconType.masukawa,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
@@ -1307,7 +1286,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ref: ref,
                     iconType: AppIconType.abuki,
                     label: 'AbukI',
-                    assetPath: 'assets/images/abuki@3x.png',
+                    assetPath: 'assets/icons/abuki@3x.png',
                     isSelected: settings.appIcon == AppIconType.abuki,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
@@ -1317,7 +1296,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ref: ref,
                     iconType: AppIconType.enadori,
                     label: 'エナドリ',
-                    assetPath: 'assets/images/enadori@3x.png',
+                    assetPath: 'assets/icons/enadori@3x.png',
                     isSelected: settings.appIcon == AppIconType.enadori,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
@@ -1327,7 +1306,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ref: ref,
                     iconType: AppIconType.roize,
                     label: 'Roize',
-                    assetPath: 'assets/images/roize@3x.png',
+                    assetPath: 'assets/icons/roize@3x.png',
                     isSelected: settings.appIcon == AppIconType.roize,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
@@ -1337,8 +1316,58 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ref: ref,
                     iconType: AppIconType.r4in,
                     label: 'R4in',
-                    assetPath: 'assets/images/r4in@3x.png',
+                    assetPath: 'assets/icons/r4in@3x.png',
                     isSelected: settings.appIcon == AppIconType.r4in,
+                    isDarkMode: isDarkMode,
+                    textColor: textColor,
+                  ),
+                  _buildAppIconOption(
+                    context: context,
+                    ref: ref,
+                    iconType: AppIconType.etoeto,
+                    label: 'えと干支',
+                    assetPath: 'assets/icons/etoeto@3x.png',
+                    isSelected: settings.appIcon == AppIconType.etoeto,
+                    isDarkMode: isDarkMode,
+                    textColor: textColor,
+                  ),
+                  _buildAppIconOption(
+                    context: context,
+                    ref: ref,
+                    iconType: AppIconType.pampy,
+                    label: 'ぱんぴー',
+                    assetPath: 'assets/icons/pampy@3x.png',
+                    isSelected: settings.appIcon == AppIconType.pampy,
+                    isDarkMode: isDarkMode,
+                    textColor: textColor,
+                  ),
+                  _buildAppIconOption(
+                    context: context,
+                    ref: ref,
+                    iconType: AppIconType.yume,
+                    label: '~yume~',
+                    assetPath: 'assets/icons/yume@3x.png',
+                    isSelected: settings.appIcon == AppIconType.yume,
+                    isDarkMode: isDarkMode,
+                    textColor: textColor,
+                  ),
+                  _buildAppIconOption(
+                    context: context,
+                    ref: ref,
+                    iconType: AppIconType.kabi_lun,
+                    label: 'kabi_lun',
+                    assetPath: 'assets/icons/kabi_lun@3x.png',
+                    isSelected: settings.appIcon == AppIconType.kabi_lun,
+                    isDarkMode: isDarkMode,
+                    textColor: textColor,
+                  ),
+                  _buildAppIconOption(
+                    context: context,
+                    ref: ref,
+                    iconType: AppIconType.sasami_st,
+                    label: 'ささみすと',
+                    assetPath: 'assets/icons/sasami_st@3x.png',
+                    isSelected: settings.appIcon == AppIconType.sasami_st,
                     isDarkMode: isDarkMode,
                     textColor: textColor,
                   ),
@@ -1624,7 +1653,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       applicationVersion: _packageInfo?.version ?? '',
       applicationIcon: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Image.asset('assets/images/default.png', width: 64, height: 64),
+        child: Image.asset('assets/icons/default.png', width: 64, height: 64),
       ),
       applicationLegalese: '© 2025 null_base',
     );

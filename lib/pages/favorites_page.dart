@@ -941,28 +941,23 @@ Widget _buildEnhancedWorldItem(
             children: [
               AspectRatio(
                 aspectRatio: 16 / 9,
-                child: Hero(
-                  tag: 'world-${world.id}',
-                  child: CachedNetworkImage(
-                    imageUrl: world.imageUrl,
-                    fit: BoxFit.cover,
-                    httpHeaders: headers,
-                    cacheManager: JsonCacheManager(),
-                    placeholder:
-                        (context, url) => Container(
-                          color:
-                              isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                          child: const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
+                child: CachedNetworkImage(
+                  imageUrl: world.imageUrl,
+                  fit: BoxFit.cover,
+                  httpHeaders: headers,
+                  cacheManager: JsonCacheManager(),
+                  placeholder:
+                      (context, url) => Container(
+                        color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                        child: const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
-                    errorWidget:
-                        (context, url, error) => Container(
-                          color:
-                              isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                          child: const Icon(Icons.broken_image),
-                        ),
-                  ),
+                      ),
+                  errorWidget:
+                      (context, url, error) => Container(
+                        color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                        child: const Icon(Icons.broken_image),
+                      ),
                 ),
               ),
 
@@ -1122,28 +1117,23 @@ Widget _buildEnhancedAvatarItem(
             children: [
               AspectRatio(
                 aspectRatio: 1.0,
-                child: Hero(
-                  tag: 'avatar-${avatar.id}',
-                  child: CachedNetworkImage(
-                    imageUrl: avatar.imageUrl,
-                    fit: BoxFit.cover,
-                    httpHeaders: headers,
-                    cacheManager: JsonCacheManager(),
-                    placeholder:
-                        (context, url) => Container(
-                          color:
-                              isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                          child: const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
+                child: CachedNetworkImage(
+                  imageUrl: avatar.imageUrl,
+                  fit: BoxFit.cover,
+                  httpHeaders: headers,
+                  cacheManager: JsonCacheManager(),
+                  placeholder:
+                      (context, url) => Container(
+                        color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                        child: const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
-                    errorWidget:
-                        (context, url, error) => Container(
-                          color:
-                              isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                          child: const Icon(Icons.broken_image),
-                        ),
-                  ),
+                      ),
+                  errorWidget:
+                      (context, url, error) => Container(
+                        color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                        child: const Icon(Icons.broken_image),
+                      ),
                 ),
               ),
 

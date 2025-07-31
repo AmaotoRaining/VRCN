@@ -1,3 +1,4 @@
+import 'package:app_links/app_links.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_app_badge_control/flutter_app_badge_control.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -31,6 +33,15 @@ Future<void> main() async {
   // Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  // クラッシュハンドラ
+  // FlutterError.onError = (errorDetails) {
+  //   FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  // };
+  // PlatformDispatcher.instance.onError = (error, stack) {
+  //   FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+  //   return true;
+  // };
+
   // システムUIの設定
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
@@ -41,6 +52,8 @@ Future<void> main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
   // SharedPreferencesの初期化
   final prefs = await SharedPreferences.getInstance();
@@ -134,11 +147,37 @@ class VRChatApp extends ConsumerStatefulWidget {
 
 class _VRChatAppState extends ConsumerState<VRChatApp>
     with WidgetsBindingObserver {
+  late AppLinks _appLinks;
+
   @override
   void initState() {
     super.initState();
     // ライフサイクルオブザーバーとして登録
     WidgetsBinding.instance.addObserver(this);
+
+    _initAppLinks();
+  }
+
+  void _initAppLinks() async {
+    _appLinks = AppLinks();
+
+    // アプリ起動時のリンク処理
+    final initialLink = await _appLinks.getInitialLink();
+    if (initialLink != null) {
+      _handleIncomingLink(initialLink);
+    }
+
+    // アプリ実行中のリンク処理
+    _appLinks.uriLinkStream.listen(_handleIncomingLink);
+  }
+
+  void _handleIncomingLink(Uri uri) {
+    if (uri.scheme == 'vrcn' && uri.host == 'avatar-api-url') {
+      final apiUrl = uri.queryParameters['url'];
+      if (apiUrl != null && apiUrl.isNotEmpty) {
+        ref.read(settingsProvider.notifier).setAvatarSearchApiUrl(apiUrl);
+      }
+    }
   }
 
   @override
@@ -226,6 +265,12 @@ class _VRChatAppState extends ConsumerState<VRChatApp>
     // ルーター使用かホーム画面使用かで分岐
     if (useRouter && router != null) {
       return MaterialApp.router(
+        supportedLocales: const [Locale('ja')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
@@ -236,6 +281,12 @@ class _VRChatAppState extends ConsumerState<VRChatApp>
     }
 
     return MaterialApp(
+      supportedLocales: const [Locale('ja')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

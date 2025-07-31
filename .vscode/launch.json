@@ -23,6 +23,15 @@
       "args": ["--flavor", "dev"]
     },
     {
+      "name": "Debug iPhoneエミュ プロ生",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "flutterMode": "debug",
+      "deviceId": "DDF2F440-FBAF-4B2F-9B19-233CE6FEBCBE",
+      "args": ["--flavor", "dev"]
+    },
+    {
       "name": "Debug Androidエミュ",
       "type": "dart",
       "request": "launch",

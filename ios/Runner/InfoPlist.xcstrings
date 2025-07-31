@@ -1,16 +1,9 @@
 {
-  "sourceLanguage" : "en",
+  "sourceLanguage" : "ja",
   "strings" : {
     "CFBundleDisplayName" : {
       "comment" : "Bundle display name",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "VRCN"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -21,14 +14,7 @@
     },
     "CFBundleName" : {
       "comment" : "Bundle name",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "vrchat"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39,18 +25,35 @@
     },
     "NSFaceIDUsageDescription" : {
       "comment" : "Privacy - Face ID Usage Description",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "アプリへのアクセスを安全に保つために生体認証を使用します"
-          }
-        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "アプリへのアクセスを安全に保つために生体認証を使用します"
+          }
+        }
+      }
+    },
+    "NSPhotoLibraryAddUsageDescription" : {
+      "comment" : "Privacy - Photo Library Additions Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "VRChatのプリントを写真に保存するために使用します"
+          }
+        }
+      }
+    },
+    "NSPhotoLibraryUsageDescription" : {
+      "comment" : "Privacy - Photo Library Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "VRChatのプリントを写真に保存するために使用します"
           }
         }
       }

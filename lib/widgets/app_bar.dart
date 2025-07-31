@@ -65,8 +65,9 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       color: isDarkMode ? Colors.white : Colors.black87,
                     ),
                   )
-                  : const CircleAvatar(
-                    backgroundImage: AssetImage('assets/images/default.png'),
+                  : CircleAvatar(
+                    backgroundImage: const AssetImage('assets/icons/default.png'),
+                    backgroundColor: Theme.of(context).colorScheme.surface,
                   )),
       iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       actions: actions,
@@ -98,9 +99,8 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                                     cacheManager: JsonCacheManager(),
                                   )
                                   : const AssetImage(
-                                        'assets/images/default.png',
-                                      )
-                                      as ImageProvider,
+                                    'assets/icons/default.png',
+                                  ),
                         ),
                       ),
                   loading:
@@ -124,7 +124,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                           radius: 16,
                           backgroundColor: Colors.grey,
                           backgroundImage: AssetImage(
-                            'assets/images/default.png',
+                            'assets/icons/default.png',
                           ),
                         ),
                       ),

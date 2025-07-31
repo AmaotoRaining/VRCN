@@ -1,6 +1,6 @@
 <div align="center">
 
-# VRCN
+# VRCN for VRChat
 
 <p align="center">
   <img src="./assets/icon.png" alt="VRCN Logo" width="120" height="120">
@@ -14,7 +14,7 @@
 
 ## 🌟 概要
 
-VRCNは、VRChatユーザーのための包括的なモバイルコンパニオンアプリです。フレンド管理、ワールド探索、イベント追跡など、VRChatライフを豊かにする多彩な機能を提供します。
+VRCN for VRChatは、VRChatユーザーのための包括的なモバイルコンパニオンアプリです。フレンド管理、ワールド探索、イベント追跡など、VRChatライフを豊かにする多彩な機能を提供します。
 
 **「VRChatをもっと便利に、もっと楽しく」**
 

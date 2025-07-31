@@ -198,35 +198,32 @@ class WorldInstanceView extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               // ワールド画像
-              Hero(
-                tag: 'world-${worldInfo.id}',
-                child: CachedNetworkImage(
-                  imageUrl: worldInfo.imageUrl,
-                  fit: BoxFit.cover,
-                  httpHeaders: headers,
-                  cacheManager: JsonCacheManager(),
-                  placeholder:
-                      (context, url) => Container(
-                        color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.green,
-                            ),
+              CachedNetworkImage(
+                imageUrl: worldInfo.imageUrl,
+                fit: BoxFit.cover,
+                httpHeaders: headers,
+                cacheManager: JsonCacheManager(),
+                placeholder:
+                    (context, url) => Container(
+                      color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.green,
                           ),
                         ),
                       ),
-                  errorWidget:
-                      (context, url, error) => Container(
-                        color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-                        child: const Icon(
-                          Icons.image_not_supported,
-                          color: Colors.green,
-                          size: 40,
-                        ),
+                    ),
+                errorWidget:
+                    (context, url, error) => Container(
+                      color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        color: Colors.green,
+                        size: 40,
                       ),
-                ),
+                    ),
               ),
 
               // グラデーションオーバーレイ

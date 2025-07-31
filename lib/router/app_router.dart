@@ -8,23 +8,29 @@ import 'package:vrchat/analytics_repository.dart';
 import 'package:vrchat/pages/avatar_detail_page.dart';
 import 'package:vrchat/pages/avatars_page.dart';
 import 'package:vrchat/pages/credits_page.dart';
+import 'package:vrchat/pages/engage_card_page.dart';
 import 'package:vrchat/pages/event_calendar_page.dart';
 import 'package:vrchat/pages/favorites_page.dart';
 import 'package:vrchat/pages/friend_detail_page.dart';
 import 'package:vrchat/pages/friends_page.dart';
 import 'package:vrchat/pages/group_detail_page.dart';
 import 'package:vrchat/pages/groups_page.dart';
+import 'package:vrchat/pages/inventory_page.dart';
 import 'package:vrchat/pages/login_page.dart';
 import 'package:vrchat/pages/notifications_page.dart';
 import 'package:vrchat/pages/osc_page.dart';
 import 'package:vrchat/pages/profile_page.dart';
+import 'package:vrchat/pages/qr_scanner_page.dart';
 import 'package:vrchat/pages/search_page.dart';
 import 'package:vrchat/pages/settings_page.dart';
+import 'package:vrchat/pages/terms_agreement_page.dart';
+import 'package:vrchat/pages/vrcnsync_page.dart';
 import 'package:vrchat/pages/world_detail_page.dart';
 import 'package:vrchat/provider/search_providers.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/navigation_observer.dart';
+import 'package:vrchat/utils/first_launch_utils.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat/widgets/navigation_bar.dart';
 
@@ -144,25 +150,34 @@ final routerProvider = Provider<GoRouter>((ref) {
       VRChatNavigationObserver(ref.read(navigationIndexProvider.notifier)),
       analyticsObserver, // Firebase Analytics Observer
     ],
-    redirect: (context, state) {
-      final isLoginRoute = state.uri.toString() == '/login';
+    redirect: (context, state) async {
+      final location = state.uri.toString();
+      final isLoginRoute = location == '/login';
+      final isTermsRoute = location == '/terms';
 
       // API初期化中は何もしない
       if (isInitializing) {
         return null;
       }
 
+      // 初回起動チェック
+      final shouldShowOnboarding =
+          await FirstLaunchUtils.shouldShowOnboarding();
+      if (shouldShowOnboarding && !isTermsRoute) {
+        return '/terms';
+      }
+
       // 自動ログイン処理中は特別処理
       if (autoLoginState == AutoLoginState.inProgress) {
         // 一時的なロード画面を表示
-        return state.uri.toString() == '/loading' ? null : '/loading';
+        return location == '/loading' ? null : '/loading';
       }
 
       // 認証状態に基づいてリダイレクト
       return authState.when(
         data: (isLoggedIn) {
           // ログインしていない場合はログイン画面へ
-          if (!isLoggedIn && !isLoginRoute) {
+          if (!isLoggedIn && !isLoginRoute && !isTermsRoute) {
             FlutterNativeSplash.remove();
             return '/login';
           }
@@ -176,10 +191,19 @@ final routerProvider = Provider<GoRouter>((ref) {
           return null;
         },
         loading: () => null,
-        error: (_, _) => isLoginRoute ? null : '/login',
+        error: (_, _) => isLoginRoute || isTermsRoute ? null : '/login',
       );
     },
     routes: [
+      // 利用規約同意画面を追加
+      GoRoute(
+        path: '/terms',
+        name: 'terms',
+        builder: (context, state) {
+          _setCurrentScreen(ref, '利用規約同意画面');
+          return const TermsAgreementPage();
+        },
+      ),
       ShellRoute(
         builder: (context, state, child) {
           final location = state.uri.toString();
@@ -309,22 +333,19 @@ final routerProvider = Provider<GoRouter>((ref) {
           return const FavoritesPage();
         },
       ),
-      GoRoute(
-        path: '/event_calendar',
-        name: 'event_calendar',
-        builder: (context, state) {
-          _setCurrentScreen(ref, 'イベントカレンダー');
-          return const EventCalendarPage();
-        },
-      ),
-      GoRoute(
-        path: '/osc',
-        name: 'osc',
-        builder: (context, state) {
-          _setCurrentScreen(ref, 'OSCコントローラー');
-          return const OscPage();
-        },
-      ),
+      // GoRoute(
+      //   path: '/notifications',
+      //   name: 'notifications',
+      //   pageBuilder: (context, state) {
+      //     _setCurrentScreen(ref, '通知画面');
+      //     final immediate =
+      //         (state.extra as Map<String, dynamic>?)?['immediate'] == true;
+      //     if (immediate) {
+      //       return const NoTransitionPage(child: NotificationsPage());
+      //     }
+      //     return const MaterialPage(child: NotificationsPage());
+      //   },
+      // ),
       GoRoute(
         path: '/groups',
         name: 'groups',
@@ -342,11 +363,59 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/inventory',
+        name: 'inventory',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'インベントリ画面');
+          return const InventoryPage();
+        },
+      ),
+      GoRoute(
+        path: '/event_calendar',
+        name: 'event_calendar',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'イベントカレンダー');
+          return const EventCalendarPage();
+        },
+      ),
+      GoRoute(
+        path: '/osc',
+        name: 'osc',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'OSCコントローラー');
+          return const OscPage();
+        },
+      ),
+      GoRoute(
+        path: '/vrcnsync',
+        name: 'vrcnsync',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'VRCNSync');
+          return const VrcnSyncPage();
+        },
+      ),
+      GoRoute(
         path: '/credits',
         name: 'credits',
         builder: (context, state) {
           _setCurrentScreen(ref, 'クレジット画面');
           return const CreditsPage();
+        },
+      ),
+      GoRoute(
+        path: '/engage_card',
+        name: 'engage_card',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'オフ会用画面');
+          return const EngageCardPage();
+        },
+      ),
+      GoRoute(
+        path: '/qr_scanner',
+        name: 'qr_scanner',
+        builder: (context, state) {
+          _setCurrentScreen(ref, 'QRスキャナー画面');
+          return const QrScannerPage();
         },
       ),
     ],

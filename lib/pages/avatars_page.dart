@@ -601,35 +601,33 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Hero(
-                        tag: 'avatar-${avatar.id}',
-                        child: CachedNetworkImage(
-                          imageUrl: avatar.thumbnailImageUrl,
-                          httpHeaders: headers,
-                          cacheManager: JsonCacheManager(),
-                          fit: BoxFit.cover,
-                          placeholder:
-                              (context, url) => Container(
-                                color:
-                                    isDarkMode
-                                        ? Colors.grey[850]
-                                        : Colors.grey[200],
-                                child: const Center(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
+                      CachedNetworkImage(
+                        imageUrl: avatar.thumbnailImageUrl,
+                        httpHeaders: headers,
+                        cacheManager: JsonCacheManager(),
+                        fit: BoxFit.cover,
+                        placeholder:
+                            (context, url) => Container(
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[850]
+                                      : Colors.grey[200],
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
                                 ),
                               ),
-                          errorWidget:
-                              (context, url, error) => Container(
-                                color:
-                                    isDarkMode
-                                        ? Colors.grey[850]
-                                        : Colors.grey[200],
-                                child: const Icon(Icons.broken_image),
-                              ),
-                        ),
+                            ),
+                        errorWidget:
+                            (context, url, error) => Container(
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[850]
+                                      : Colors.grey[200],
+                              child: const Icon(Icons.broken_image),
+                            ),
                       ),
+
                       Positioned(
                         bottom: 0,
                         left: 0,

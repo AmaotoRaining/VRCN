@@ -8,6 +8,7 @@ import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/utils/status_helpers.dart';
+import 'package:vrchat/widgets/feedback_dialog.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
 class AppDrawer extends ConsumerWidget {
@@ -68,10 +69,6 @@ class AppDrawer extends ConsumerWidget {
                       isDarkMode
                           ? const Color(0xFF1A1F2C).withValues(alpha: 0.9)
                           : Colors.white.withValues(alpha: 0.9),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(32),
-                    topRight: Radius.circular(0),
-                  ),
                 ),
                 child: ClipRRect(
                   borderRadius: const BorderRadius.only(
@@ -81,7 +78,7 @@ class AppDrawer extends ConsumerWidget {
                     physics: const BouncingScrollPhysics(),
                     child: Column(
                       children: [
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 6),
 
                         // メインナビゲーション
                         _buildNavigationSection(
@@ -120,6 +117,17 @@ class AppDrawer extends ConsumerWidget {
                                 Navigator.pop(context);
                               },
                             ),
+                            // _MenuItem(
+                            //   icon: Icons.notifications,
+                            //   title: 'フレンドログ',
+                            //   isSelected: GoRouterState.of(
+                            //     context,
+                            //   ).uri.path.startsWith('/notifications'),
+                            //   onTap: () {
+                            //     context.push('/notifications');
+                            //     Navigator.pop(context);
+                            //   },
+                            // ),
                             _MenuItem(
                               icon: Icons.calendar_month,
                               title: 'イベントカレンダー',
@@ -173,6 +181,17 @@ class AppDrawer extends ConsumerWidget {
                                 Navigator.pop(context);
                               },
                             ),
+                            _MenuItem(
+                              icon: Icons.inventory,
+                              title: 'インベントリ',
+                              isSelected: GoRouterState.of(
+                                context,
+                              ).uri.path.startsWith('/inventory'),
+                              onTap: () {
+                                context.push('/inventory');
+                                Navigator.pop(context);
+                              },
+                            ),
                           ],
                         ),
 
@@ -182,6 +201,29 @@ class AppDrawer extends ConsumerWidget {
                           context: context,
                           isDarkMode: isDarkMode,
                           items: [
+                            _MenuItem(
+                              imagePath: 'assets/images/logo.png',
+                              title: 'VRCNSync (β)',
+                              isSelected:
+                                  GoRouterState.of(context).uri.path ==
+                                  '/vrcnsync',
+                              onTap: () {
+                                context.push('/vrcnsync');
+                                Navigator.pop(context);
+                              },
+                            ),
+                            _MenuItem(
+                              icon: Icons.feedback_outlined,
+                              title: 'フィードバック',
+                              isSelected: false,
+                              onTap: () {
+                                Navigator.pop(context);
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => const FeedbackDialog(),
+                                );
+                              },
+                            ),
                             _MenuItem(
                               icon: Icons.settings_rounded,
                               title: '設定',
@@ -234,33 +276,11 @@ class AppDrawer extends ConsumerWidget {
     );
   }
 
-  // ナビゲーションセクション
-  Widget _buildNavigationSection({
-    required BuildContext context,
-    required bool isDarkMode,
-    required List<_MenuItem> items,
-  }) {
-    return Column(
-      children:
-          items
-              .map(
-                (item) => _buildAnimatedMenuItem(
-                  context: context,
-                  icon: item.icon,
-                  title: item.title,
-                  isSelected: item.isSelected,
-                  onTap: item.onTap,
-                  isDarkMode: isDarkMode,
-                ),
-              )
-              .toList(),
-    );
-  }
-
   // アニメーション付きメニュー項目
   Widget _buildAnimatedMenuItem({
     required BuildContext context,
-    required IconData icon,
+    required IconData? icon,
+    String? imagePath,
     required String title,
     required bool isSelected,
     required VoidCallback onTap,
@@ -273,7 +293,7 @@ class AppDrawer extends ConsumerWidget {
         isDarkMode ? Colors.grey[300] : Colors.grey[800];
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color:
             isSelected
@@ -290,10 +310,10 @@ class AppDrawer extends ConsumerWidget {
           highlightColor: selectedColor.withValues(alpha: 0.05),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: Row(
               children: [
-                // アイコン
+                // アイコンまたは画像
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.all(8),
@@ -316,11 +336,21 @@ class AppDrawer extends ConsumerWidget {
                             ]
                             : null,
                   ),
-                  child: Icon(
-                    icon,
-                    color: isSelected ? Colors.white : unselectedIconColor,
-                    size: 22,
-                  ),
+                  child:
+                      imagePath != null
+                          ? Image.asset(
+                            imagePath,
+                            width: 22,
+                            height: 22,
+                            color:
+                                isSelected ? Colors.white : unselectedIconColor,
+                          )
+                          : Icon(
+                            icon!,
+                            color:
+                                isSelected ? Colors.white : unselectedIconColor,
+                            size: 22,
+                          ),
                 ),
 
                 const SizedBox(width: 10),
@@ -331,8 +361,7 @@ class AppDrawer extends ConsumerWidget {
                     title,
                     style: GoogleFonts.notoSans(
                       fontSize: 15,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: FontWeight.bold,
                       color: isSelected ? selectedColor : unselectedTextColor,
                     ),
                   ),
@@ -341,15 +370,15 @@ class AppDrawer extends ConsumerWidget {
                 // 選択インジケーター
                 if (isSelected)
                   Container(
-                    width: 5,
-                    height: 5,
+                    width: 6,
+                    height: 6,
                     decoration: BoxDecoration(
                       color: selectedColor,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
                           color: selectedColor.withValues(alpha: 0.3),
-                          blurRadius: 4,
+                          blurRadius: 6,
                           spreadRadius: 1,
                         ),
                       ],
@@ -363,6 +392,30 @@ class AppDrawer extends ConsumerWidget {
     );
   }
 
+  // ナビゲーションセクション
+  Widget _buildNavigationSection({
+    required BuildContext context,
+    required bool isDarkMode,
+    required List<_MenuItem> items,
+  }) {
+    return Column(
+      children:
+          items
+              .map(
+                (item) => _buildAnimatedMenuItem(
+                  context: context,
+                  icon: item.icon,
+                  imagePath: item.imagePath,
+                  title: item.title,
+                  isSelected: item.isSelected,
+                  onTap: item.onTap,
+                  isDarkMode: isDarkMode,
+                ),
+              )
+              .toList(),
+    );
+  }
+
   // ヘッダー
   Widget _buildEnhancedHeader(
     BuildContext context,
@@ -373,7 +426,7 @@ class AppDrawer extends ConsumerWidget {
     final statusColor = StatusHelper.getStatusColor(user.status);
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -480,7 +533,7 @@ class AppDrawer extends ConsumerWidget {
               ),
             ),
 
-            const SizedBox(height: 6),
+            const SizedBox(height: 3),
 
             // ユーザー情報
             Column(
@@ -512,6 +565,7 @@ class AppDrawer extends ConsumerWidget {
 
                 // ユーザーID
                 Text(
+                  // ignore: deprecated_member_use
                   '@${user.username}',
                   style: GoogleFonts.notoSans(
                     fontSize: 14,
@@ -561,7 +615,7 @@ class AppDrawer extends ConsumerWidget {
     );
   }
 
-  // スタイリッシュなローディングヘッダー
+  // ローディングヘッダー
   Widget _buildStylishLoadingHeader(BuildContext context, bool isDarkMode) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 50),
@@ -624,7 +678,7 @@ class AppDrawer extends ConsumerWidget {
     );
   }
 
-  // スタイリッシュなエラーヘッダー
+  // エラーヘッダー
   Widget _buildEnhancedErrorHeader(
     BuildContext context,
     WidgetRef ref,
@@ -711,15 +765,20 @@ class AppDrawer extends ConsumerWidget {
 // メニュー項目データクラス
 @immutable
 class _MenuItem {
-  final IconData icon;
+  final IconData? icon;
+  final String? imagePath;
   final String title;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _MenuItem({
-    required this.icon,
+    this.icon,
+    this.imagePath,
     required this.title,
     required this.isSelected,
     required this.onTap,
-  });
+  }) : assert(
+         icon != null || imagePath != null,
+         'icon または imagePath のいずれかが必要です',
+       );
 }

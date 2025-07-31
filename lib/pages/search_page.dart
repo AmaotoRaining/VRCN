@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:vrchat/pages/tabs/avatar_search_tab.dart';
-import 'package:vrchat/pages/tabs/group_search_tab.dart';
-import 'package:vrchat/pages/tabs/user_search_tab.dart';
-import 'package:vrchat/pages/tabs/world_search_tab.dart';
+import 'package:vrchat/pages/tabs/search/avatar_search_tab.dart';
+import 'package:vrchat/pages/tabs/search/group_search_tab.dart';
+import 'package:vrchat/pages/tabs/search/user_search_tab.dart';
+import 'package:vrchat/pages/tabs/search/world_search_tab.dart';
 import 'package:vrchat/provider/search_providers.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 

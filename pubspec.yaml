@@ -1,7 +1,7 @@
 name: vrchat
-description: "VRCN"
+description: "VRCN for VRChat"
 publish_to: "none"
-version: 1.0.3+65
+version: 1.2.1+110
 
 environment:
   sdk: ^3.7.2
@@ -13,17 +13,23 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  # VRChat API
+  # VRChat APIクライアント
   vrchat_dart: ^3.6.0
 
-  # パス
-  path_provider: ^2.0.11
+  # パス操作
+  path_provider: ^2.1.5
+  # デバイス情報取得
+  device_info_plus: ^11.5.0
+  # Apple製品名取得
+  apple_product_name: ^3.6.0
 
+  # 設定保存
   shared_preferences: ^2.5.3
 
-  # Keychain
+  # セキュアストレージ
   flutter_secure_storage: ^9.2.4
 
+  # 状態管理
   flutter_riverpod: ^2.6.1
   riverpod_annotation: ^2.6.1
 
@@ -33,36 +39,37 @@ dependencies:
   # アプリ情報
   package_info_plus: ^8.0.0
 
-  # キャッシュ
+  # 画像キャッシュ
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
 
-  # フォント
+  # Googleフォント
   google_fonts: ^6.2.1
 
-  # アイコン
-  flutter_launcher_icons: ^0.14.3
+  # アイコン切り替え
   flutter_dynamic_icon_plus: ^1.3.1
 
-  # Firebase
-  firebase_core: ^3.13.0
-  firebase_analytics: ^11.4.5
+  # Firebaseコア
+  firebase_core: ^4.0.0
+  # Firebaseアナリティクス
+  firebase_analytics: ^12.0.0
+  # Firebaseパフォーマンス
+  firebase_performance: ^0.11.0
+  # firebase_crashlytics: ^4.3.9
 
-  # スプラッシュ
+  # スプラッシュ画面
   flutter_native_splash: ^2.4.6
 
+  # URL起動
   url_launcher: ^6.3.1
 
   # ローカル通知
   flutter_local_notifications: ^19.1.0
 
-  # 二段階認証
-  otp: ^3.1.3
-
   # 画面遷移
-  go_router: ^15.1.1
+  go_router: ^16.0.0
 
-  # フォーマット
+  # 日付・数値フォーマット
   intl: ^0.20.2
 
   # 共有
@@ -75,32 +82,73 @@ dependencies:
   flutter_staggered_grid_view: ^0.7.0
   flutter_staggered_animations: ^1.1.1
 
-  # ローディング
+  # ローディング用シマー
   shimmer: ^3.0.0
 
-  # ファビコン
+  # ファビコン取得
   favicon: ^1.1.2
 
-  http: ^1.3.0
+  # HTTP通信
+  http: ^1.4.0
 
-  # パレットジェネレーター
+  # パレット抽出
   palette_generator: ^0.3.3+6
+  # 生体認証
   local_auth: ^2.3.0
 
-  # OSC
+  # OSC通信
   osc: ^1.0.0
 
-  # Deeplink
+  # Deeplink対応
   app_links: ^6.4.0
 
+  # タイムゾーン
   timezone: ^0.10.1
 
-  # バッジ
+  # アプリアイコンバッジ
   flutter_app_badge_control: ^0.0.2
 
+  # バックグラウンドサービス
   flutter_background_service: ^5.1.0
-  flutter_background_service_android: ^6.3.0
-  flutter_background_service_ios: ^5.0.3
+
+  # Shorebirdホットアップデート
+  shorebird_code_push: ^2.0.4
+
+  # HTTPクライアント
+  dio: ^5.8.0+1
+
+  # ファイル選択
+  file_picker: ^10.2.0
+
+  # 権限管理
+  permission_handler: ^12.0.1
+
+  # 画像選択
+  image_picker: ^1.1.2
+  # HTTPヘッダー解析
+  http_parser: ^4.1.2
+  # パス操作
+  path: ^1.9.1
+  # ネットワーク情報取得
+  network_info_plus: ^6.1.4
+  # MIMEタイプ判定
+  mime: ^2.0.0
+  # ギャラリー操作
+  gal: ^2.3.2
+  # Bonjour/mDNSサービス
+  nsd: ^4.0.3
+  # QRコード生成
+  qr_flutter: ^4.1.0
+  # QRコードスキャン
+  mobile_scanner: ^7.0.1
+  # 画面輝度制御
+  screen_brightness: ^2.1.5
+  # すりガラスUI
+  liquid_glass_renderer:
+  # 高機能画像表示
+  extended_image: ^10.0.1
+  # 画像トリミング
+  image_cropper: ^9.1.0
 
 dev_dependencies:
   flutter_test:
@@ -109,6 +157,7 @@ dev_dependencies:
   rexios_lints: ^11.0.4
   build_runner: ^2.4.15
   riverpod_generator: ^2.6.5
+  flutter_launcher_icons: ^0.14.3
 
 flutter:
   uses-material-design: true
@@ -116,29 +165,36 @@ flutter:
   generate: true
 
   assets:
+    - path: assets/icons/
     - path: assets/images/
+    - shorebird.yaml
     - path: .env
       flavors:
         - dev
 
-flutter_icons:
+flutter_launcher_icons:
   image_path_android: assets/launcher_icon/android_icon.png
+  # image_path_android: assets/launcher_icon/android_icon_shinra.png
   adaptive_icon_background: "#000000"
   adaptive_icon_foreground: assets/launcher_icon/android_icon.png
+  # adaptive_icon_foreground: assets/launcher_icon/android_icon_shinra.png
   image_path_ios: assets/launcher_icon/ios_icon.png
+  # image_path_ios: assets/launcher_icon/ios_icon_shinra.png
   android: true
   adaptive_icon_padding: true
   min_sdk_android: 30
   ios: true
+  remove_alpha_ios: true
 
 flutter_native_splash:
   color: "#262626"
   image: assets/images/splash.png
   color_dark: "#262626"
   image_dark: assets/images/splash.png
-  fullscreen: true
+  fullscreen: false
   android_12:
     icon_background_color: "#262626"
     image: assets/images/splash.png
     icon_background_color_dark: "#262626"
     image_dark: assets/images/splash.png
+    fullscreen: false

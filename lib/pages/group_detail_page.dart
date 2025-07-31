@@ -388,34 +388,6 @@ class GroupDetailPage extends ConsumerWidget {
               ),
             ),
           ),
-
-          // アクションボタン
-          // SliverToBoxAdapter(
-          //   child: Padding(
-          //     padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
-          //     child: FilledButton.icon(
-          //       onPressed: () {
-          //         // TODO: 参加申請機能を実装
-          //         ScaffoldMessenger.of(
-          //           context,
-          //         ).showSnackBar(const SnackBar(content: Text('参加機能は準備中です')));
-          //       },
-          //       icon: const Icon(Icons.add),
-          //       label: Text(
-          //         'グループに参加申請',
-          //         style: GoogleFonts.notoSans(fontWeight: FontWeight.w600),
-          //       ),
-          //       style: FilledButton.styleFrom(
-          //         padding: const EdgeInsets.symmetric(vertical: 12),
-          //         backgroundColor: Colors.indigo,
-          //         foregroundColor: Colors.white,
-          //         shape: RoundedRectangleBorder(
-          //           borderRadius: BorderRadius.circular(12),
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          // ),
         ],
       ),
     );

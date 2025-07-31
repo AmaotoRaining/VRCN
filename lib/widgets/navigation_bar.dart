@@ -212,7 +212,6 @@ class Navigation extends ConsumerWidget {
           case 1:
             destination = '/search';
           case 2:
-            // allowNsfwがfalseの場合、タブ2は通知画面になる
             destination = allowNsfw ? '/notifications' : '/notifications';
           default:
             destination = '/';

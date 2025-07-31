@@ -214,12 +214,9 @@ class FriendLocationGroup extends ConsumerWidget {
                     effectiveWorldId,
                     statusText,
                     worldPalette,
-                    ref, // ★ refパラメータを追加
+                    ref,
                     occupantCount,
                   ),
-
-                  // フレンド数の表示
-                  _buildFriendCounter(isDarkMode, accentColor),
 
                   // フレンドのリスト
                   _buildFriendList(isDarkMode),
@@ -314,14 +311,11 @@ class FriendLocationGroup extends ConsumerWidget {
             child: Row(
               children: [
                 // サムネイルまたはアイコン
-                Hero(
-                  tag: 'world-${effectiveWorldId ?? locationName}',
-                  child: _buildLocationImage(
-                    thumbnailUrl,
-                    headers,
-                    isDarkMode,
-                    dominantColor,
-                  ),
+                _buildLocationImage(
+                  thumbnailUrl,
+                  headers,
+                  isDarkMode,
+                  dominantColor,
                 ),
 
                 const SizedBox(width: 16),
@@ -662,64 +656,6 @@ class FriendLocationGroup extends ConsumerWidget {
     );
   }
 
-  Widget _buildFriendCounter(bool isDarkMode, Color accentColor) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      child: Row(
-        children: [
-          TweenAnimationBuilder<double>(
-            duration: const Duration(milliseconds: 800),
-            tween: Tween<double>(begin: 0.0, end: 1.0),
-            curve: Curves.elasticOut,
-            builder: (context, value, child) {
-              return Transform.scale(
-                scale: value,
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: accentColor.withValues(alpha: 0.1),
-                        blurRadius: 4,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  ),
-                  child: Icon(Icons.people, size: 16, color: accentColor),
-                ),
-              );
-            },
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'フレンド',
-            style: GoogleFonts.notoSans(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: isDarkMode ? Colors.white70 : Colors.black54,
-            ),
-          ),
-          const Spacer(),
-          TweenAnimationBuilder<int>(
-            duration: const Duration(milliseconds: 1200),
-            tween: IntTween(begin: 0, end: friends.length),
-            builder: (context, value, child) {
-              return Text(
-                '$value人',
-                style: GoogleFonts.notoSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: accentColor,
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildFriendList(bool isDarkMode) {
     return DecoratedBox(

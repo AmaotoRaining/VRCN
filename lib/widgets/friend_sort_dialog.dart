@@ -117,9 +117,21 @@ void showFriendSortOptions(BuildContext context, WidgetRef ref) {
                                 FriendFilter.offline;
                           },
                         ),
-
+                        _buildFilterOption(
+                          context: context,
+                          icon: Icons.favorite_rounded,
+                          title: 'お気に入りのみ',
+                          isSelected: localFilter == FriendFilter.favorite,
+                          isDarkMode: isDarkMode,
+                          onTap: () {
+                            setState(() {
+                              localFilter = FriendFilter.favorite;
+                            });
+                            ref.read(friendFilterProvider.notifier).state =
+                                FriendFilter.favorite;
+                          },
+                        ),
                         const Divider(height: 32, thickness: 1),
-
                         // 並び替えセクションのヘッダー
                         Padding(
                           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dynamic_icon_plus/flutter_dynamic_icon_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vrchat/analytics_repository.dart';
 
 enum AppThemeMode {
   light, // ライトテーマ
@@ -11,26 +12,31 @@ enum AppThemeMode {
 
 // アプリアイコンタイプ
 enum AppIconType {
-  nullbase,
+  nullbase, // あのめあ
   vrcn_icon,
   vrcn_logo,
-  nullkalne,
-  annobu,
+  nullkalne, // カルネ
+  annobu, // ラスク
   kazkiller,
-  miyamoto,
-  le0yuki,
-  ray,
-  hare,
-  aihuru,
-  rea,
-  masukawa,
-  abuki,
-  enadori,
-  roize,
-  r4in,
+  miyamoto, // しなの
+  le0yuki, // 水瀬
+  ray, //
+  hare, // しなの
+  aihuru, // ベルセリナ
+  rea, // るるね
+  masukawa, // 真央
+  abuki, // 銀杏
+  enadori, // マヌカ
+  roize, // しなの
+  r4in, // しなの
+  etoeto, // イルネル
+  pampy, // sio
+  yume, // キプフェル
+  kabi_lun, // Shuan
+  sasami_st // くうた
 }
 
-// アイコン名のマッピング
+// アイコンマッピング
 Map<AppIconType, String> appIconNameMap = {
   AppIconType.nullbase: 'default',
   AppIconType.vrcn_icon: 'vrcn_icon',
@@ -49,6 +55,12 @@ Map<AppIconType, String> appIconNameMap = {
   AppIconType.enadori: 'enadori',
   AppIconType.roize: 'roize',
   AppIconType.r4in: 'r4in',
+  AppIconType.etoeto: 'etoeto',
+  AppIconType.pampy: 'pampy',
+  AppIconType.yume: 'yume',
+  AppIconType.kabi_lun: 'kabi_lun',
+  AppIconType.sasami_st: 'sasami_st',
+
 };
 
 // 設定データモデル
@@ -251,6 +263,15 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       // 状態を更新
       await prefs.setInt('appIcon', iconType.index);
       state = state.copyWith(appIcon: iconType);
+
+      // アナリティクスにログを記録
+      final iconName = appIconNameMap[iconType] ?? 'default';
+      final analytics = AnalyticsService();
+      await analytics.logEvent(
+        name: 'app_icon_changed',
+        parameters: {'icon_type': iconName},
+      );
+
       return true;
     } catch (e) {
       // エラー発生時
