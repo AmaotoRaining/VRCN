@@ -93,7 +93,7 @@ dependencies:
   http: ^1.4.0
 
   # パレット抽出
-  material_color_utilities: ^0.13.0
+  material_color_utilities: ^0.11.1
 
   # 生体認証
   local_auth: ^2.3.0
