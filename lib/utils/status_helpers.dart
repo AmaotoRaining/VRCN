@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
 /// VRChatのユーザーステータスに関するヘルパー関数を提供するクラス
@@ -27,17 +28,17 @@ class StatusHelper {
   static String getStatusText(UserStatus? status) {
     switch (status) {
       case UserStatus.active:
-        return 'オンライン';
+        return t.status.active;
       case UserStatus.joinMe:
-        return 'だれでもおいで';
+        return t.status.joinMe;
       case UserStatus.askMe:
-        return 'きいてみてね';
+        return t.status.askMe;
       case UserStatus.busy:
-        return '取り込み中';
+        return t.status.busy;
       case UserStatus.offline:
-        return 'オフライン';
+        return t.status.offline;
       default:
-        return 'ステータス不明';
+        return t.status.unknown;
     }
   }
 

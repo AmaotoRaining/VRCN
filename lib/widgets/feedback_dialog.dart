@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/services/feedback_service.dart';
 import 'package:vrchat/theme/app_theme.dart';
 
@@ -14,10 +15,10 @@ class FeedbackDialog extends ConsumerStatefulWidget {
 class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  var _selectedType = 'バグ報告';
+  var _selectedType = 'bug'; // 多言語化用のキー
   var _isLoading = false;
 
-  final _feedbackTypes = <String>['バグ報告', '機能要望', '改善提案', 'その他'];
+  final _feedbackTypes = <String>['bug', 'feature', 'improvement', 'other'];
 
   @override
   void dispose() {
@@ -49,7 +50,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
           ),
           const SizedBox(width: 12),
           Text(
-            'フィードバック',
+            t.feedback.title,
             style: GoogleFonts.notoSans(
               fontWeight: FontWeight.bold,
               color: isDarkMode ? Colors.white : Colors.black87,
@@ -66,7 +67,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
             children: [
               // フィードバックタイプ選択
               Text(
-                'フィードバックタイプ',
+                t.feedback.type,
                 style: GoogleFonts.notoSans(
                   fontWeight: FontWeight.w600,
                   color: isDarkMode ? Colors.white : Colors.black87,
@@ -102,7 +103,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
                                   color: _getColorForType(type),
                                 ),
                                 const SizedBox(width: 8),
-                                Text(type),
+                                Text(t.feedback.types[type] ?? type),
                               ],
                             ),
                           );
@@ -122,7 +123,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
 
               // タイトル入力
               Text(
-                'タイトル *',
+                t.feedback.inputTitle,
                 style: GoogleFonts.notoSans(
                   fontWeight: FontWeight.w600,
                   color: isDarkMode ? Colors.white : Colors.black87,
@@ -132,7 +133,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
               TextField(
                 controller: _titleController,
                 decoration: InputDecoration(
-                  hintText: '簡潔にお聞かせください',
+                  hintText: t.feedback.inputTitleHint,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -149,7 +150,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
 
               // 詳細説明
               Text(
-                '詳細説明 *',
+                t.feedback.inputDescription,
                 style: GoogleFonts.notoSans(
                   fontWeight: FontWeight.w600,
                   color: isDarkMode ? Colors.white : Colors.black87,
@@ -160,7 +161,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
                 controller: _descriptionController,
                 maxLines: 4,
                 decoration: InputDecoration(
-                  hintText: '詳細な説明をお聞かせください...',
+                  hintText: t.feedback.inputDescriptionHint,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -180,7 +181,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
         TextButton(
           onPressed: _isLoading ? null : () => Navigator.pop(context),
           child: Text(
-            'キャンセル',
+            t.feedback.cancel,
             style: GoogleFonts.notoSans(
               color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
             ),
@@ -206,7 +207,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
                     ),
                   )
                   : Text(
-                    '送信',
+                    t.feedback.send,
                     style: GoogleFonts.notoSans(fontWeight: FontWeight.w600),
                   ),
         ),
@@ -216,13 +217,13 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
 
   IconData _getIconForType(String type) {
     switch (type) {
-      case 'バグ報告':
+      case 'bug':
         return Icons.bug_report;
-      case '機能要望':
+      case 'feature':
         return Icons.lightbulb_outline;
-      case '改善提案':
+      case 'improvement':
         return Icons.trending_up;
-      case 'その他':
+      case 'other':
         return Icons.chat_bubble_outline;
       default:
         return Icons.feedback;
@@ -231,13 +232,13 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
 
   Color _getColorForType(String type) {
     switch (type) {
-      case 'バグ報告':
+      case 'bug':
         return Colors.red;
-      case '機能要望':
+      case 'feature':
         return Colors.green;
-      case '改善提案':
+      case 'improvement':
         return Colors.blue;
-      case 'その他':
+      case 'other':
         return Colors.orange;
       default:
         return Colors.grey;
@@ -249,7 +250,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
         _descriptionController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('タイトルと詳細説明は必須項目です'),
+          content: Text(t.feedback.required),
           backgroundColor: Colors.red,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -277,7 +278,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('フィードバックを送信しました。ありがとうございます！'),
+              content: Text(t.feedback.success),
               backgroundColor: Colors.green,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -287,7 +288,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('フィードバックの送信に失敗しました'),
+              content: Text(t.feedback.fail),
               backgroundColor: Colors.red,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -300,7 +301,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラーが発生しました: ${e.toString()}'),
+            content: Text(t.common.error(error: e.toString())),
             backgroundColor: Colors.red,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),

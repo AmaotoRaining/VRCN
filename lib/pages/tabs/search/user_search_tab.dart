@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/search_providers.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
@@ -102,15 +103,24 @@ class _UserSearchTabState extends ConsumerState<UserSearchTab> {
     );
 
     if (query.isEmpty) {
-      return buildEmptySearchState('ユーザー', Icons.people, isDarkMode);
+      return buildEmptySearchState(
+        t.search.tabs.userSearch.emptyTitle,
+        Icons.people,
+        isDarkMode,
+      );
     }
 
     if (searchState.isLoading && offset == 0) {
-      return const Center(child: LoadingIndicator(message: '検索中...'));
+      return Center(
+        child: LoadingIndicator(message: t.search.tabs.userSearch.searching),
+      );
     }
 
     if (searchState.hasError && cachedResults.isEmpty) {
-      return buildErrorState(searchState.error.toString(), isDarkMode);
+      return buildErrorState(
+        t.search.tabs.userSearch.error(error: searchState.error.toString()),
+        isDarkMode,
+      );
     }
 
     if (cachedResults.isEmpty && !searchState.isLoading) {

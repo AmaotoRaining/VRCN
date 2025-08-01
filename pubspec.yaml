@@ -1,7 +1,7 @@
 name: vrchat
 description: "VRCN for VRChat"
 publish_to: "none"
-version: 1.2.2+111
+version: 1.2.2+112
 
 environment:
   sdk: ^3.7.2
@@ -153,6 +153,15 @@ dependencies:
   in_app_review: ^2.0.10
   # ウォレット
   flutter_wallet_card: ^4.0.4
+
+  # 多言語化
+  slang: ^4.7.3
+  slang_flutter: ^4.7.0
+
+  # 画像ビュー
+  photo_view: ^0.15.0
+  # 音楽再生
+  audioplayers: ^6.5.0
 
 dev_dependencies:
   flutter_test:

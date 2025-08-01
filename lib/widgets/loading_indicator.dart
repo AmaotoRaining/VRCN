@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 
 class LoadingIndicator extends StatefulWidget {
   final String message;
 
-  const LoadingIndicator({super.key, this.message = '読み込み中...'});
+  const LoadingIndicator({super.key, this.message = ''});
 
   @override
   State<LoadingIndicator> createState() => _LoadingIndicatorState();
@@ -33,7 +34,7 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
         _controller.forward();
       }
     });
-
+    
     // アニメーションを開始
     _controller.forward();
   }
@@ -47,6 +48,8 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).colorScheme.primary;
+    final displayMessage =
+        widget.message.isEmpty ? t.common.loading : widget.message;
 
     return Center(
       child: Column(
@@ -74,7 +77,7 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
 
           // メッセージテキスト
           Text(
-            widget.message,
+            displayMessage,
             style: GoogleFonts.notoSans(
               fontSize: 16,
               fontWeight: FontWeight.w500,

@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
@@ -12,7 +13,7 @@ import 'package:vrchat_dart/vrchat_dart.dart';
 class FriendListItem extends ConsumerWidget {
   final LimitedUser friend;
   final VoidCallback onTap;
-  final bool compact; // コンパクト表示モード（ロケーション情報を非表示）
+  final bool compact;
 
   const FriendListItem({
     super.key,
@@ -211,7 +212,7 @@ class FriendListItem extends ConsumerWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'プライベート',
+                                t.friends.private,
                                 style: GoogleFonts.notoSans(
                                   fontSize: 12,
                                   color:

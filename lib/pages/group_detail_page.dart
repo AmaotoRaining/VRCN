@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/group_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
@@ -28,10 +29,10 @@ class GroupDetailPage extends ConsumerWidget {
     return Scaffold(
       body: groupDetailAsync.when(
         data: (group) => _buildGroupDetail(context, group, ref, isDarkMode),
-        loading: () => const LoadingIndicator(message: 'グループ情報を読み込み中...'),
+        loading: () => LoadingIndicator(message: t.groupDetail.loading),
         error:
             (error, stackTrace) => ErrorContainer(
-              message: 'グループ情報の取得に失敗しました: ${error.toString()}',
+              message: t.groupDetail.error(error: error.toString()),
               onRetry:
                   () => ref.refresh(
                     groupDetailProvider(
@@ -78,11 +79,10 @@ class GroupDetailPage extends ConsumerWidget {
                 isDarkMode
                     ? Colors.indigo.withValues(alpha: .8)
                     : Colors.indigo,
-            // 共有ボタンを追加
             actions: [
               IconButton(
                 icon: const Icon(Icons.share_outlined, color: Colors.white),
-                tooltip: 'グループ情報を共有',
+                tooltip: t.groupDetail.share,
                 onPressed: () => _shareGroup(group),
               ),
             ],
@@ -90,7 +90,6 @@ class GroupDetailPage extends ConsumerWidget {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // バナー画像
                   if (group.bannerUrl != null)
                     CachedNetworkImage(
                       imageUrl: group.bannerUrl!,
@@ -115,7 +114,6 @@ class GroupDetailPage extends ConsumerWidget {
                             ),
                           ),
                     ),
-                  // 暗いオーバーレイ
                   Container(color: Colors.black.withValues(alpha: 0.3)),
                 ],
               ),
@@ -208,7 +206,6 @@ class GroupDetailPage extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 名前とID
                         Text(
                           group.name.toString(),
                           style: GoogleFonts.notoSans(
@@ -266,7 +263,9 @@ class GroupDetailPage extends ConsumerWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '${group.memberCount ?? "?"} メンバー',
+                              t.groupDetail.memberCount(
+                                count: (group.memberCount ?? '?').toString(),
+                              ),
                               style: GoogleFonts.notoSans(
                                 fontSize: 14,
                                 color:
@@ -291,7 +290,7 @@ class GroupDetailPage extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                 child: InfoCard(
-                  title: '説明',
+                  title: t.groupDetail.description,
                   icon: Icons.description_outlined,
                   isDarkMode: isDarkMode,
                   customColor: Colors.indigo,
@@ -328,7 +327,7 @@ class GroupDetailPage extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                 child: InfoCard(
-                  title: 'ロール',
+                  title: t.groupDetail.roles,
                   icon: Icons.badge_outlined,
                   isDarkMode: isDarkMode,
                   customColor: Colors.orange,
@@ -346,14 +345,14 @@ class GroupDetailPage extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 30),
               child: InfoCard(
-                title: '基本情報',
+                title: t.groupDetail.basicInfo,
                 icon: Icons.info_outline,
                 isDarkMode: isDarkMode,
                 children: [
                   // 作成日時
                   _buildInfoRow(
                     icon: Icons.calendar_today,
-                    label: '作成日',
+                    label: t.groupDetail.createdAt,
                     value: _formatDate(group.createdAt),
                     isDarkMode: isDarkMode,
                   ),
@@ -362,7 +361,7 @@ class GroupDetailPage extends ConsumerWidget {
                   if (group.ownerId != null)
                     _buildInfoRow(
                       icon: Icons.person,
-                      label: 'オーナー',
+                      label: t.groupDetail.owner,
                       value: group.ownerId!,
                       isDarkMode: isDarkMode,
                     ),
@@ -371,7 +370,7 @@ class GroupDetailPage extends ConsumerWidget {
                   if (group.rules != null && group.rules!.isNotEmpty)
                     _buildInfoRow(
                       icon: Icons.gavel,
-                      label: 'ルール',
+                      label: t.groupDetail.rules,
                       value: group.rules!,
                       isDarkMode: isDarkMode,
                     ),
@@ -380,7 +379,7 @@ class GroupDetailPage extends ConsumerWidget {
                   if (group.languages != null && group.languages!.isNotEmpty)
                     _buildInfoRow(
                       icon: Icons.language,
-                      label: '言語',
+                      label: t.groupDetail.languages,
                       value: group.languages!.join(', '),
                       isDarkMode: isDarkMode,
                     ),
@@ -420,7 +419,7 @@ class GroupDetailPage extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  role.name ?? 'Unknown',
+                  role.name ?? t.groupDetail.role.unknown,
                   style: GoogleFonts.notoSans(
                     fontSize: 14,
                     color: Colors.white,
@@ -440,7 +439,7 @@ class GroupDetailPage extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    '管理者',
+                    t.groupDetail.role.admin,
                     style: GoogleFonts.notoSans(
                       fontSize: 12,
                       color: Colors.white,
@@ -521,16 +520,16 @@ class GroupDetailPage extends ConsumerWidget {
   String _getGroupPrivacyText(String? privacy) {
     switch (privacy?.toLowerCase()) {
       case 'default':
-        return '公開';
+        return t.groupDetail.privacy.public;
       case 'private':
-        return '非公開';
+        return t.groupDetail.privacy.private;
       case 'friends':
-        return 'フレンド';
+        return t.groupDetail.privacy.friends;
       case 'invite':
       case 'invite+':
-        return '招待制';
+        return t.groupDetail.privacy.invite;
       default:
-        return privacy ?? '不明';
+        return t.groupDetail.privacy.unknown;
     }
   }
 
@@ -567,7 +566,7 @@ class GroupDetailPage extends ConsumerWidget {
 
   // 日付フォーマット
   String _formatDate(DateTime? date) {
-    if (date == null) return '不明';
+    if (date == null) return t.groupDetail.privacy.unknown;
 
     final year = date.year;
     final month = date.month.toString().padLeft(2, '0');

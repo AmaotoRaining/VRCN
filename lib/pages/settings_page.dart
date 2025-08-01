@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/auth_storage_provider.dart';
 import 'package:vrchat/provider/cache_provider.dart';
 import 'package:vrchat/provider/event_reminder_provider.dart';
@@ -101,7 +102,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 flexibleSpace: FlexibleSpaceBar(
                   titlePadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
                   title: Text(
-                    '設定',
+                    t.common.settings,
                     style: GoogleFonts.notoSans(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -120,7 +121,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                       children: [
                         // アプリ外観設定
                         _buildSettingsSection(
-                              title: '外観',
+                              title: t.settings.appearance,
                               icon: Icons.palette_outlined,
                               iconColor: const Color(0xFF8E8CD8),
                               backgroundColor: sectionBgColor,
@@ -146,7 +147,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                         if (Platform.isIOS) ...[
                           // アプリアイコン設定 (iOS限定)
                           _buildSettingsSection(
-                                title: 'アプリアイコン',
+                                title: t.settings.appIcon,
                                 icon: Icons.app_settings_alt_outlined,
                                 iconColor: const Color(0xFF52B69A),
                                 backgroundColor: sectionBgColor,
@@ -173,7 +174,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
                         // コンテンツ設定
                         _buildSettingsSection(
-                              title: 'コンテンツ設定',
+                              title: t.settings.contentSettings,
                               icon: Icons.content_paste_outlined,
                               iconColor: const Color(0xFFE76F51),
                               backgroundColor: sectionBgColor,
@@ -185,15 +186,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                 _buildSwitchSetting(
                                   icon: Icons.search,
                                   iconColor: const Color(0xFFE76F51),
-                                  title: '検索機能を有効',
-                                  subtitle:
-                                      '検索結果に性的なコンテンツや暴力的なコンテンツが表示される可能性があります。',
+                                  title: t.settings.enableSearch,
+                                  subtitle: t.settings.enableSearchDescription,
                                   value: settings.allowNsfw,
                                   onChanged: (value) {
                                     ref
                                         .read(settingsProvider.notifier)
                                         .setAllowNsfw(value);
-                                    _showNsfwToast(context, value);
+                                    _showNsfwToast(context, value, t);
                                   },
                                   textColor: textColor,
                                   secondaryTextColor: secondaryTextColor,
@@ -216,7 +216,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
                         // 通知設定
                         _buildSettingsSection(
-                              title: '通知設定',
+                              title: t.settings.notifications,
                               icon: Icons.notifications_outlined,
                               iconColor: const Color(0xFF3A86FF),
                               backgroundColor: sectionBgColor,
@@ -228,8 +228,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                 _buildSwitchSetting(
                                   icon: Icons.event_available,
                                   iconColor: const Color(0xFF3A86FF),
-                                  title: 'イベントリマインダー',
-                                  subtitle: '設定したイベントの開始前に通知を受け取ります',
+                                  title: t.settings.eventReminder,
+                                  subtitle: t.settings.eventReminderDescription,
                                   value: settings.enableEventReminders,
                                   onChanged: (value) {
                                     ref
@@ -258,7 +258,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
                         // データとストレージ
                         _buildSettingsSection(
-                              title: 'データとストレージ',
+                              title: t.settings.dataStorage,
                               icon: Icons.storage_outlined,
                               iconColor: const Color(0xFF2A9D8F),
                               backgroundColor: sectionBgColor,
@@ -283,7 +283,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                         // アプリ情報
                         if (_packageInfo != null)
                           _buildSettingsSection(
-                                title: 'アプリ情報',
+                                title: t.settings.appInfo,
                                 icon: Icons.info_outline,
                                 iconColor: const Color(0xFF9381FF),
                                 backgroundColor: sectionBgColor,
@@ -295,7 +295,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                   _buildInfoItem(
                                     icon: Icons.tag,
                                     iconColor: const Color(0xFF9381FF),
-                                    title: 'バージョン',
+                                    title: t.settings.version,
                                     value:
                                         '${_packageInfo!.version} (${_packageInfo!.buildNumber})',
                                     textColor: textColor,
@@ -305,7 +305,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                     _buildInfoItem(
                                       icon: Icons.code,
                                       iconColor: const Color(0xFF9381FF),
-                                      title: 'パッケージ名',
+                                      title: t.settings.packageName,
                                       value: _packageInfo!.packageName,
                                       textColor: textColor,
                                       secondaryTextColor: secondaryTextColor,
@@ -315,8 +315,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                   _buildLinkItem(
                                     icon: Icons.person,
                                     iconColor: const Color(0xFF9381FF),
-                                    title: 'クレジット',
-                                    subtitle: '開発者・貢献者情報',
+                                    title: t.settings.credit,
+                                    subtitle: t.settings.creditDescription,
                                     onTap: () => context.push('/credits'),
                                     textColor: textColor,
                                     secondaryTextColor: secondaryTextColor,
@@ -324,8 +324,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                   _buildLinkItem(
                                     icon: Icons.email_outlined,
                                     iconColor: const Color(0xFF9381FF),
-                                    title: 'お問い合わせ',
-                                    subtitle: '不具合報告・ご意見はこちら',
+                                    title: t.settings.contact,
+                                    subtitle: t.settings.contactDescription,
                                     onTap:
                                         () => _launchURL(
                                           'https://discord.gg/wNgbkdXq6M',
@@ -336,8 +336,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                   _buildLinkItem(
                                     icon: Icons.security_outlined,
                                     iconColor: const Color(0xFF9381FF),
-                                    title: 'プライバシーポリシー',
-                                    subtitle: '個人情報の取り扱いについて',
+                                    title: t.settings.privacyPolicy,
+                                    subtitle:
+                                        t.settings.privacyPolicyDescription,
                                     onTap:
                                         () => _launchURL(
                                           'https://null-base.com/vrcn/privacy-policy/',
@@ -348,8 +349,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                   _buildLinkItem(
                                     icon: Icons.description_outlined,
                                     iconColor: const Color(0xFF9381FF),
-                                    title: '利用規約',
-                                    subtitle: 'アプリのご利用条件',
+                                    title: t.settings.termsOfService,
+                                    subtitle:
+                                        t.settings.termsOfServiceDescription,
                                     onTap:
                                         () => _launchURL(
                                           'https://null-base.com/vrcn/terms-of-service',
@@ -360,8 +362,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                   _buildLinkItem(
                                     icon: Icons.code_outlined,
                                     iconColor: const Color(0xFF9381FF),
-                                    title: 'オープンソース情報',
-                                    subtitle: '使用しているライブラリ等のライセンス',
+                                    title: t.settings.openSource,
+                                    subtitle: t.settings.openSourceDescription,
                                     onTap: _showLicenses,
                                     textColor: textColor,
                                     secondaryTextColor: secondaryTextColor,
@@ -369,8 +371,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                   _buildLinkItem(
                                     icon: Icons.code_rounded,
                                     iconColor: const Color(0xFF9381FF),
-                                    title: 'GitHubリポジトリ',
-                                    subtitle: 'ソースコードを見る',
+                                    title: t.settings.github,
+                                    subtitle: t.settings.githubDescription,
                                     onTap:
                                         () => _launchURL(
                                           'https://github.com/null-base/vrcn',
@@ -526,7 +528,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'テーマモード',
+                      t.settings.themeMode,
                       style: GoogleFonts.notoSans(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -535,7 +537,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'アプリの表示テーマを選択できます',
+                      t.settings.themeModeDescription,
                       style: GoogleFonts.notoSans(
                         fontSize: 13,
                         color: secondaryTextColor,
@@ -556,7 +558,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildThemeModeOption(
-                  title: '明るい',
+                  title: t.settings.themeLight,
                   icon: Icons.wb_sunny_outlined,
                   isSelected: currentThemeMode == AppThemeMode.light,
                   onTap: () {
@@ -568,7 +570,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   textColor: textColor,
                 ),
                 _buildThemeModeOption(
-                  title: 'システム',
+                  title: t.settings.themeSystem,
                   icon: Icons.settings_brightness,
                   isSelected: currentThemeMode == AppThemeMode.system,
                   onTap: () {
@@ -580,7 +582,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   textColor: textColor,
                 ),
                 _buildThemeModeOption(
-                  title: '暗い',
+                  title: t.settings.themeDark,
                   icon: Icons.nightlight_round,
                   isSelected: currentThemeMode == AppThemeMode.dark,
                   onTap: () {
@@ -763,7 +765,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '設定済みリマインダーの管理',
+                      t.settings.manageReminders,
                       style: GoogleFonts.notoSans(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
@@ -772,7 +774,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '通知のキャンセルや確認ができます',
+                      t.settings.manageRemindersDescription,
                       style: GoogleFonts.notoSans(
                         fontSize: 13,
                         color: secondaryTextColor,
@@ -793,7 +795,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     );
   }
 
-  // API URL設定
+  // API設定
   Widget _buildApiSetting(
     BuildContext context,
     WidgetRef ref,
@@ -817,7 +819,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     borderRadius: BorderRadius.circular(20),
                   ),
                   title: Text(
-                    'アバター検索API',
+                    t.settings.apiSetting,
                     style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
                   ),
                   content: TextField(
@@ -844,7 +846,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: const Text('URLを保存しました'),
+                            content: Text(t.settings.apiSettingSaveUrl),
                             behavior: SnackBarBehavior.floating,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -858,7 +860,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                         ),
                         backgroundColor: AppTheme.primaryColor,
                       ),
-                      child: Text('保存', style: GoogleFonts.notoSans()),
+                      child: Text(t.common.save, style: GoogleFonts.notoSans()),
                     ),
                   ],
                 ),
@@ -888,7 +890,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'アバター検索API',
+                    t.settings.apiSetting,
                     style: GoogleFonts.notoSans(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -898,7 +900,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   const SizedBox(height: 4),
                   Text(
                     ref.watch(settingsProvider).avatarSearchApiUrl.isEmpty
-                        ? '未設定 (アバター検索機能が使用できません)'
+                        ? t.settings.notSet
                         : ref.watch(settingsProvider).avatarSearchApiUrl,
                     style: GoogleFonts.notoSans(
                       fontSize: 13,
@@ -1081,7 +1083,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   const SizedBox(width: 16),
                   Expanded(
                     child: Text(
-                      'お使いのデバイスではアプリアイコンの変更がサポートされていません',
+                      t.settings.iconChangeNotSupported,
                       style: GoogleFonts.notoSans(
                         color: Colors.red.withValues(alpha: 0.8),
                         fontSize: 14,
@@ -1122,7 +1124,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'アプリアイコン',
+                          t.settings.appIcon,
                           style: GoogleFonts.notoSans(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -1131,7 +1133,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'ホーム画面に表示されるアプリのアイコンを変更します',
+                          t.settings.appIconDescription,
                           style: GoogleFonts.notoSans(
                             fontSize: 13,
                             color: secondaryTextColor,
@@ -1155,7 +1157,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     context: context,
                     ref: ref,
                     iconType: AppIconType.nullbase,
-                    label: 'デフォルト',
+                    label: t.settings.appIconDefault,
                     assetPath: 'assets/icons/default.png',
                     isSelected: settings.appIcon == AppIconType.nullbase,
                     isDarkMode: isDarkMode,
@@ -1165,7 +1167,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     context: context,
                     ref: ref,
                     iconType: AppIconType.vrcn_icon,
-                    label: 'アイコン',
+                    label: t.settings.appIconIcon,
                     assetPath: 'assets/icons/vrcn_icon@3x.png',
                     isSelected: settings.appIcon == AppIconType.vrcn_icon,
                     isDarkMode: isDarkMode,
@@ -1175,7 +1177,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     context: context,
                     ref: ref,
                     iconType: AppIconType.vrcn_logo,
-                    label: 'ロゴ',
+                    label: t.settings.appIconLogo,
                     assetPath: 'assets/icons/vrcn_logo@3x.png',
                     isSelected: settings.appIcon == AppIconType.vrcn_logo,
                     isDarkMode: isDarkMode,
@@ -1399,7 +1401,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
         if (!success && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('アイコンの変更に失敗しました'),
+              content: Text(t.settings.iconChangeFailed),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -1536,7 +1538,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'ログアウト',
+                    t.common.logout,
                     style: GoogleFonts.notoSans(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -1553,10 +1555,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
   }
 
   // NSFWトーストを表示
-  void _showNsfwToast(BuildContext context, bool value) {
+  void _showNsfwToast(BuildContext context, bool value, Translations t) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(value ? '検索機能が有効になりました' : '検索機能が無効になりました'),
+        content: Text(
+          value ? t.settings.searchEnabled : t.settings.searchDisabled,
+        ),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -1582,15 +1586,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               borderRadius: BorderRadius.circular(20),
             ),
             title: Text(
-              'ログアウト',
+              t.common.logout,
               style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
             ),
-            content: Text('ログアウトしますか？', style: GoogleFonts.notoSans()),
+            content: Text(
+              t.settings.logoutConfirm,
+              style: GoogleFonts.notoSans(),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
                 child: Text(
-                  'キャンセル',
+                  t.common.cancel,
                   style: GoogleFonts.notoSans(color: Colors.grey[600]),
                 ),
               ),
@@ -1603,7 +1610,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text('ログアウト', style: GoogleFonts.notoSans()),
+                child: Text(t.common.logout, style: GoogleFonts.notoSans()),
               ),
             ],
           ),
@@ -1627,7 +1634,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('ログアウト中にエラーが発生しました: ${e.toString()}'),
+              content: Text(t.settings.logoutError(error: e.toString())),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
@@ -1695,7 +1702,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'キャッシュを削除',
+                    t.settings.clearCache,
                     style: GoogleFonts.notoSans(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -1706,7 +1713,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   cacheSizeAsync.when(
                     data:
                         (size) => Text(
-                          'キャッシュサイズ: $size',
+                          t.settings.cacheSize(size: size),
                           style: GoogleFonts.notoSans(
                             fontSize: 13,
                             color: secondaryTextColor,
@@ -1714,7 +1721,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                         ),
                     loading:
                         () => Text(
-                          'キャッシュサイズを計算中...',
+                          t.settings.calculatingCache,
                           style: GoogleFonts.notoSans(
                             fontSize: 13,
                             color: secondaryTextColor,
@@ -1722,7 +1729,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                         ),
                     error:
                         (_, _) => Text(
-                          'キャッシュサイズを取得できませんでした',
+                          t.settings.cacheError,
                           style: GoogleFonts.notoSans(
                             fontSize: 13,
                             color: Colors.red[300],
@@ -1753,20 +1760,20 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 Icon(Icons.warning_amber_rounded, color: Colors.amber[700]),
                 const SizedBox(width: 12),
                 Text(
-                  'キャッシュを削除',
+                  t.settings.clearCache,
                   style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             content: Text(
-              'キャッシュを削除すると、一時的に保存された画像やデータが削除されます。\n\nアカウント情報やアプリの設定は削除されません。',
+              t.settings.confirmClearCache,
               style: GoogleFonts.notoSans(),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
                 child: Text(
-                  'キャンセル',
+                  t.common.cancel,
                   style: GoogleFonts.notoSans(color: Colors.grey[600]),
                 ),
               ),
@@ -1779,7 +1786,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text('削除する', style: GoogleFonts.notoSans()),
+                child: Text(t.settings.delete, style: GoogleFonts.notoSans()),
               ),
             ],
           ),
@@ -1795,7 +1802,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(success ? 'キャッシュを削除しました' : 'キャッシュの削除中にエラーが発生しました'),
+            content: Text(
+              success
+                  ? t.settings.clearCacheSuccess
+                  : t.settings.clearCacheError,
+            ),
             backgroundColor: success ? Colors.green : Colors.red,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(

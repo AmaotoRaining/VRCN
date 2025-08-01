@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/pages/tabs/inventory/emoji_inventory_tab.dart';
 import 'package:vrchat/pages/tabs/inventory/gallery_inventory_tab.dart';
 import 'package:vrchat/pages/tabs/inventory/icon_inventory_tab.dart';
@@ -68,14 +69,13 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
     if (file == null) return;
 
     await _showUploadDialog(
-      title: 'ギャラリー画像をアップロード中...',
+      title: t.inventory.uploadGallery,
       future: () async {
         final multipartFile = await MultipartFile.fromFile(
           file.path,
           filename: file.name,
           contentType: MediaType.parse('image/png'),
         );
-
         final params = UploadImageParams(file: multipartFile, tag: 'gallery');
         return ref.read(uploadImageProvider(params).future);
       },
@@ -88,15 +88,13 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
     if (file == null) return;
 
     await _showUploadDialog(
-      title: 'アイコンをアップロード中...',
+      title: t.inventory.uploadIcon,
       future: () async {
         final multipartFile = await MultipartFile.fromFile(
           file.path,
           filename: file.name,
           contentType: MediaType.parse('image/png'),
         );
-
-        // 汎用のuploadImageProviderを使用してアイコンをアップロード
         final params = UploadImageParams(file: multipartFile, tag: 'icon');
         return ref.read(uploadImageProvider(params).future);
       },
@@ -109,14 +107,13 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
     if (file == null) return;
 
     await _showUploadDialog(
-      title: '絵文字をアップロード中...',
+      title: t.inventory.uploadEmoji,
       future: () async {
         final multipartFile = await MultipartFile.fromFile(
           file.path,
           filename: file.name,
           contentType: MediaType.parse('image/png'),
         );
-
         final params = UploadImageParams(file: multipartFile, tag: 'emoji');
         return ref.read(uploadImageProvider(params).future);
       },
@@ -129,14 +126,13 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
     if (file == null) return;
 
     await _showUploadDialog(
-      title: 'ステッカーをアップロード中...',
+      title: t.inventory.uploadSticker,
       future: () async {
         final multipartFile = await MultipartFile.fromFile(
           file.path,
           filename: file.name,
           contentType: MediaType.parse('image/png'),
         );
-
         final params = UploadImageParams(file: multipartFile, tag: 'sticker');
         return ref.read(uploadImageProvider(params).future);
       },
@@ -149,14 +145,13 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
     if (file == null) return;
 
     await _showUploadDialog(
-      title: 'プリント画像をアップロード中...',
+      title: t.inventory.uploadPrint,
       future: () async {
         final multipartFile = await MultipartFile.fromFile(
           file.path,
           filename: file.name,
           contentType: MediaType.parse('image/png'),
         );
-
         final params = UploadImageParams(file: multipartFile, tag: 'print');
         return ref.read(uploadImageProvider(params).future);
       },
@@ -173,7 +168,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
       builder:
           (context) => AlertDialog(
             title: Text(
-              '画像を選択',
+              t.inventory.selectImage,
               style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
             ),
             content: Column(
@@ -181,12 +176,18 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
               children: [
                 ListTile(
                   leading: const Icon(Icons.photo_library),
-                  title: Text('ギャラリーから選択', style: GoogleFonts.notoSans()),
+                  title: Text(
+                    t.inventory.selectFromGallery,
+                    style: GoogleFonts.notoSans(),
+                  ),
                   onTap: () => Navigator.pop(context, ImageSource.gallery),
                 ),
                 ListTile(
                   leading: const Icon(Icons.camera_alt),
-                  title: Text('カメラで撮影', style: GoogleFonts.notoSans()),
+                  title: Text(
+                    t.inventory.takePhoto,
+                    style: GoogleFonts.notoSans(),
+                  ),
                   onTap: () => Navigator.pop(context, ImageSource.camera),
                 ),
               ],
@@ -199,12 +200,12 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
     try {
       return await picker.pickImage(source: source);
     } catch (e) {
-      _showErrorSnackBar('画像の選択に失敗しました: $e');
+      _showErrorSnackBar(t.inventory.pickImageFailed(error: e.toString()));
       return null;
     }
   }
 
-  // アップロード進行ダイアログ - エラー詳細表示を追加
+  // アップロード進行ダイアログ
   Future<void> _showUploadDialog({
     required String title,
     required Future<dynamic> Function() future,
@@ -234,26 +235,26 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
 
       if (mounted) {
         Navigator.pop(context); // プログレスダイアログを閉じる
-        _showSuccessSnackBar('アップロードが完了しました');
+        _showSuccessSnackBar(Translations.of(context).inventory.uploadSuccess);
       }
     } catch (e) {
       if (mounted) {
         Navigator.pop(context); // プログレスダイアログを閉じる
 
-        // エラーの詳細情報を取得
-        var errorMessage = 'アップロードに失敗しました';
+        var errorMessage = t.inventory.uploadFailed;
         if (e is DioException) {
           if (e.response?.statusCode == 400) {
-            errorMessage = 'ファイル形式またはサイズに問題があります。PNG形式で1MB以下の画像を選択してください。';
+            errorMessage = t.inventory.uploadFailedFormat;
           } else if (e.response?.statusCode == 401) {
-            errorMessage = '認証に失敗しました。再度ログインしてください。';
+            errorMessage = t.inventory.uploadFailedAuth;
           } else if (e.response?.statusCode == 413) {
-            errorMessage = 'ファイルサイズが大きすぎます。より小さな画像を選択してください。';
+            errorMessage = t.inventory.uploadFailedSize;
           } else {
-            errorMessage = 'サーバーエラーが発生しました (${e.response?.statusCode})';
+            errorMessage = t.inventory.uploadFailedServer(
+              code: int.parse(e.response!.statusCode.toString()),
+            );
           }
         }
-
         _showErrorSnackBar(errorMessage);
       }
     }
@@ -313,7 +314,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
                 backgroundColor:
                     isDarkMode ? const Color(0xFF1A1A1A) : Colors.white,
                 title: Text(
-                  'インベントリ',
+                  t.inventory.title,
                   style: GoogleFonts.notoSans(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -355,14 +356,14 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
                       isDarkMode ? Colors.grey[400] : Colors.grey[600],
                   indicatorSize: TabBarIndicatorSize.label,
                   isScrollable: true,
-                  tabs: const [
+                  tabs: [
                     Tab(
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.photo_library, size: 18),
-                          SizedBox(width: 4),
-                          Text('ギャラリー'),
+                          const Icon(Icons.photo_library, size: 18),
+                          const SizedBox(width: 4),
+                          Text(t.inventory.gallery),
                         ],
                       ),
                     ),
@@ -370,9 +371,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.account_circle, size: 18),
-                          SizedBox(width: 4),
-                          Text('アイコン'),
+                          const Icon(Icons.account_circle, size: 18),
+                          const SizedBox(width: 4),
+                          Text(t.inventory.icon),
                         ],
                       ),
                     ),
@@ -380,9 +381,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.emoji_emotions, size: 18),
-                          SizedBox(width: 4),
-                          Text('絵文字'),
+                          const Icon(Icons.emoji_emotions, size: 18),
+                          const SizedBox(width: 4),
+                          Text(t.inventory.emoji),
                         ],
                       ),
                     ),
@@ -390,9 +391,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.sticky_note_2, size: 18),
-                          SizedBox(width: 4),
-                          Text('ステッカー'),
+                          const Icon(Icons.sticky_note_2, size: 18),
+                          const SizedBox(width: 4),
+                          Text(t.inventory.sticker),
                         ],
                       ),
                     ),
@@ -400,9 +401,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.print, size: 18),
-                          SizedBox(width: 4),
-                          Text('プリント'),
+                          const Icon(Icons.print, size: 18),
+                          const SizedBox(width: 4),
+                          Text(t.inventory.print),
                         ],
                       ),
                     ),
@@ -425,7 +426,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
         onPressed: _handleUpload,
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
-        tooltip: 'ファイルをアップロード',
+        tooltip: t.inventory.upload,
         child: const Icon(Icons.add),
       ),
     );

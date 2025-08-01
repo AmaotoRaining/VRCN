@@ -15,6 +15,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vrchat/analytics_repository.dart';
 import 'package:vrchat/firebase_options.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/event_reminder_provider.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/provider/streaming_provider.dart';
@@ -26,21 +27,14 @@ import 'package:vrchat/widgets/loading_indicator.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await LocaleSettings.useDeviceLocale();
+
   // スプラッシュ画面
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   // Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  // クラッシュハンドラ
-  // FlutterError.onError = (errorDetails) {
-  //   FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-  // };
-  // PlatformDispatcher.instance.onError = (error, stack) {
-  //   FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-  //   return true;
-  // };
 
   // システムUIの設定
   SystemChrome.setSystemUIOverlayStyle(
@@ -91,7 +85,10 @@ Future<void> main() async {
   }
 
   runApp(
-    UncontrolledProviderScope(container: container, child: const VRChatApp()),
+    UncontrolledProviderScope(
+      container: container,
+      child: TranslationProvider(child: const VRChatApp()),
+    ),
   );
 }
 
@@ -172,7 +169,7 @@ class _VRChatAppState extends ConsumerState<VRChatApp>
   }
 
   void _handleIncomingLink(Uri uri) {
-    if (uri.scheme == 'vrcn' && uri.host == 'avatar-api-url') {
+    if (uri.scheme == 'vrcn' && uri.host == 'avatar-api') {
       final apiUrl = uri.queryParameters['url'];
       if (apiUrl != null && apiUrl.isNotEmpty) {
         ref.read(settingsProvider.notifier).setAvatarSearchApiUrl(apiUrl);
@@ -265,12 +262,9 @@ class _VRChatAppState extends ConsumerState<VRChatApp>
     // ルーター使用かホーム画面使用かで分岐
     if (useRouter && router != null) {
       return MaterialApp.router(
-        supportedLocales: const [Locale('ja')],
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
+        locale: TranslationProvider.of(context).flutterLocale,
+        supportedLocales: AppLocaleUtils.supportedLocales,
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
@@ -281,12 +275,9 @@ class _VRChatAppState extends ConsumerState<VRChatApp>
     }
 
     return MaterialApp(
-      supportedLocales: const [Locale('ja')],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      locale: TranslationProvider.of(context).flutterLocale,
+      supportedLocales: AppLocaleUtils.supportedLocales,
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

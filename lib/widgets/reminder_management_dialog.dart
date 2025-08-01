@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/event_reminder_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
 
@@ -53,7 +54,7 @@ class ReminderManagementDialog extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      '設定済みリマインダー',
+                      t.eventCalendar.reminderSetDone,
                       style: GoogleFonts.notoSans(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
@@ -85,7 +86,7 @@ class ReminderManagementDialog extends ConsumerWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        '設定済みのリマインダーはありません',
+                        t.reminder.noReminders,
                         style: GoogleFonts.notoSans(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -96,7 +97,7 @@ class ReminderManagementDialog extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'イベントページから通知を設定できます',
+                        t.reminder.setFromEvent,
                         style: GoogleFonts.notoSans(
                           fontSize: 14,
                           color:
@@ -167,7 +168,10 @@ class ReminderManagementDialog extends ConsumerWidget {
                       _showClearAllDialog(context, ref);
                     },
                     icon: const Icon(Icons.delete_outline),
-                    label: Text('すべてのリマインダーを削除', style: GoogleFonts.notoSans()),
+                    label: Text(
+                      t.reminder.deleteAll,
+                      style: GoogleFonts.notoSans(),
+                    ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.red,
                       side: const BorderSide(color: Colors.red),
@@ -209,7 +213,7 @@ class ReminderManagementDialog extends ConsumerWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            '$eventTime 開始',
+            t.reminder.eventStart(time: eventTime),
             style: GoogleFonts.notoSans(
               fontSize: 12,
               color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
@@ -251,7 +255,7 @@ class ReminderManagementDialog extends ConsumerWidget {
               .removeReminder(reminder.eventId, reminder.reminderTime);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('リマインダーを削除しました'),
+              content: Text(t.reminder.deleted),
               backgroundColor: Colors.red[700],
               duration: const Duration(seconds: 2),
             ),
@@ -267,17 +271,17 @@ class ReminderManagementDialog extends ConsumerWidget {
       builder:
           (context) => AlertDialog(
             title: Text(
-              'すべてのリマインダーを削除',
+              t.reminder.deleteAll,
               style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
             ),
             content: Text(
-              '設定したすべてのイベントリマインダーを削除します。この操作は元に戻せません。',
+              t.reminder.deleteAllConfirm,
               style: GoogleFonts.notoSans(),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('キャンセル', style: GoogleFonts.notoSans()),
+                child: Text(t.reminder.cancel, style: GoogleFonts.notoSans()),
               ),
               TextButton(
                 onPressed: () {
@@ -288,14 +292,14 @@ class ReminderManagementDialog extends ConsumerWidget {
                   Navigator.pop(context); // 管理ダイアログも閉じる
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('すべてのリマインダーを削除しました'),
+                      content: Text(t.reminder.deletedAll),
                       backgroundColor: Colors.red[700],
                       duration: const Duration(seconds: 2),
                     ),
                   );
                 },
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: Text('削除する', style: GoogleFonts.notoSans()),
+                child: Text(t.reminder.delete, style: GoogleFonts.notoSans()),
               ),
             ],
           ),

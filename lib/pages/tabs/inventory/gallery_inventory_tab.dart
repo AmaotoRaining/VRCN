@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/files_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -51,10 +52,15 @@ class _GalleryInventoryTabState extends ConsumerState<GalleryInventoryTab>
 
           return _buildFilesGrid(files, headers, isDarkMode);
         },
-        loading: () => const LoadingIndicator(message: 'ギャラリーを読み込み中...'),
+        loading:
+            () => LoadingIndicator(
+              message: t.inventory.tabs.galleryInventory.loading,
+            ),
         error:
             (error, stackTrace) => ErrorContainer(
-              message: 'ギャラリーの取得に失敗しました: $error',
+              message: t.inventory.tabs.galleryInventory.error(
+                error: error.toString(),
+              ),
               onRetry: _refreshFiles,
             ),
       ),
@@ -83,12 +89,21 @@ class _GalleryInventoryTabState extends ConsumerState<GalleryInventoryTab>
             ),
             const SizedBox(height: 32),
             Text(
-              'ギャラリーがありません',
+              t.inventory.tabs.galleryInventory.emptyTitle,
               style: GoogleFonts.notoSans(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: isDarkMode ? Colors.white : Colors.black87,
               ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              t.inventory.tabs.galleryInventory.emptyDescription,
+              style: GoogleFonts.notoSans(
+                fontSize: 16,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -173,6 +188,7 @@ class _GalleryInventoryTabState extends ConsumerState<GalleryInventoryTab>
       ),
     );
   }
+
   // フルスクリーン画像表示
   void _showFullScreenImage(File file, Map<String, String> headers) {
     Navigator.of(context).push(
@@ -271,8 +287,6 @@ class _FullScreenFileViewerState extends State<_FullScreenFileViewer>
     });
     _animationController.forward();
   }
-
-
 
   void _shareFile() {
     final url = widget.file.versions.last.file!.url.toString();
@@ -419,7 +433,7 @@ class _FullScreenFileViewerState extends State<_FullScreenFileViewer>
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'ダブルタップでズーム',
+                  t.inventory.tabs.galleryInventory.zoomHint,
                   style: GoogleFonts.notoSans(
                     fontSize: 12,
                     color: Colors.white,

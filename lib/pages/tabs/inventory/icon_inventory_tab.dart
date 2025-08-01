@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/files_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -47,13 +48,17 @@ class _IconInventoryTabState extends ConsumerState<IconInventoryTab>
           if (files.isEmpty) {
             return _buildEmptyState(isDarkMode);
           }
-
           return _buildFilesGrid(files, headers, isDarkMode);
         },
-        loading: () => const LoadingIndicator(message: 'アイコンを読み込み中...'),
+        loading:
+            () => LoadingIndicator(
+              message: t.inventory.tabs.iconInventory.loading,
+            ),
         error:
             (error, stackTrace) => ErrorContainer(
-              message: 'アイコンの取得に失敗しました: $error',
+              message: t.inventory.tabs.iconInventory.error(
+                error: error.toString(),
+              ),
               onRetry: _refreshFiles,
             ),
       ),
@@ -82,7 +87,7 @@ class _IconInventoryTabState extends ConsumerState<IconInventoryTab>
             ),
             const SizedBox(height: 32),
             Text(
-              'アイコンがありません',
+              t.inventory.tabs.iconInventory.emptyTitle,
               style: GoogleFonts.notoSans(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -91,7 +96,7 @@ class _IconInventoryTabState extends ConsumerState<IconInventoryTab>
             ),
             const SizedBox(height: 16),
             Text(
-              'VRChatでアップロードしたアイコンがここに表示されます',
+              t.inventory.tabs.iconInventory.emptyDescription,
               style: GoogleFonts.notoSans(
                 fontSize: 16,
                 color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
@@ -409,7 +414,7 @@ class _FullScreenFileViewerState extends State<_FullScreenFileViewer>
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'ダブルタップでズーム',
+                  t.inventory.tabs.iconInventory.zoomHint,
                   style: GoogleFonts.notoSans(
                     fontSize: 12,
                     color: Colors.white,

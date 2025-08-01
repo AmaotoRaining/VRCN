@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/models/vrcnsync_models.dart';
 import 'package:vrchat/provider/vrcnsync_provider.dart';
 import 'package:vrchat/services/photo_save_service.dart';
@@ -68,7 +69,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                savedToAlbum ? '写真をVRCNアルバムに保存しました' : '写真を受信しました（アルバム保存に失敗）',
+                savedToAlbum ? t.vrcnsync.photoSaved : t.vrcnsync.photoReceived,
                 style: GoogleFonts.notoSans(),
               ),
             ),
@@ -79,7 +80,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         action: SnackBarAction(
-          label: savedToAlbum ? 'アルバムを開く' : '確認',
+          label: savedToAlbum ? t.vrcnsync.openAlbum : t.common.confirm,
           textColor: Colors.white,
           onPressed: () {
             if (savedToAlbum) {
@@ -100,7 +101,10 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('フォトアプリを開けませんでした', style: GoogleFonts.notoSans()),
+            content: Text(
+              t.vrcnsync.openPhotoAppError,
+              style: GoogleFonts.notoSans(),
+            ),
             backgroundColor: Colors.orange.shade600,
           ),
         );
@@ -117,7 +121,9 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                Platform.isIOS ? 'フォトライブラリへのアクセス権限が必要です' : 'ストレージへのアクセス権限が必要です',
+                Platform.isIOS
+                    ? t.vrcnsync.permissionErrorIos
+                    : t.vrcnsync.permissionErrorAndroid,
                 style: GoogleFonts.notoSans(),
               ),
             ),
@@ -126,8 +132,8 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
         backgroundColor: Colors.red.shade600,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        action: const SnackBarAction(
-          label: '設定を開く',
+        action: SnackBarAction(
+          label: t.vrcnsync.openSettings,
           textColor: Colors.white,
           onPressed: openAppSettings,
         ),
@@ -144,7 +150,10 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
             const Icon(Icons.error, color: Colors.white),
             const SizedBox(width: 12),
             Expanded(
-              child: Text('初期化に失敗しました: $error', style: GoogleFonts.notoSans()),
+              child: Text(
+                t.vrcnsync.initError(error: error),
+                style: GoogleFonts.notoSans(),
+              ),
             ),
           ],
         ),
@@ -171,16 +180,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
               fontWeight: FontWeight.bold,
               fontSize: 20,
             ),
-            children: [
-              const TextSpan(text: 'VRCNSync'),
-              TextSpan(
-                text: ' (β)',
-                style: TextStyle(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.8),
-                  fontSize: 16,
-                ),
-              ),
-            ],
+            children: [TextSpan(text: t.vrcnsync.title)],
           ),
         ),
         centerTitle: true,
@@ -194,7 +194,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // ベータ版の警告
-              _buildBetaWarningCard(isDarkMode),
+              _buildBetaWarningCard(isDarkMode, t),
 
               const SizedBox(height: 16),
 
@@ -228,7 +228,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'VRCNSyncのGitHubページ',
+                            t.vrcnsync.githubLink,
                             style: GoogleFonts.notoSans(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -264,17 +264,17 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
                 ),
 
               // サーバーステータス
-              _buildServerStatusCard(syncStatus, isDarkMode),
+              _buildServerStatusCard(syncStatus, isDarkMode, t),
 
               const SizedBox(height: 16),
 
               // 使用方法カード
-              _buildUsageCard(isDarkMode),
+              _buildUsageCard(isDarkMode, t),
 
               const SizedBox(height: 16),
 
               // 統計情報カード
-              _buildStatsCard(syncStatus, isDarkMode),
+              _buildStatsCard(syncStatus, isDarkMode, t),
 
               // 下部に余白を追加
               const SizedBox(height: 16),
@@ -285,7 +285,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
     );
   }
 
-  Widget _buildBetaWarningCard(bool isDarkMode) {
+  Widget _buildBetaWarningCard(bool isDarkMode, Translations t) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -311,7 +311,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'ベータ版機能',
+                    t.vrcnsync.betaTitle,
                     style: GoogleFonts.notoSans(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -320,7 +320,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'この機能は開発中のベータ版です。予期せぬ問題が発生する可能性があります。\n現在はローカルのみの実装ですが、クラウド版が需要があれば実装します。',
+                    t.vrcnsync.betaDescription,
                     style: GoogleFonts.notoSans(
                       fontSize: 13,
                       color:
@@ -338,7 +338,11 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
     );
   }
 
-  Widget _buildServerStatusCard(SyncStatus status, bool isDarkMode) {
+  Widget _buildServerStatusCard(
+    SyncStatus status,
+    bool isDarkMode,
+    Translations t,
+  ) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -372,7 +376,9 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        status.isServerRunning ? 'サーバー実行中' : 'サーバー停止中',
+                        status.isServerRunning
+                            ? t.vrcnsync.serverRunning
+                            : t.vrcnsync.serverStopped,
                         style: GoogleFonts.notoSans(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -382,8 +388,8 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
                       const SizedBox(height: 4),
                       Text(
                         status.isServerRunning
-                            ? 'PCからの写真をVRCNアルバムに保存します'
-                            : 'サーバーが停止しています',
+                            ? t.vrcnsync.serverRunningDesc
+                            : t.vrcnsync.serverStoppedDesc,
                         style: GoogleFonts.notoSans(
                           fontSize: 14,
                           color:
@@ -418,7 +424,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            '受信した写真は「VRCN」アルバムに自動保存されます',
+                            t.vrcnsync.autoSave,
                             style: GoogleFonts.notoSans(
                               fontSize: 13,
                               color: AppTheme.primaryColor,
@@ -446,7 +452,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                'サーバー情報',
+                                t.vrcnsync.serverInfo,
                                 style: GoogleFonts.notoSans(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
@@ -468,7 +474,9 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                'IP: ${status.serverIP ?? "取得中..."}',
+                                t.vrcnsync.ip(
+                                  ip: status.serverIP ?? t.common.loading,
+                                ),
                                 style: GoogleFonts.notoSans(
                                   fontSize: 11,
                                   color:
@@ -492,7 +500,10 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                'ポート: ${status.serverPort ?? "49527"}',
+                                t.vrcnsync.port(
+                                  port:
+                                      status.serverPort?.toString() ?? '49527',
+                                ),
                                 style: GoogleFonts.notoSans(
                                   fontSize: 11,
                                   color:
@@ -518,7 +529,11 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                'http://${status.serverIP}:${status.serverPort}',
+                                t.vrcnsync.address(
+                                  ip: status.serverIP!,
+                                  port: status.serverPort!.toString(),
+                                ),
+
                                 style: GoogleFonts.notoSans(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
@@ -540,7 +555,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
     );
   }
 
-  Widget _buildUsageCard(bool isDarkMode) {
+  Widget _buildUsageCard(bool isDarkMode, Translations t) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -559,7 +574,7 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '使用方法',
+                  t.vrcnsync.usage,
                   style: GoogleFonts.notoSans(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -571,34 +586,96 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
             const SizedBox(height: 12),
             _buildUsageStep(
               '1',
-              'PCでVRCNSyncアプリを起動',
-              'PCでVRCNSyncアプリを起動してください',
+              t.vrcnsync.usageSteps[0].title,
+              t.vrcnsync.usageSteps[0].desc,
               Icons.computer,
               isDarkMode,
             ),
             const SizedBox(height: 8),
             _buildUsageStep(
               '2',
-              '同じWiFiネットワークに接続',
-              'PC・モバイル端末を同じWiFiネットワークに接続してください',
+              t.vrcnsync.usageSteps[1].title,
+              t.vrcnsync.usageSteps[1].desc,
               Icons.wifi,
               isDarkMode,
             ),
             const SizedBox(height: 8),
             _buildUsageStep(
               '3',
-              '接続先にモバイル端末を指定',
-              'PCアプリで上記のIPアドレスとポートを指定してください',
+              t.vrcnsync.usageSteps[2].title,
+              t.vrcnsync.usageSteps[2].desc,
               Icons.settings_ethernet,
               isDarkMode,
             ),
             const SizedBox(height: 8),
             _buildUsageStep(
               '4',
-              '写真を送信',
-              'PCから写真を送信すると、自動的にVRCNアルバムに保存されます',
+              t.vrcnsync.usageSteps[3].title,
+              t.vrcnsync.usageSteps[3].desc,
               Icons.photo_album,
               isDarkMode,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsCard(SyncStatus status, bool isDarkMode, Translations t) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: isDarkMode ? Colors.grey[850] : Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.analytics,
+                  color: AppTheme.primaryColor,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  t.vrcnsync.stats,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? Colors.white : Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatItem(
+                    t.vrcnsync.statServer,
+                    status.isServerRunning
+                        ? t.vrcnsync.statServerRunning
+                        : t.vrcnsync.statServerStopped,
+                    status.isServerRunning ? Icons.check_circle : Icons.cancel,
+                    status.isServerRunning ? Colors.green : Colors.red,
+                    isDarkMode,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildStatItem(
+                    t.vrcnsync.statNetwork,
+                    status.serverIP != null
+                        ? t.vrcnsync.statNetworkConnected
+                        : t.vrcnsync.statNetworkDisconnected,
+                    status.serverIP != null ? Icons.wifi : Icons.wifi_off,
+                    status.serverIP != null ? Colors.blue : Colors.grey,
+                    isDarkMode,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -661,64 +738,6 @@ class _VrcnSyncPageState extends ConsumerState<VrcnSyncPage>
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildStatsCard(SyncStatus status, bool isDarkMode) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: isDarkMode ? Colors.grey[850] : Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.analytics,
-                  color: AppTheme.primaryColor,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '接続状況',
-                  style: GoogleFonts.notoSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white : Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatItem(
-                    'サーバー状態',
-                    status.isServerRunning ? '実行中' : '停止中',
-                    status.isServerRunning ? Icons.check_circle : Icons.cancel,
-                    status.isServerRunning ? Colors.green : Colors.red,
-                    isDarkMode,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildStatItem(
-                    'ネットワーク',
-                    status.serverIP != null ? '接続済み' : '未接続',
-                    status.serverIP != null ? Icons.wifi : Icons.wifi_off,
-                    status.serverIP != null ? Colors.blue : Colors.grey,
-                    isDarkMode,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
     );
   }
 

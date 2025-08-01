@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/avatar_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
@@ -88,31 +89,26 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
           IconButton(
             icon: const Icon(Icons.qr_code_2_outlined),
             onPressed: () => context.push('/engage_card'),
-            tooltip: 'エンゲージカード',
+            tooltip: t.profile.engageCard,
           ),
           currentUserAsync.when(
             data:
                 (user) => IconButton(
                   icon: const Icon(Icons.edit_outlined),
                   onPressed: () async {
-                    // 編集前に最新情報を取得
                     ref.invalidate(currentUserProvider);
-
-                    // ローディングインジケータを表示
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('最新のユーザー情報を取得中...'),
-                          duration: Duration(milliseconds: 1000),
+                        SnackBar(
+                          content: Text(t.profile.loading),
+                          duration: const Duration(milliseconds: 1000),
                         ),
                       );
                     }
-                    // 最新のユーザー情報を待機
                     final updatedUser = await ref.read(
                       currentUserProvider.future,
                     );
                     if (!context.mounted) return;
-                    // 最新の情報で編集シートを表示
                     final result = await showModalBottomSheet<bool>(
                       context: context,
                       isScrollControlled: true,
@@ -123,12 +119,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                         return ProfileEditSheet(user: updatedUser);
                       },
                     );
-
-                    // 編集シートが閉じられて結果がtrueの場合
                     if (result == true && context.mounted) {
                       await _refreshProfile();
                     }
                   },
+                  tooltip: t.profile.edit,
                 ),
             loading: () => const SizedBox.shrink(),
             error: (_, _) => const SizedBox.shrink(),
@@ -147,10 +142,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                 isDarkMode,
               ),
             ),
-        loading: () => const LoadingIndicator(message: 'プロフィール情報を読み込み中...'),
+        loading: () => LoadingIndicator(message: t.profile.loading),
         error:
             (error, stackTrace) => ErrorContainer(
-              message: 'プロフィール情報の取得に失敗しました: ${error.toString()}',
+              message: t.profile.error.replaceFirst(
+                '{error}',
+                error.toString(),
+              ),
               onRetry: _refreshProfile,
             ),
       ),
@@ -516,43 +514,43 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                 // 基本情報セクション
                 _buildModernInfoCard(
                   context: context,
-                  title: '基本情報',
+                  title: t.profile.title,
                   icon: Icons.person_outline,
                   backgroundColor:
                       isDarkMode
                           ? HSLColor.fromColor(
-                            accentColor,
+                            AppTheme.primaryColor,
                           ).withLightness(0.15).toColor()
                           : HSLColor.fromColor(
-                            accentColor,
+                            AppTheme.primaryColor,
                           ).withLightness(0.95).toColor(),
-                  iconColor: accentColor,
+                  iconColor: AppTheme.primaryColor,
                   isDarkMode: isDarkMode,
                   children: [
                     _buildModernInfoRow(
                       icon: Icons.badge,
-                      label: 'ユーザーID',
+                      label: t.profile.userId,
                       value: user.id,
                       isDarkMode: isDarkMode,
-                      iconColor: accentColor,
+                      iconColor: AppTheme.primaryColor,
                     ),
                     _buildModernInfoRow(
                       icon: Icons.calendar_today,
-                      label: '登録日',
+                      label: t.profile.dateJoined,
                       value:
                           user.dateJoined !=
                                   DateTime.fromMillisecondsSinceEpoch(0)
                               ? _formatDate(user.dateJoined)
-                              : '不明',
+                              : t.profile.unknown,
                       isDarkMode: isDarkMode,
-                      iconColor: accentColor,
+                      iconColor: AppTheme.primaryColor,
                     ),
                     _buildModernInfoRow(
                       icon: Icons.verified_user,
-                      label: 'ユーザータイプ',
+                      label: t.profile.userType,
                       value: UserTypeHelper.getUserTypeText(user.tags),
                       isDarkMode: isDarkMode,
-                      iconColor: accentColor,
+                      iconColor: AppTheme.primaryColor,
                       isLast: true,
                     ),
                   ],
@@ -584,7 +582,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                   const SizedBox(height: 24),
                   _buildModernInfoCard(
                     context: context,
-                    title: 'ステータスメッセージ',
+                    title: t.profile.statusMessage,
                     icon: Icons.message_outlined,
                     backgroundColor:
                         isDarkMode
@@ -634,7 +632,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                   const SizedBox(height: 24),
                   _buildModernInfoCard(
                     context: context,
-                    title: '自己紹介',
+                    title: t.profile.bio,
                     icon: Icons.info_outline,
                     backgroundColor:
                         isDarkMode
@@ -702,7 +700,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                         ],
                       );
                     } else {
-                      return const SizedBox.shrink(); // グループがない場合は何も表示しない
+                      return const SizedBox.shrink();
                     }
                   },
                   loading:
@@ -724,7 +722,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
     );
   }
 
-  // モダンなグループカード
   Widget _buildModernGroupCard(
     BuildContext context,
     RepresentedGroup group,
@@ -792,7 +789,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
-                    '所属グループ',
+                    t.profile.group,
                     style: GoogleFonts.notoSans(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -879,7 +876,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                     children: [
                       // グループ名
                       Text(
-                        group.name ?? 'Unknown Group',
+                        group.name ?? t.groups.unknownName,
                         style: GoogleFonts.notoSans(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -933,7 +930,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              '${group.memberCount}人のメンバー',
+                              t.groups.members(
+                                count: group.memberCount.toString(),
+                              ),
                               style: GoogleFonts.notoSans(
                                 fontSize: 14,
                                 color:
@@ -959,7 +958,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                 context.push('/group/${group.groupId}');
               },
               icon: const Icon(Icons.visibility_outlined, size: 18),
-              label: const Text('グループ詳細を表示'),
+              label: Text(t.profile.groupDetail),
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
                 backgroundColor: accentColor,
@@ -977,7 +976,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
     );
   }
 
-  // 現在のアバターカード
   Widget _buildAvatarCard({
     required BuildContext context,
     required Avatar avatar,
@@ -1040,7 +1038,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
-                    '現在のアバター',
+                    t.profile.avatar,
                     style: GoogleFonts.notoSans(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -1187,7 +1185,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                 context.push('/avatar/${avatar.id}');
               },
               icon: const Icon(Icons.visibility_outlined, size: 18),
-              label: const Text('アバター詳細を表示'),
+              label: Text(t.profile.avatarDetail),
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
                 backgroundColor: accentColor,
@@ -1243,7 +1241,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                 _buildStatItem(
                   icon: Icons.people_alt_rounded,
                   value: user.friends.length.toString(),
-                  label: 'フレンド',
+                  label: t.profile.frined,
                   isDarkMode: isDarkMode,
                 ),
                 // 追加の統計情報をここに追加可能
@@ -1480,205 +1478,209 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
   String _getReleaseStatusText(ReleaseStatus status) {
     switch (status) {
       case ReleaseStatus.public:
-        return '公開';
+        return t.profile.public;
       case ReleaseStatus.private:
-        return '非公開';
+        return t.profile.private;
       case ReleaseStatus.hidden:
-        return '非表示';
+        return t.profile.hidden;
       default:
-        return '不明';
+        return t.profile.unknown;
     }
   }
-}
 
-Widget _buildBioLinksCard(
-  BuildContext context,
-  List<String> bioLinks,
-  bool isDarkMode,
-) {
-  return FutureBuilder(
-    future: Future.wait(
-      bioLinks.map((link) async {
-        try {
-          final uri = Uri.parse(_ensureHttpPrefix(link));
-
-          // ファビコン取得を強化
-          Favicon? favicon;
+  Widget _buildBioLinksCard(
+    BuildContext context,
+    List<String> bioLinks,
+    bool isDarkMode,
+  ) {
+    return FutureBuilder(
+      future: Future.wait(
+        bioLinks.map((link) async {
           try {
-            favicon = await FaviconFinder.getBest(link);
+            final uri = Uri.parse(_ensureHttpPrefix(link));
+
+            // ファビコン取得を強化
+            Favicon? favicon;
+            try {
+              favicon = await FaviconFinder.getBest(link);
+            } catch (e) {
+              // ファビコンが取得できなくても代替手段があるので無視
+            }
+
+            String? faviconUrl;
+            if (favicon != null && favicon.url.isNotEmpty) {
+              faviconUrl = favicon.url;
+            } else {
+              faviconUrl = '${uri.scheme}://${uri.host}/favicon.ico';
+            }
+
+            return {'url': link, 'favicon': faviconUrl, 'domain': uri.host};
           } catch (e) {
-            // ファビコンが取得できなくても代替手段があるので無視
+            return {
+              'url': link,
+              'favicon': null,
+              'domain': _extractDomain(link),
+            };
           }
+        }).toList(),
+      ),
+      builder: (context, snapshot) {
+        final linkData = snapshot.data as List<Map<String, dynamic>>? ?? [];
 
-          String? faviconUrl;
-          if (favicon != null && favicon.url.isNotEmpty) {
-            faviconUrl = favicon.url;
-          } else {
-            faviconUrl = '${uri.scheme}://${uri.host}/favicon.ico';
-          }
+        return InfoCard(
+          title: t.profile.links,
+          icon: Icons.link,
+          isDarkMode: isDarkMode,
+          customColor: Colors.teal,
+          children:
+              linkData.isEmpty
+                  ? [_buildLoadingLinksIndicator(isDarkMode)]
+                  : linkData
+                      .map((data) => _buildLinkItem(context, data, isDarkMode))
+                      .toList(),
+        );
+      },
+    );
+  }
 
-          return {'url': link, 'favicon': faviconUrl, 'domain': uri.host};
-        } catch (e) {
-          return {'url': link, 'favicon': null, 'domain': _extractDomain(link)};
-        }
-      }).toList(),
-    ),
-    builder: (context, snapshot) {
-      final linkData = snapshot.data as List<Map<String, dynamic>>? ?? [];
+  Widget _buildLinkItem(
+    BuildContext context,
+    Map<String, dynamic> linkData,
+    bool isDarkMode,
+  ) {
+    final url = linkData['url'] as String;
+    final faviconUrl = linkData['favicon'] as String?;
+    final domain = linkData['domain'] as String;
 
-      return InfoCard(
-        title: 'リンク',
-        icon: Icons.link,
-        isDarkMode: isDarkMode,
-        customColor: Colors.teal,
-        children:
-            linkData.isEmpty
-                ? [_buildLoadingLinksIndicator(isDarkMode)]
-                : linkData
-                    .map((data) => _buildLinkItem(context, data, isDarkMode))
-                    .toList(),
-      );
-    },
-  );
-}
-
-Widget _buildLinkItem(
-  BuildContext context,
-  Map<String, dynamic> linkData,
-  bool isDarkMode,
-) {
-  final url = linkData['url'] as String;
-  final faviconUrl = linkData['favicon'] as String?;
-  final domain = linkData['domain'] as String;
-
-  return InkWell(
-    onTap: () => _launchURL(url),
-    borderRadius: BorderRadius.circular(12),
-    child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[850] : Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
+    return InkWell(
+      onTap: () => _launchURL(url),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: isDarkMode ? Colors.grey[850] : Colors.grey[100],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child:
+                  faviconUrl != null
+                      ? ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Image.network(
+                          faviconUrl,
+                          width: 16,
+                          height: 16,
+                          errorBuilder:
+                              (context, error, stackTrace) => Icon(
+                                Icons.language,
+                                size: 16,
+                                color:
+                                    isDarkMode
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                              ),
+                        ),
+                      )
+                      : Icon(
+                        Icons.language,
+                        size: 16,
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                      ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    domain,
+                    style: GoogleFonts.notoSans(
+                      fontWeight: FontWeight.w500,
+                      color: Colors.teal,
+                    ),
+                  ),
+                  Text(
+                    _truncateUrl(url),
+                    style: GoogleFonts.notoSans(
+                      fontSize: 14,
+                      color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.open_in_new,
+              size: 18,
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            ),
+          ],
         ),
       ),
-      child: Row(
+    );
+  }
+
+  Widget _buildLoadingLinksIndicator(bool isDarkMode) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      alignment: Alignment.center,
+      child: Column(
         children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child:
-                faviconUrl != null
-                    ? ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Image.network(
-                        faviconUrl,
-                        width: 16,
-                        height: 16,
-                        errorBuilder:
-                            (context, error, stackTrace) => Icon(
-                              Icons.language,
-                              size: 16,
-                              color:
-                                  isDarkMode
-                                      ? Colors.grey[400]
-                                      : Colors.grey[600],
-                            ),
-                      ),
-                    )
-                    : Icon(
-                      Icons.language,
-                      size: 16,
-                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                    ),
+          CircularProgressIndicator(
+            strokeWidth: 2,
+            color: isDarkMode ? Colors.teal[300] : Colors.teal,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  domain,
-                  style: GoogleFonts.notoSans(
-                    fontWeight: FontWeight.w500,
-                    color: Colors.teal,
-                  ),
-                ),
-                Text(
-                  _truncateUrl(url),
-                  style: GoogleFonts.notoSans(
-                    fontSize: 14,
-                    color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+          const SizedBox(height: 12),
+          Text(
+            t.profile.loadingLinks,
+            style: GoogleFonts.notoSans(
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
             ),
-          ),
-          Icon(
-            Icons.open_in_new,
-            size: 18,
-            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
           ),
         ],
       ),
-    ),
-  );
-}
-
-Widget _buildLoadingLinksIndicator(bool isDarkMode) {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    alignment: Alignment.center,
-    child: Column(
-      children: [
-        CircularProgressIndicator(
-          strokeWidth: 2,
-          color: isDarkMode ? Colors.teal[300] : Colors.teal,
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'リンク情報を読み込み中...',
-          style: GoogleFonts.notoSans(
-            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Future<void> _launchURL(String urlString) async {
-  final url = Uri.parse(_ensureHttpPrefix(urlString));
-  if (await canLaunchUrl(url)) {
-    await launchUrl(url);
-  } else {
-    debugPrint('URLを開けませんでした: $urlString');
+    );
   }
-}
 
-String _ensureHttpPrefix(String url) {
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
+  Future<void> _launchURL(String urlString) async {
+    final url = Uri.parse(_ensureHttpPrefix(urlString));
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      debugPrint('URLを開けませんでした: $urlString');
+    }
   }
-  return 'https://$url';
-}
 
-String _extractDomain(String url) {
-  var processedUrl = url.replaceAll(RegExp(r'https?://'), '');
-  processedUrl = processedUrl.split('/')[0];
-  processedUrl = processedUrl.split('?')[0].split('#')[0];
-  return processedUrl;
-}
+  String _ensureHttpPrefix(String url) {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return 'https://$url';
+  }
 
-String _truncateUrl(String url) {
-  const maxLength = 40;
-  return url.length > maxLength ? '${url.substring(0, maxLength)}...' : url;
+  String _extractDomain(String url) {
+    var processedUrl = url.replaceAll(RegExp(r'https?://'), '');
+    processedUrl = processedUrl.split('/')[0];
+    processedUrl = processedUrl.split('?')[0].split('#')[0];
+    return processedUrl;
+  }
+
+  String _truncateUrl(String url) {
+    const maxLength = 40;
+    return url.length > maxLength ? '${url.substring(0, maxLength)}...' : url;
+  }
 }

@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 
 // 検索前の空の状態
-Widget buildEmptySearchState(String type, IconData icon, bool isDarkMode) {
+Widget buildEmptySearchState(
+  String type,
+  IconData icon,
+  bool isDarkMode, {
+  String? description,
+}) {
   return Center(
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -14,13 +20,24 @@ Widget buildEmptySearchState(String type, IconData icon, bool isDarkMode) {
         ),
         const SizedBox(height: 16),
         Text(
-          '$typeを検索',
+          type,
           style: GoogleFonts.notoSans(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
           ),
         ),
+        if (description != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            description,
+            style: GoogleFonts.notoSans(
+              fontSize: 14,
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ],
     ),
   );
@@ -35,7 +52,7 @@ Widget buildErrorState(String errorMessage, bool isDarkMode) {
         Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
         const SizedBox(height: 16),
         Text(
-          'エラーが発生しました',
+          t.common.errorNomessage,
           style: GoogleFonts.notoSans(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -69,7 +86,7 @@ Widget buildNoResultsState(String query, bool isDarkMode) {
         ),
         const SizedBox(height: 16),
         Text(
-          '「$query」の検索結果はありません',
+          t.search.tabs.worldSearch.noResultsWithQuery(query: query),
           style: GoogleFonts.notoSans(
             fontSize: 18,
             fontWeight: FontWeight.bold,

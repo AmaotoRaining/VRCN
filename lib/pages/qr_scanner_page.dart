@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 
 class QrScannerPage extends StatelessWidget {
   const QrScannerPage({super.key});
@@ -15,7 +16,17 @@ class QrScannerPage extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white, size: 28),
           onPressed: () => context.pop(),
+          tooltip: t.qrScanner.title,
         ),
+        title: Text(
+          t.qrScanner.title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        centerTitle: true,
       ),
       body: Stack(
         children: [
@@ -31,6 +42,14 @@ class QrScannerPage extends StatelessWidget {
                     context.pop();
                     context.push('/user/$userId');
                   }
+                } else {
+                  // 無効なQRコード
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(t.qrScanner.notFound),
+                      backgroundColor: Colors.redAccent,
+                    ),
+                  );
                 }
               }
             },
@@ -106,7 +125,7 @@ class QrScannerPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'QRコードを枠内に合わせてください',
+                  t.qrScanner.guide,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.92),
                     fontSize: 16,

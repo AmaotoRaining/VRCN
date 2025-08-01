@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
@@ -26,7 +27,7 @@ class GroupsPage extends ConsumerWidget {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         title: Text(
-          'グループ',
+          t.groups.title,
           style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -34,11 +35,11 @@ class GroupsPage extends ConsumerWidget {
       body: currentUserAsync.when(
         data:
             (currentUser) =>
-                _buildGroupsList(context, ref, currentUser.id, isDarkMode),
-        loading: () => const LoadingIndicator(message: 'ユーザー情報を読み込み中...'),
+                _buildGroupsList(context, ref, currentUser.id, isDarkMode, t),
+        loading: () => LoadingIndicator(message: t.groups.loadingUser),
         error:
             (error, _) => ErrorContainer(
-              message: 'ユーザー情報の取得に失敗しました: $error',
+              message: t.groups.errorUser(error: error.toString()),
               onRetry: () => ref.refresh(currentUserProvider),
             ),
       ),
@@ -50,6 +51,7 @@ class GroupsPage extends ConsumerWidget {
     WidgetRef ref,
     String userId,
     bool isDarkMode,
+    Translations t,
   ) {
     // ユーザーのグループ一覧を取得
     final userGroupsAsync = ref.watch(userGroupsProvider(userId));
@@ -62,7 +64,7 @@ class GroupsPage extends ConsumerWidget {
       child: userGroupsAsync.when(
         data: (groups) {
           if (groups.isEmpty) {
-            return _buildEmptyState(context, isDarkMode);
+            return _buildEmptyState(context, isDarkMode, t);
           }
 
           return Column(
@@ -100,6 +102,7 @@ class GroupsPage extends ConsumerWidget {
                         group,
                         isDarkMode,
                         index,
+                        t,
                       ),
                     );
                   },
@@ -108,10 +111,10 @@ class GroupsPage extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const LoadingIndicator(message: 'グループ情報を読み込み中...'),
+        loading: () => LoadingIndicator(message: t.groups.loadingGroups),
         error:
             (error, _) => ErrorContainer(
-              message: 'グループ情報の取得に失敗しました: $error',
+              message: t.groups.errorGroups(error: error.toString()),
               onRetry: () => ref.refresh(userGroupsProvider(userId)),
             ),
       ),
@@ -124,6 +127,7 @@ class GroupsPage extends ConsumerWidget {
     LimitedUserGroups group,
     bool isDarkMode,
     int index,
+    Translations t,
   ) {
     final vrchatApi = ref.watch(vrchatProvider).value;
     final headers = <String, String>{
@@ -165,13 +169,12 @@ class GroupsPage extends ConsumerWidget {
               children: [
                 // ヘッダー部分（バナー画像、アイコン、名前、ショートコード）
                 Container(
-                  height: 120, // バナー画像用に高さを少し増やす
+                  height: 120,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(16),
                       topRight: Radius.circular(16),
                     ),
-                    // bannerUrlが存在する場合は、画像を背景にする
                     image:
                         group.bannerUrl != null
                             ? DecorationImage(
@@ -183,7 +186,6 @@ class GroupsPage extends ConsumerWidget {
                               fit: BoxFit.cover,
                             )
                             : null,
-                    // bannerUrlがない場合は、従来のグラデーション背景を使用
                     gradient:
                         group.bannerUrl == null
                             ? LinearGradient(
@@ -204,7 +206,6 @@ class GroupsPage extends ConsumerWidget {
                   ),
                   child: Stack(
                     children: [
-                      // バナー画像がある場合は、テキストを読みやすくするためのオーバーレイを追加
                       if (group.bannerUrl != null)
                         Positioned.fill(
                           child: DecoratedBox(
@@ -213,7 +214,6 @@ class GroupsPage extends ConsumerWidget {
                                 topLeft: Radius.circular(16),
                                 topRight: Radius.circular(16),
                               ),
-                              // 半透明のグラデーションでテキストを見やすくする
                               gradient: LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -225,7 +225,6 @@ class GroupsPage extends ConsumerWidget {
                             ),
                           ),
                         ),
-                      // グループ情報
                       Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(
@@ -234,7 +233,6 @@ class GroupsPage extends ConsumerWidget {
                           children: [
                             Row(
                               children: [
-                                // アイコン
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
                                   child: SizedBox(
@@ -314,11 +312,10 @@ class GroupsPage extends ConsumerWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        group.name ?? '名称不明',
+                                        group.name ?? t.groups.unknownName,
                                         style: GoogleFonts.notoSans(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
-                                          // バナー画像があるときは常に白色テキストにして読みやすくする
                                           color:
                                               group.bannerUrl != null
                                                   ? Colors.white
@@ -350,7 +347,6 @@ class GroupsPage extends ConsumerWidget {
                                           '@${group.shortCode}',
                                           style: GoogleFonts.notoSans(
                                             fontSize: 14,
-                                            // バナー画像があるときは常に明るい色のテキストにして読みやすくする
                                             color:
                                                 group.bannerUrl != null
                                                     ? Colors.grey[300]
@@ -416,7 +412,9 @@ class GroupsPage extends ConsumerWidget {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                '${group.memberCount ?? "?"}人のメンバー',
+                                t.groups.members(
+                                  count: (group.memberCount ?? '?').toString(),
+                                ),
                                 style: GoogleFonts.notoSans(
                                   fontSize: 14,
                                   color:
@@ -458,7 +456,7 @@ class GroupsPage extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            '詳細を表示',
+                            t.groups.showDetails,
                             style: GoogleFonts.notoSans(
                               fontSize: 14,
                               color: colorSet[0],
@@ -484,7 +482,11 @@ class GroupsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, bool isDarkMode) {
+  Widget _buildEmptyState(
+    BuildContext context,
+    bool isDarkMode,
+    Translations t,
+  ) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -507,7 +509,7 @@ class GroupsPage extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            'グループに参加していません',
+            t.groups.emptyTitle,
             style: GoogleFonts.notoSans(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -518,7 +520,7 @@ class GroupsPage extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Text(
-              'VRChatアプリやウェブサイトからグループに参加できます',
+              t.groups.emptyDescription,
               style: GoogleFonts.notoSans(
                 fontSize: 16,
                 color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
@@ -531,7 +533,10 @@ class GroupsPage extends ConsumerWidget {
             icon: const Icon(Icons.search),
             label: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-              child: Text('グループを探す', style: GoogleFonts.notoSans(fontSize: 16)),
+              child: Text(
+                t.groups.searchGroups,
+                style: GoogleFonts.notoSans(fontSize: 16),
+              ),
             ),
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.white,

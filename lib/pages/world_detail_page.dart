@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
@@ -32,7 +33,10 @@ class WorldDetailPage extends ConsumerWidget {
             (world) =>
                 _buildWorldDetailView(context, world, isDarkMode, headers, ref),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => ErrorView(message: 'ワールド情報の取得に失敗しました: $error'),
+        error:
+            (error, _) => ErrorView(
+              message: t.worldDetail.error(error: error.toString()),
+            ),
       ),
     );
   }
@@ -128,12 +132,11 @@ class WorldDetailPage extends ConsumerWidget {
         // 共有ボタン
         IconButton(
           icon: const Icon(Icons.share, color: Colors.white),
-          tooltip: 'このワールドを共有',
+          tooltip: t.worldDetail.share,
           onPressed: () => _shareWorld(world),
         ),
         PopupMenuButton<String>(
           icon: const Icon(Icons.more_vert, color: Colors.white),
-          tooltip: 'アクション',
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -147,23 +150,23 @@ class WorldDetailPage extends ConsumerWidget {
           },
           itemBuilder:
               (context) => [
-                const PopupMenuItem<String>(
+                PopupMenuItem<String>(
                   value: 'website',
                   child: Row(
                     children: [
-                      Icon(Icons.public, size: 20),
-                      SizedBox(width: 12),
-                      Text('VRChat公式サイトで開く'),
+                      const Icon(Icons.public, size: 20),
+                      const SizedBox(width: 12),
+                      Text(t.worldDetail.openInVRChat),
                     ],
                   ),
                 ),
-                const PopupMenuItem<String>(
+                PopupMenuItem<String>(
                   value: 'report',
                   child: Row(
                     children: [
-                      Icon(Icons.report_problem, size: 20),
-                      SizedBox(width: 12),
-                      Text('このワールドを通報'),
+                      const Icon(Icons.report_problem, size: 20),
+                      const SizedBox(width: 12),
+                      Text(t.worldDetail.report),
                     ],
                   ),
                 ),
@@ -194,7 +197,7 @@ class WorldDetailPage extends ConsumerWidget {
         Row(
           children: [
             Text(
-              '作成者: ',
+              '${t.worldDetail.creator}: ',
               style: GoogleFonts.notoSans(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -219,14 +222,14 @@ class WorldDetailPage extends ConsumerWidget {
             const Icon(Icons.calendar_today, size: 16),
             const SizedBox(width: 8),
             Text(
-              '作成: ${_formatDate(world.createdAt)}',
+              '${t.worldDetail.created}: ${_formatDate(world.createdAt)}',
               style: GoogleFonts.notoSans(fontSize: 14),
             ),
             const SizedBox(width: 16),
             const Icon(Icons.update, size: 16),
             const SizedBox(width: 8),
             Text(
-              '更新: ${_formatDate(world.updatedAt)}',
+              '${t.worldDetail.updated}: ${_formatDate(world.updatedAt)}',
               style: GoogleFonts.notoSans(fontSize: 14),
             ),
           ],
@@ -255,28 +258,28 @@ class WorldDetailPage extends ConsumerWidget {
             context,
             Icons.favorite,
             _formatNumber(world.favorites),
-            'お気に入り',
+            t.worldDetail.favorites,
             Colors.red,
           ),
           _buildStatItem(
             context,
             Icons.visibility,
             _formatNumber(world.visits),
-            '訪問数',
+            t.worldDetail.visits,
             Colors.blue,
           ),
           _buildStatItem(
             context,
             Icons.public,
             _formatNumber(world.occupants),
-            '現在の人数',
+            t.worldDetail.occupants,
             Colors.green,
           ),
           _buildStatItem(
             context,
             Icons.favorite,
             world.popularity.toString(),
-            '評価',
+            t.worldDetail.popularity,
             Colors.amber,
           ),
         ],
@@ -312,7 +315,7 @@ class WorldDetailPage extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '説明',
+          t.worldDetail.description,
           style: GoogleFonts.notoSans(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -332,7 +335,9 @@ class WorldDetailPage extends ConsumerWidget {
             ),
           ),
           child: Text(
-            world.description.isNotEmpty ? world.description : '説明はありません',
+            world.description.isNotEmpty
+                ? world.description
+                : t.worldDetail.noDescription,
             style: GoogleFonts.notoSans(fontSize: 14, height: 1.5),
           ),
         ),
@@ -349,7 +354,7 @@ class WorldDetailPage extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'タグ',
+          t.worldDetail.tags,
           style: GoogleFonts.notoSans(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -396,7 +401,7 @@ class WorldDetailPage extends ConsumerWidget {
   //           },
   //           icon: const Icon(Icons.public),
   //           label: Text(
-  //             'パブリックで招待を送信',
+  //             t.worldDetail.joinPublic,
   //             style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
   //           ),
   //           style: ElevatedButton.styleFrom(
@@ -450,7 +455,7 @@ class WorldDetailPage extends ConsumerWidget {
   // }
 
   String _formatDate(DateTime? date) {
-    if (date == null) return '不明';
+    if (date == null) return t.worldDetail.unknown;
     return DateFormat('yyyy/MM/dd').format(date);
   }
 

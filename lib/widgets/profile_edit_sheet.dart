@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/utils/status_helpers.dart';
@@ -36,10 +37,18 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
 
   // カテゴリ定義
   final List<Map<String, dynamic>> _categories = [
-    {'title': 'ステータス', 'icon': Icons.mood, 'color': Colors.green},
-    {'title': '自己紹介', 'icon': Icons.person_outline, 'color': Colors.blue},
-    {'title': 'リンク', 'icon': Icons.link, 'color': Colors.purple},
-    {'title': '基本情報', 'icon': Icons.info_outline, 'color': Colors.orange},
+    {'title': t.profile.status, 'icon': Icons.mood, 'color': Colors.green},
+    {
+      'title': t.profile.bio,
+      'icon': Icons.person_outline,
+      'color': Colors.blue,
+    },
+    {'title': t.profile.links, 'icon': Icons.link, 'color': Colors.purple},
+    {
+      'title': t.profile.basic,
+      'icon': Icons.info_outline,
+      'color': Colors.orange,
+    },
   ];
 
   @override
@@ -134,11 +143,11 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
         // 成功メッセージ表示
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Row(
+            content: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 12),
-                Text('プロフィールを更新しました'),
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 12),
+                Text(t.profile.saved),
               ],
             ),
             backgroundColor: Colors.green.shade600,
@@ -168,7 +177,11 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
               children: [
                 const Icon(Icons.error_outline, color: Colors.white),
                 const SizedBox(width: 12),
-                Expanded(child: Text('更新に失敗しました: ${e.toString()}')),
+                Expanded(
+                  child: Text(
+                    t.profile.saveFailed.replaceFirst('{error}', e.toString()),
+                  ),
+                ),
               ],
             ),
             backgroundColor: Colors.red.shade600,
@@ -285,7 +298,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'プロフィールを編集',
+                                t.profile.edit,
                                 style: GoogleFonts.notoSans(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -425,7 +438,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
                                     const Icon(Icons.check_circle),
                                     const SizedBox(width: 10),
                                     Text(
-                                      '変更を保存',
+                                      t.profile.save,
                                       style: GoogleFonts.notoSans(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -471,13 +484,18 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader('オンラインステータス', Icons.mood, Colors.green, isDarkMode),
+        _buildSectionHeader(
+          t.profile.status,
+          Icons.mood,
+          Colors.green,
+          isDarkMode,
+        ),
         const SizedBox(height: 16),
         _buildStatusSelector(isDarkMode, Colors.green),
         const SizedBox(height: 24),
 
         _buildSectionHeader(
-          'ステータスメッセージ',
+          t.profile.statusMessage,
           Icons.chat_bubble_outline,
           Colors.green,
           isDarkMode,
@@ -486,7 +504,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
         _buildStyledTextField(
           controller: _statusDescriptionController,
           focusNode: _statusDescriptionFocusNode,
-          hintText: 'あなたの今の状況やメッセージを入力',
+          hintText: t.profile.statusMessageHint,
           maxLength: 100,
           prefix: Icon(
             Icons.short_text,
@@ -506,7 +524,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader(
-          '自己紹介文',
+          t.profile.bio,
           Icons.person_outline,
           Colors.blue,
           isDarkMode,
@@ -515,7 +533,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
         _buildStyledTextField(
           controller: _bioController,
           focusNode: _bioFocusNode,
-          hintText: 'あなた自身について書いてみましょう',
+          hintText: t.profile.bioHint,
           maxLength: 500,
           maxLines: 8,
           isDarkMode: isDarkMode,
@@ -538,7 +556,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             _buildSectionHeader(
-              'プロフィールリンク',
+              t.profile.links,
               Icons.link,
               Colors.purple,
               isDarkMode,
@@ -546,7 +564,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
             TextButton.icon(
               onPressed: _addLinkField,
               icon: const Icon(Icons.add, size: 18),
-              label: const Text('追加'),
+              label: Text(t.profile.addLink),
               style: TextButton.styleFrom(
                 foregroundColor: Colors.purple,
                 backgroundColor: Colors.purple.withValues(alpha: 0.1),
@@ -572,7 +590,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
         ),
         const SizedBox(height: 8),
         Text(
-          'リンクはプロフィールに表示され、タップすると開くことができます',
+          t.profile.linksHint,
           style: GoogleFonts.notoSans(
             fontSize: 12,
             color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
@@ -589,7 +607,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader(
-          '代名詞',
+          t.profile.pronouns,
           Icons.label_outline,
           Colors.orange,
           isDarkMode,
@@ -598,7 +616,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
         _buildStyledTextField(
           controller: _pronounsController,
           focusNode: _pronounsFocusNode,
-          hintText: '例: he/him, she/her, they/them',
+          hintText: 'he/him, she/her, they/them',
           maxLength: 50,
           prefix: Icon(
             Icons.person_pin,
@@ -612,7 +630,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
 
         // 現在のユーザー情報表示
         _buildInfoItem(
-          'ユーザー名',
+          t.profile.username,
           widget.user.username.toString(),
           Icons.account_circle,
           Colors.orange,
@@ -620,7 +638,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
         ),
         const SizedBox(height: 12),
         _buildInfoItem(
-          '表示名',
+          t.profile.displayName,
           widget.user.displayName,
           Icons.badge,
           Colors.orange,
@@ -628,7 +646,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
         ),
         const SizedBox(height: 12),
         _buildInfoItem(
-          '登録日',
+          t.profile.dateJoined,
           _formatDate(widget.user.dateJoined),
           Icons.calendar_today,
           Colors.orange,
@@ -878,7 +896,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
               child: TextField(
                 controller: _bioLinkControllers[index],
                 decoration: InputDecoration(
-                  hintText: 'リンクを入力 (例: https://twitter.com/username)',
+                  hintText: t.profile.linkHint,
                   hintStyle: GoogleFonts.notoSans(
                     color: isDarkMode ? Colors.grey[500] : Colors.grey[400],
                     fontSize: 14,
@@ -898,7 +916,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
             IconButton(
               icon: Icon(Icons.remove_circle, color: Colors.red[400], size: 22),
               onPressed: () => _removeLinkField(index),
-              tooltip: '削除',
+              tooltip: t.common.delete,
               style: IconButton.styleFrom(
                 backgroundColor: Colors.red[50]?.withValues(alpha: 0.2),
               ),
@@ -973,10 +991,10 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
               children: [
                 Icon(Icons.warning_amber_rounded, color: Colors.amber[700]),
                 const SizedBox(width: 12),
-                const Text('変更を破棄しますか？'),
+                Text(t.profile.discardTitle),
               ],
             ),
-            content: const Text('プロフィールに加えた変更は保存されません。'),
+            content: Text(t.profile.discardContent),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -993,9 +1011,9 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
                     () => Navigator.of(
                       dialogContext,
                     ).pop(false), // dialogContextを使用
-                child: const Text(
-                  'キャンセル',
-                  style: TextStyle(color: AppTheme.primaryColor),
+                child: Text(
+                  t.profile.discardCancel,
+                  style: const TextStyle(color: AppTheme.primaryColor),
                 ),
               ),
               ElevatedButton(
@@ -1010,7 +1028,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet>
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('破棄する'),
+                child: Text(t.profile.discardOk),
               ),
             ],
           ),

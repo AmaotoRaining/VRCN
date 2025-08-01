@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/friend_sort_provider.dart';
 import 'package:vrchat/provider/friends_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -28,7 +29,7 @@ void showFriendSortOptions(BuildContext context, WidgetRef ref) {
                   child: Row(
                     children: [
                       Text(
-                        '並び替え・フィルター',
+                        t.friend.sortFilter,
                         style: GoogleFonts.notoSans(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -61,7 +62,7 @@ void showFriendSortOptions(BuildContext context, WidgetRef ref) {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                'フィルター',
+                                t.friend.filter,
                                 style: GoogleFonts.notoSans(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -76,7 +77,7 @@ void showFriendSortOptions(BuildContext context, WidgetRef ref) {
                         _buildFilterOption(
                           context: context,
                           icon: Icons.people_alt_rounded,
-                          title: 'すべて表示',
+                          title: t.friend.filterAll,
                           isSelected: localFilter == FriendFilter.all,
                           isDarkMode: isDarkMode,
                           onTap: () {
@@ -91,7 +92,7 @@ void showFriendSortOptions(BuildContext context, WidgetRef ref) {
                         _buildFilterOption(
                           context: context,
                           icon: Icons.wifi_rounded,
-                          title: 'オンラインのみ',
+                          title: t.friend.filterOnline,
                           isSelected: localFilter == FriendFilter.online,
                           isDarkMode: isDarkMode,
                           onTap: () {
@@ -106,7 +107,7 @@ void showFriendSortOptions(BuildContext context, WidgetRef ref) {
                         _buildFilterOption(
                           context: context,
                           icon: Icons.wifi_off_rounded,
-                          title: 'オフラインのみ',
+                          title: t.friend.filterOffline,
                           isSelected: localFilter == FriendFilter.offline,
                           isDarkMode: isDarkMode,
                           onTap: () {
@@ -120,7 +121,7 @@ void showFriendSortOptions(BuildContext context, WidgetRef ref) {
                         _buildFilterOption(
                           context: context,
                           icon: Icons.favorite_rounded,
-                          title: 'お気に入りのみ',
+                          title: t.friend.filterFavorite,
                           isSelected: localFilter == FriendFilter.favorite,
                           isDarkMode: isDarkMode,
                           onTap: () {
@@ -144,7 +145,7 @@ void showFriendSortOptions(BuildContext context, WidgetRef ref) {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                '並び替え',
+                                t.friend.sort,
                                 style: GoogleFonts.notoSans(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -159,7 +160,7 @@ void showFriendSortOptions(BuildContext context, WidgetRef ref) {
                         ListTile(
                           leading: const Icon(Icons.circle),
                           title: Text(
-                            'オンライン状態順',
+                            t.friend.sortStatus,
                             style: GoogleFonts.notoSans(),
                           ),
                           trailing:
@@ -180,7 +181,10 @@ void showFriendSortOptions(BuildContext context, WidgetRef ref) {
 
                         ListTile(
                           leading: const Icon(Icons.sort_by_alpha),
-                          title: Text('名前順', style: GoogleFonts.notoSans()),
+                          title: Text(
+                            t.friend.sortName,
+                            style: GoogleFonts.notoSans(),
+                          ),
                           trailing:
                               localSortType == FriendSortType.name
                                   ? const Icon(Icons.check)
@@ -197,7 +201,10 @@ void showFriendSortOptions(BuildContext context, WidgetRef ref) {
 
                         ListTile(
                           leading: const Icon(Icons.access_time),
-                          title: Text('最終ログイン順', style: GoogleFonts.notoSans()),
+                          title: Text(
+                            t.friend.sortLastLogin,
+                            style: GoogleFonts.notoSans(),
+                          ),
                           trailing:
                               localSortType == FriendSortType.lastLogin
                                   ? const Icon(Icons.check)
@@ -223,8 +230,8 @@ void showFriendSortOptions(BuildContext context, WidgetRef ref) {
                           ),
                           title: Text(
                             localDirection == SortDirection.ascending
-                                ? '昇順'
-                                : '降順',
+                                ? t.friend.sortAsc
+                                : t.friend.sortDesc,
                             style: GoogleFonts.notoSans(),
                           ),
                           onTap: () {

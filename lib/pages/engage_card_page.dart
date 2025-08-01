@@ -14,6 +14,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
@@ -158,7 +159,7 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
                     IconButton(
                       icon: const Icon(Icons.photo_library_outlined),
                       onPressed: _pickImage,
-                      tooltip: '背景画像を選択',
+                      tooltip: t.engageCard.pickBackground,
                     ),
                     if (backgroundImage != null)
                       IconButton(
@@ -167,19 +168,22 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
                           color: Colors.redAccent,
                         ),
                         onPressed: _removeBackgroundImage,
-                        tooltip: '背景画像を削除',
+                        tooltip: t.engageCard.removeBackground,
                       ),
                     IconButton(
                       icon: const Icon(Icons.qr_code_scanner),
                       onPressed: () => context.push('/qr_scanner'),
-                      tooltip: 'QRコードをスキャン',
+                      tooltip: t.engageCard.scanQr,
                     ),
                     IconButton(
                       icon: Icon(
                         _showAvatar ? Icons.visibility : Icons.visibility_off,
                         color: Colors.white,
                       ),
-                      tooltip: _showAvatar ? 'アバターを非表示' : 'アバターを表示',
+                      tooltip:
+                          _showAvatar
+                              ? t.engageCard.hideAvatar
+                              : t.engageCard.showAvatar,
                       onPressed: () {
                         setState(() {
                           _showAvatar = !_showAvatar;
@@ -215,7 +219,7 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
                       ),
                     ),
                     child: Text(
-                      '背景画像が選択されていません\n右上のボタンから設定できます',
+                      t.engageCard.noBackground,
                       style: GoogleFonts.notoSans(
                         color: Colors.white70,
                         fontSize: 16,
@@ -241,7 +245,13 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
             );
           },
           loading: () => const LoadingIndicator(),
-          error: (err, stack) => Center(child: Text('エラー: $err')),
+          error:
+              (err, stack) => Center(
+                child: Text(
+                  t.engageCard.error(error: err.toString()),
+                  style: const TextStyle(color: Colors.redAccent),
+                ),
+              ),
         ),
       ),
     );
@@ -336,7 +346,7 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
                           crossAxisAlignment:
                               _showAvatar
                                   ? CrossAxisAlignment.start
-                                  : CrossAxisAlignment.center, // ← ここを切り替え
+                                  : CrossAxisAlignment.center,
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             FittedBox(
@@ -362,6 +372,8 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
                       ),
                       QrImageView(
                         data: 'https://vrchat.com/home/user/${user.id}',
+                        // QRコードの色
+                        // ignore: deprecated_member_use
                         foregroundColor: Colors.white,
                         version: QrVersions.auto,
                         size: 80,
