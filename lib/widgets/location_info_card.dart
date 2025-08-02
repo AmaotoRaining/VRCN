@@ -64,9 +64,7 @@ class LocationInfoCard extends ConsumerWidget {
             : null;
 
     final vrchatApi = ref.watch(vrchatProvider).value;
-    final headers = {
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     return Container(
       padding: const EdgeInsets.all(16),

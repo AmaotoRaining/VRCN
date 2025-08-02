@@ -24,14 +24,9 @@ class FriendListItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // VRChat APIのインスタンスから User-Agent を取得
     final vrchatApi = ref.watch(vrchatProvider).value;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    // User-Agent ヘッダーの定義
-    final headers = <String, String>{
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     final statusColor = StatusHelper.getStatusColor(friend.status);
     final userTypeColor = UserTypeHelper.getUserTypeColor(friend.tags);
@@ -225,8 +220,8 @@ class FriendListItem extends ConsumerWidget {
                               ),
                             ],
                           ),
-                        ] else if (userDetailAsync != null) ...[
-                        ],
+                        ] else if (userDetailAsync != null)
+                          ...[],
                       ],
                     ],
                   ),

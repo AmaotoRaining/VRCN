@@ -21,10 +21,7 @@ class AppDrawer extends ConsumerWidget {
     final currentUserAsync = ref.watch(currentUserProvider);
     final vrchatApi = ref.watch(vrchatProvider).value;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    final headers = <String, String>{
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     final inAppReview = InAppReview.instance;
 
@@ -36,9 +33,10 @@ class AppDrawer extends ConsumerWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: isDarkMode
-                ? [const Color(0xFF141E30), const Color(0xFF243B55)]
-                : [Colors.white, const Color(0xFFF5F7FA)],
+            colors:
+                isDarkMode
+                    ? [const Color(0xFF141E30), const Color(0xFF243B55)]
+                    : [Colors.white, const Color(0xFFF5F7FA)],
           ),
           borderRadius: const BorderRadius.only(
             topRight: Radius.circular(16),
@@ -56,18 +54,28 @@ class AppDrawer extends ConsumerWidget {
           children: [
             // ユーザー情報ヘッダー
             currentUserAsync.when(
-              data: (user) => _buildEnhancedHeader(context, user, headers, isDarkMode, t),
+              data:
+                  (user) => _buildEnhancedHeader(
+                    context,
+                    user,
+                    headers,
+                    isDarkMode,
+                    t,
+                  ),
               loading: () => _buildStylishLoadingHeader(context, isDarkMode, t),
-              error: (_, _) => _buildEnhancedErrorHeader(context, ref, isDarkMode, t),
+              error:
+                  (_, _) =>
+                      _buildEnhancedErrorHeader(context, ref, isDarkMode, t),
             ),
 
             // メニュー項目
             Expanded(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: isDarkMode
-                      ? const Color(0xFF1A1F2C).withValues(alpha: 0.9)
-                      : Colors.white.withValues(alpha: 0.9),
+                  color:
+                      isDarkMode
+                          ? const Color(0xFF1A1F2C).withValues(alpha: 0.9)
+                          : Colors.white.withValues(alpha: 0.9),
                 ),
                 child: ClipRRect(
                   borderRadius: const BorderRadius.only(
@@ -87,7 +95,8 @@ class AppDrawer extends ConsumerWidget {
                             _MenuItem(
                               icon: Icons.home_rounded,
                               title: t.drawer.home,
-                              isSelected: GoRouterState.of(context).uri.path == '/',
+                              isSelected:
+                                  GoRouterState.of(context).uri.path == '/',
                               onTap: () {
                                 context.go('/');
                                 Navigator.pop(context);
@@ -96,7 +105,9 @@ class AppDrawer extends ConsumerWidget {
                             _MenuItem(
                               icon: Icons.person_rounded,
                               title: t.drawer.profile,
-                              isSelected: GoRouterState.of(context).uri.path == '/profile',
+                              isSelected:
+                                  GoRouterState.of(context).uri.path ==
+                                  '/profile',
                               onTap: () {
                                 context.push('/profile');
                                 Navigator.pop(context);
@@ -105,7 +116,9 @@ class AppDrawer extends ConsumerWidget {
                             _MenuItem(
                               icon: Icons.favorite_rounded,
                               title: t.drawer.favorite,
-                              isSelected: GoRouterState.of(context).uri.path.startsWith('/favorites'),
+                              isSelected: GoRouterState.of(
+                                context,
+                              ).uri.path.startsWith('/favorites'),
                               onTap: () {
                                 context.push('/favorites');
                                 Navigator.pop(context);
@@ -125,7 +138,9 @@ class AppDrawer extends ConsumerWidget {
                             _MenuItem(
                               icon: Icons.calendar_month,
                               title: t.drawer.eventCalendar,
-                              isSelected: GoRouterState.of(context).uri.path.startsWith('/event_calendar'),
+                              isSelected: GoRouterState.of(
+                                context,
+                              ).uri.path.startsWith('/event_calendar'),
                               onTap: () {
                                 context.push('/event_calendar');
                                 Navigator.pop(context);
@@ -146,7 +161,10 @@ class AppDrawer extends ConsumerWidget {
                         ),
 
                         // コンテンツセクション
-                        _buildSectionHeader(t.drawer.section.content, isDarkMode),
+                        _buildSectionHeader(
+                          t.drawer.section.content,
+                          isDarkMode,
+                        ),
                         _buildNavigationSection(
                           context: context,
                           isDarkMode: isDarkMode,
@@ -154,7 +172,9 @@ class AppDrawer extends ConsumerWidget {
                             _MenuItem(
                               icon: Icons.face_rounded,
                               title: t.drawer.avatar,
-                              isSelected: GoRouterState.of(context).uri.path.startsWith('/avatars'),
+                              isSelected: GoRouterState.of(
+                                context,
+                              ).uri.path.startsWith('/avatars'),
                               onTap: () {
                                 context.push('/avatars');
                                 Navigator.pop(context);
@@ -163,7 +183,9 @@ class AppDrawer extends ConsumerWidget {
                             _MenuItem(
                               icon: Icons.group_rounded,
                               title: t.drawer.group,
-                              isSelected: GoRouterState.of(context).uri.path.startsWith('/groups'),
+                              isSelected: GoRouterState.of(
+                                context,
+                              ).uri.path.startsWith('/groups'),
                               onTap: () {
                                 context.push('/groups');
                                 Navigator.pop(context);
@@ -172,7 +194,9 @@ class AppDrawer extends ConsumerWidget {
                             _MenuItem(
                               icon: Icons.inventory,
                               title: t.drawer.inventory,
-                              isSelected: GoRouterState.of(context).uri.path.startsWith('/inventory'),
+                              isSelected: GoRouterState.of(
+                                context,
+                              ).uri.path.startsWith('/inventory'),
                               onTap: () {
                                 context.push('/inventory');
                                 Navigator.pop(context);
@@ -190,7 +214,9 @@ class AppDrawer extends ConsumerWidget {
                             _MenuItem(
                               imagePath: 'assets/images/logo.png',
                               title: t.drawer.vrcnsync,
-                              isSelected: GoRouterState.of(context).uri.path == '/vrcnsync',
+                              isSelected:
+                                  GoRouterState.of(context).uri.path ==
+                                  '/vrcnsync',
                               onTap: () {
                                 context.push('/vrcnsync');
                                 Navigator.pop(context);
@@ -220,7 +246,9 @@ class AppDrawer extends ConsumerWidget {
                             _MenuItem(
                               icon: Icons.settings_rounded,
                               title: t.drawer.settings,
-                              isSelected: GoRouterState.of(context).uri.path == '/settings',
+                              isSelected:
+                                  GoRouterState.of(context).uri.path ==
+                                  '/settings',
                               onTap: () {
                                 context.push('/settings');
                                 Navigator.pop(context);
@@ -278,15 +306,18 @@ class AppDrawer extends ConsumerWidget {
     required bool isDarkMode,
   }) {
     const selectedColor = AppTheme.primaryColor;
-    final unselectedIconColor = isDarkMode ? Colors.grey[400] : Colors.grey[700];
-    final unselectedTextColor = isDarkMode ? Colors.grey[300] : Colors.grey[800];
+    final unselectedIconColor =
+        isDarkMode ? Colors.grey[400] : Colors.grey[700];
+    final unselectedTextColor =
+        isDarkMode ? Colors.grey[300] : Colors.grey[800];
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isSelected
-            ? selectedColor.withValues(alpha: isDarkMode ? 0.15 : 0.1)
-            : Colors.transparent,
+        color:
+            isSelected
+                ? selectedColor.withValues(alpha: isDarkMode ? 0.15 : 0.1)
+                : Colors.transparent,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Material(
@@ -306,34 +337,39 @@ class AppDrawer extends ConsumerWidget {
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? selectedColor
-                        : isDarkMode
+                    color:
+                        isSelected
+                            ? selectedColor
+                            : isDarkMode
                             ? const Color(0xFF2A3142)
                             : const Color(0xFFF0F3F6),
                     borderRadius: BorderRadius.circular(12),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: selectedColor.withValues(alpha: 0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ]
-                        : null,
+                    boxShadow:
+                        isSelected
+                            ? [
+                              BoxShadow(
+                                color: selectedColor.withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                            : null,
                   ),
-                  child: imagePath != null
-                      ? Image.asset(
-                          imagePath,
-                          width: 22,
-                          height: 22,
-                          color: isSelected ? Colors.white : unselectedIconColor,
-                        )
-                      : Icon(
-                          icon!,
-                          color: isSelected ? Colors.white : unselectedIconColor,
-                          size: 22,
-                        ),
+                  child:
+                      imagePath != null
+                          ? Image.asset(
+                            imagePath,
+                            width: 22,
+                            height: 22,
+                            color:
+                                isSelected ? Colors.white : unselectedIconColor,
+                          )
+                          : Icon(
+                            icon!,
+                            color:
+                                isSelected ? Colors.white : unselectedIconColor,
+                            size: 22,
+                          ),
                 ),
 
                 const SizedBox(width: 10),
@@ -382,19 +418,20 @@ class AppDrawer extends ConsumerWidget {
     required List<_MenuItem> items,
   }) {
     return Column(
-      children: items
-          .map(
-            (item) => _buildAnimatedMenuItem(
-              context: context,
-              icon: item.icon,
-              imagePath: item.imagePath,
-              title: item.title,
-              isSelected: item.isSelected,
-              onTap: item.onTap,
-              isDarkMode: isDarkMode,
-            ),
-          )
-          .toList(),
+      children:
+          items
+              .map(
+                (item) => _buildAnimatedMenuItem(
+                  context: context,
+                  icon: item.icon,
+                  imagePath: item.imagePath,
+                  title: item.title,
+                  isSelected: item.isSelected,
+                  onTap: item.onTap,
+                  isDarkMode: isDarkMode,
+                ),
+              )
+              .toList(),
     );
   }
 
@@ -414,12 +451,13 @@ class AppDrawer extends ConsumerWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: isDarkMode
-              ? [const Color(0xFF2A3F54), const Color(0xFF1F2A40)]
-              : [
-                  const Color(0xFF5C6BC0).withValues(alpha: 0.15),
-                  const Color(0xFF9FA8DA).withValues(alpha: 0.1),
-                ],
+          colors:
+              isDarkMode
+                  ? [const Color(0xFF2A3F54), const Color(0xFF1F2A40)]
+                  : [
+                    const Color(0xFF5C6BC0).withValues(alpha: 0.15),
+                    const Color(0xFF9FA8DA).withValues(alpha: 0.1),
+                  ],
         ),
       ),
       child: SafeArea(
@@ -452,27 +490,35 @@ class AppDrawer extends ConsumerWidget {
                     ),
                     child: CircleAvatar(
                       radius: 42,
-                      backgroundColor: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-                      backgroundImage: user.userIcon.isNotEmpty
-                          ? CachedNetworkImageProvider(
-                              user.userIcon,
-                              headers: headers,
-                              cacheManager: JsonCacheManager(),
-                            )
-                          : user.currentAvatarThumbnailImageUrl.isNotEmpty
+                      backgroundColor:
+                          isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                      backgroundImage:
+                          user.userIcon.isNotEmpty
                               ? CachedNetworkImageProvider(
-                                  user.currentAvatarThumbnailImageUrl,
-                                  headers: headers,
-                                  cacheManager: JsonCacheManager(),
-                                )
-                              : const AssetImage('assets/images/default.png') as ImageProvider,
-                      child: user.currentAvatarThumbnailImageUrl.isEmpty && user.userIcon.isEmpty
-                          ? Icon(
-                              Icons.person,
-                              size: 36,
-                              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                            )
-                          : null,
+                                user.userIcon,
+                                headers: headers,
+                                cacheManager: JsonCacheManager(),
+                              )
+                              : user.currentAvatarThumbnailImageUrl.isNotEmpty
+                              ? CachedNetworkImageProvider(
+                                user.currentAvatarThumbnailImageUrl,
+                                headers: headers,
+                                cacheManager: JsonCacheManager(),
+                              )
+                              : const AssetImage('assets/images/default.png')
+                                  as ImageProvider,
+                      child:
+                          user.currentAvatarThumbnailImageUrl.isEmpty &&
+                                  user.userIcon.isEmpty
+                              ? Icon(
+                                Icons.person,
+                                size: 36,
+                                color:
+                                    isDarkMode
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                              )
+                              : null,
                     ),
                   ),
 
@@ -483,7 +529,8 @@ class AppDrawer extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.all(3),
                       decoration: BoxDecoration(
-                        color: isDarkMode ? const Color(0xFF1F2A40) : Colors.white,
+                        color:
+                            isDarkMode ? const Color(0xFF1F2A40) : Colors.white,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
@@ -551,14 +598,19 @@ class AppDrawer extends ConsumerWidget {
                   const SizedBox(height: 8),
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 20),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: isDarkMode
-                          ? Colors.black.withValues(alpha: 0.2)
-                          : Colors.white.withValues(alpha: 0.6),
+                      color:
+                          isDarkMode
+                              ? Colors.black.withValues(alpha: 0.2)
+                              : Colors.white.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
+                        color:
+                            isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
                         width: 1,
                       ),
                     ),
@@ -584,19 +636,24 @@ class AppDrawer extends ConsumerWidget {
   }
 
   // ローディングヘッダー
-  Widget _buildStylishLoadingHeader(BuildContext context, bool isDarkMode, Translations t) {
+  Widget _buildStylishLoadingHeader(
+    BuildContext context,
+    bool isDarkMode,
+    Translations t,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 50),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: isDarkMode
-              ? [const Color(0xFF2A3F54), const Color(0xFF1F2A40)]
-              : [
-                  AppTheme.primaryColor.withValues(alpha: 0.15),
-                  AppTheme.primaryColor.withValues(alpha: 0.05),
-                ],
+          colors:
+              isDarkMode
+                  ? [const Color(0xFF2A3F54), const Color(0xFF1F2A40)]
+                  : [
+                    AppTheme.primaryColor.withValues(alpha: 0.15),
+                    AppTheme.primaryColor.withValues(alpha: 0.05),
+                  ],
         ),
       ),
       child: SafeArea(
@@ -710,7 +767,10 @@ class AppDrawer extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.red[700],
                   backgroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   elevation: 4,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),

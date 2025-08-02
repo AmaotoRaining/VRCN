@@ -24,7 +24,7 @@ final worldPaletteProvider = FutureProvider.family<CorePalette?, String>((
   if (imageUrl.isEmpty) return null;
 
   try {
-    final headers = <String, String>{'User-Agent': 'VRChat/1.0'};
+    final headers = <String, String>{'User-Agent': 'VRCN'};
     final imageProvider = CachedNetworkImageProvider(
       imageUrl,
       cacheManager: JsonCacheManager(),
@@ -147,11 +147,8 @@ class FriendLocationGroup extends ConsumerWidget {
       stops: const [0.3, 1.0],
     );
 
-    // VRChat APIのインスタンスからヘッダー情報を取得
     final vrchatApi = ref.watch(vrchatProvider).value;
-    final headers = <String, String>{
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     // 使用するワールドIDを決定
     final effectiveInstance = isTraveling ? travelingToLocation : location;

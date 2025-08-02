@@ -37,10 +37,7 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final printFilesAsync = ref.watch(getPrintFilesProvider);
     final vrchatApi = ref.watch(vrchatProvider).value;
-
-    final headers = <String, String>{
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     return RefreshIndicator(
       onRefresh: _refreshFiles,

@@ -37,9 +37,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final currentUserAsync = ref.watch(currentUserProvider);
     final vrchatApi = ref.watch(vrchatProvider).value;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final headers = {
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     // ドロワーを開くための関数
     void openDrawer() {
@@ -66,7 +64,9 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     ),
                   )
                   : CircleAvatar(
-                    backgroundImage: const AssetImage('assets/icons/default.png'),
+                    backgroundImage: const AssetImage(
+                      'assets/icons/default.png',
+                    ),
                     backgroundColor: Theme.of(context).colorScheme.surface,
                   )),
       iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),

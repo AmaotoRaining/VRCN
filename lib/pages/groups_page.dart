@@ -130,9 +130,7 @@ class GroupsPage extends ConsumerWidget {
     Translations t,
   ) {
     final vrchatApi = ref.watch(vrchatProvider).value;
-    final headers = <String, String>{
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     // グループの種類に応じた色を設定（ランダムだが一貫性あり）
     final colorSets = <List<Color>>[

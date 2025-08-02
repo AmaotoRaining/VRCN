@@ -63,9 +63,7 @@ class FriendDetailPage extends ConsumerWidget {
     }
 
     final vrchatApi = ref.watch(vrchatProvider).value;
-    final headers = {
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     final userRepresentedGroupAsync = ref.watch(
       userRepresentedGroupProvider(user.id),
@@ -193,7 +191,7 @@ class FriendDetailPage extends ConsumerWidget {
                           ],
                         ),
                   ),
-                  _buildUserHeader(user, statusColor),
+                  _buildUserHeader(user, statusColor, ref),
                 ],
               ),
             ),
@@ -388,7 +386,7 @@ class FriendDetailPage extends ConsumerWidget {
     }
   }
 
-  Widget _buildUserHeader(User user, Color statusColor) {
+  Widget _buildUserHeader(User user, Color statusColor, WidgetRef ref) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -406,7 +404,7 @@ class FriendDetailPage extends ConsumerWidget {
               ),
             ],
           ),
-          child: ClipOval(child: _buildUserAvatar(user)),
+          child: ClipOval(child: _buildUserAvatar(user, ref)),
         ),
         const SizedBox(height: 16),
         Text(
@@ -436,8 +434,9 @@ class FriendDetailPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildUserAvatar(User user) {
-    final headers = {'User-Agent': 'VRChat/1.0'};
+  Widget _buildUserAvatar(User user, WidgetRef ref) {
+    final vrchatApi = ref.watch(vrchatProvider).value;
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     if (user.userIcon.isNotEmpty) {
       return CachedNetworkImage(

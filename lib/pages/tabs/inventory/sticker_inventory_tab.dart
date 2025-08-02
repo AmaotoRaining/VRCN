@@ -37,10 +37,7 @@ class _StickerInventoryTabState extends ConsumerState<StickerInventoryTab>
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final stickerFilesAsync = ref.watch(getFilesByTagProvider('sticker'));
     final vrchatApi = ref.watch(vrchatProvider).value;
-
-    final headers = <String, String>{
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     return RefreshIndicator(
       onRefresh: _refreshFiles,

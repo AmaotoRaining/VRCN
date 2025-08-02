@@ -218,10 +218,7 @@ class _AvatarsPageState extends ConsumerState<AvatarsPage>
         isDarkMode ? const Color(0xFF121212) : const Color(0xFFF8F8F8);
     final vrchatApi = ref.watch(vrchatProvider).value;
 
-    // API呼び出し用のヘッダー
-    final headers = <String, String>{
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     // 初期ロード用のプロバイダー - キャッシュは使うが状態管理は手動で行う
     final avatarsAsync = ref.watch(avatarSearchProvider(_getSearchParams()));

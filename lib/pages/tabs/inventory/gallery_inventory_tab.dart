@@ -37,10 +37,7 @@ class _GalleryInventoryTabState extends ConsumerState<GalleryInventoryTab>
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final galleryFilesAsync = ref.watch(getFilesByTagProvider('gallery'));
     final vrchatApi = ref.watch(vrchatProvider).value;
-
-    final headers = <String, String>{
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     return RefreshIndicator(
       onRefresh: _refreshFiles,

@@ -5,6 +5,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/avatar_provider.dart';
 import 'package:vrchat/provider/favorite_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
@@ -14,7 +15,6 @@ import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
-import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat_dart/vrchat_dart.dart' hide FavoriteType;
 
 // お気に入り削除用のStateNotifierプロバイダー
@@ -764,7 +764,7 @@ Widget _buildEnhancedFriendItem(
 ) {
   final vrchatApi = ref.watch(vrchatProvider).value;
   final headers = <String, String>{
-    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
+    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN',
   };
 
   return Card(
@@ -923,7 +923,7 @@ Widget _buildEnhancedWorldItem(
 ) {
   final vrchatApi = ref.watch(vrchatProvider).value;
   final headers = <String, String>{
-    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
+    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN',
   };
 
   return Card(
@@ -1085,7 +1085,7 @@ Widget _buildEnhancedAvatarItem(
 ) {
   final vrchatApi = ref.watch(vrchatProvider).value;
   final headers = <String, String>{
-    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
+    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN',
   };
 
   // リリースステータスに応じた色を取得

@@ -36,10 +36,7 @@ class _IconInventoryTabState extends ConsumerState<IconInventoryTab>
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final iconFilesAsync = ref.watch(getFilesByTagProvider('icon'));
     final vrchatApi = ref.watch(vrchatProvider).value;
-
-    final headers = <String, String>{
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     return RefreshIndicator(
       onRefresh: _refreshFiles,

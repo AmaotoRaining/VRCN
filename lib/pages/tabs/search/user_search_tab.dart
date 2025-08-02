@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/search_providers.dart';
 import 'package:vrchat/provider/user_provider.dart';
+import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat/widgets/search_widgets.dart';
@@ -150,7 +151,8 @@ class _UserSearchTabState extends ConsumerState<UserSearchTab> {
   }
 
   Widget _buildUserCard(LimitedUser user, bool isDarkMode) {
-    final headers = {'User-Agent': 'VRChat/1.0'};
+    final vrchatApi = ref.watch(vrchatProvider).value;
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     return Card(
       elevation: 2,

@@ -23,9 +23,7 @@ class WorldDetailPage extends ConsumerWidget {
     final worldDetailAsync = ref.watch(worldDetailProvider(worldId));
     final vrchatApi = ref.watch(vrchatProvider).value;
 
-    final headers = <String, String>{
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     return Scaffold(
       body: worldDetailAsync.when(

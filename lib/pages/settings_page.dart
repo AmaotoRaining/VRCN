@@ -143,14 +143,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                   secondaryTextColor,
                                   buttonColor,
                                 ),
-                                if (Platform.isIOS || Platform.isAndroid)
-                                  _buildAppIconSection(
-                                    context,
-                                    ref,
-                                    isDarkMode,
-                                    textColor,
-                                    secondaryTextColor,
-                                  ),
                               ],
                             )
                             .animate()
@@ -934,7 +926,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     );
   }
 
-  // 言語設定メソッドを修正
+  // 言語設定
   Widget _buildLanguageSetting(
     bool isDarkMode,
     Color textColor,

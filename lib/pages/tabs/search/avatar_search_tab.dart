@@ -40,8 +40,8 @@ class AvatarSearchTab extends ConsumerWidget {
 
         return _buildSearchResults(context, avatars, isDarkMode);
       },
-      loading: () => LoadingIndicator(message: t.search.tabs.avatarSearch.searching,
-          ),
+      loading:
+          () => LoadingIndicator(message: t.search.tabs.avatarSearch.searching),
       error:
           (error, stack) => ErrorContainer(
             message: error.toString(),
@@ -144,7 +144,6 @@ class AvatarSearchTab extends ConsumerWidget {
     AvtrDbSearchResult avatar,
     bool isDarkMode,
   ) {
-    final headers = {'User-Agent': 'VRChat/1.0'};
 
     // ランダムな要素を追加してデザインのバリエーションを増やす
     final cardHeight = 240.0 + (avatar.name.length % 3) * 10;
@@ -177,7 +176,6 @@ class AvatarSearchTab extends ConsumerWidget {
                       imageUrl: avatar.imageUrl,
                       fit: BoxFit.cover,
                       width: double.infinity,
-                      httpHeaders: headers,
                       cacheManager: JsonCacheManager(),
                       placeholder:
                           (context, url) => Container(
