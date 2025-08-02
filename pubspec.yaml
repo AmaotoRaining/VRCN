@@ -69,6 +69,8 @@ dependencies:
   firebase_in_app_messaging: ^0.9.0
   # App Check
   firebase_app_check: ^0.4.0
+  # Firebase Remote Config
+  firebase_remote_config: ^6.0.0
 
   # スプラッシュ画面
   flutter_native_splash: ^2.4.4
