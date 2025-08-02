@@ -374,7 +374,13 @@ class _EngageCardPageState extends ConsumerState<EngageCardPage>
                         // ignore: deprecated_member_use
                         foregroundColor: Colors.white,
                         version: QrVersions.auto,
-                        size: 80,
+                        size: 90,
+                        embeddedImage: const AssetImage(
+                          'assets/images/logo.png',
+                        ),
+                        embeddedImageStyle: const QrEmbeddedImageStyle(
+                          size: Size(20, 20)
+                        ),
                       ),
                     ],
                   ),
