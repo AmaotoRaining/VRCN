@@ -1,7 +1,7 @@
 name: vrchat
 description: "VRCN for VRChat"
 publish_to: "none"
-version: 1.2.2+125
+version: 1.2.2+121
 
 environment:
   sdk: ^3.7.2
@@ -49,12 +49,26 @@ dependencies:
   # アイコン切り替え
   flutter_dynamic_icon_plus: ^1.3.1
 
-  # Firebaseコア
+  # Firebase Core
   firebase_core: ^4.0.0
-  # Firebaseアナリティクス
+  # Firebase Analytics
   firebase_analytics: ^12.0.0
-  # Firebaseパフォーマンス
+  # Firebase Crashlytics
+  firebase_crashlytics: ^5.0.0
+  # Firebase Performance Monitoring
   firebase_performance: ^0.11.0
+  # Firebase Authentication
+  firebase_auth: ^6.0.0
+  # Cloud Firestore
+  cloud_firestore: ^6.0.0
+  # Cloud Storage
+  firebase_storage: ^13.0.0
+  # Cloud Messaging
+  firebase_messaging: ^16.0.0
+  # In-App Messaging
+  firebase_in_app_messaging: ^0.9.0
+  # App Check
+  firebase_app_check: ^0.4.0
 
   # スプラッシュ画面
   flutter_native_splash: ^2.4.4

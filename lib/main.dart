@@ -1,6 +1,8 @@
 import 'package:app_links/app_links.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -33,6 +35,23 @@ Future<void> main() async {
 
   // Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // クラッシュハンドラ
+  FlutterError.onError = (errorDetails) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
+  // App Check初期化
+  await FirebaseAppCheck.instance.activate(
+    androidProvider:
+        kReleaseMode ? AndroidProvider.playIntegrity : AndroidProvider.debug,
+    appleProvider:
+        kReleaseMode ? AppleProvider.deviceCheck : AppleProvider.debug,
+  );
 
   // システムUIの設定
   SystemChrome.setSystemUIOverlayStyle(
