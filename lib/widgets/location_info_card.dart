@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/Instance_provider.dart';
 import 'package:vrchat/provider/invite_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
@@ -38,7 +39,7 @@ class LocationInfoCard extends ConsumerWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'プライベート',
+                t.location.private,
                 style: GoogleFonts.notoSans(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -63,9 +64,7 @@ class LocationInfoCard extends ConsumerWidget {
             : null;
 
     final vrchatApi = ref.watch(vrchatProvider).value;
-    final headers = {
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -101,13 +100,12 @@ class LocationInfoCard extends ConsumerWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () async {
-                      // ボタンを押したときのフィードバック用にScaffoldMessengerを使用
                       try {
                         // ローディング表示
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('招待を送信中...'),
-                            duration: Duration(seconds: 1),
+                          SnackBar(
+                            content: Text(t.location.inviteSending),
+                            duration: const Duration(seconds: 1),
                           ),
                         );
 
@@ -125,11 +123,11 @@ class LocationInfoCard extends ConsumerWidget {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: const Text('招待を送信しました。通知から参加できます'),
+                              content: Text(t.location.inviteSent),
                               backgroundColor: Colors.green[700],
                               duration: const Duration(seconds: 3),
                               action: SnackBarAction(
-                                label: '閉じる',
+                                label: t.common.close,
                                 textColor: Colors.white,
                                 onPressed: () {
                                   ScaffoldMessenger.of(
@@ -145,11 +143,13 @@ class LocationInfoCard extends ConsumerWidget {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('招待の送信に失敗しました: ${e.toString()}'),
+                              content: Text(
+                                t.location.inviteFailed(error: e.toString()),
+                              ),
                               backgroundColor: Colors.red[700],
                               duration: const Duration(seconds: 5),
                               action: SnackBarAction(
-                                label: '閉じる',
+                                label: t.common.close,
                                 textColor: Colors.white,
                                 onPressed: () {
                                   ScaffoldMessenger.of(
@@ -164,7 +164,7 @@ class LocationInfoCard extends ConsumerWidget {
                     },
                     icon: const Icon(Icons.login),
                     label: Text(
-                      '自分に招待を送信',
+                      t.location.inviteButton,
                       style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
                     ),
                     style: ElevatedButton.styleFrom(

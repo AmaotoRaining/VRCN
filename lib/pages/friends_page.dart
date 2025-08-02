@@ -9,6 +9,7 @@ import 'package:vrchat/widgets/app_drawer.dart';
 import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/friend_location_group.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
 class FriendsPage extends ConsumerWidget {
@@ -26,12 +27,11 @@ class FriendsPage extends ConsumerWidget {
         data: (friends) {
           return _buildFriendsList(context, sortedFriends, ref);
         },
-        loading: () => const LoadingIndicator(message: 'フレンド情報を読み込み中...'),
-        error:
-            (error, stackTrace) => ErrorContainer(
-              message: 'フレンドの情報の取得に失敗しました: ${error.toString()}',
-              onRetry: () => ref.refresh(friendsProvider),
-            ),
+        loading: () => LoadingIndicator(message: t.friends.loading),
+        error: (error, stackTrace) => ErrorContainer(
+          message: t.friends.error(error: error.toString()),
+          onRetry: () => ref.refresh(friendsProvider),
+        ),
       ),
     );
   }
@@ -44,7 +44,7 @@ class FriendsPage extends ConsumerWidget {
     if (friends.isEmpty) {
       return Center(
         child: Text(
-          'フレンドが見つかりませんでした',
+          t.friends.notFound,
           style: GoogleFonts.notoSans(fontSize: 16),
         ),
       );
@@ -52,16 +52,12 @@ class FriendsPage extends ConsumerWidget {
 
     return RefreshIndicator(
       onRefresh: () async {
-        // 短い遅延後にデータを更新
         await Future.delayed(const Duration(milliseconds: 300));
-
-        // refreshの戻り値を適切に利用
         return await ref.refresh(friendsProvider.future);
       },
       color: Theme.of(context).colorScheme.primary,
       backgroundColor: Theme.of(context).colorScheme.surface,
       strokeWidth: 2.5,
-      // 常にグループ表示のみを使用
       child: _buildGroupedFriendsList(context, friends, ref),
     );
   }
@@ -72,17 +68,13 @@ class FriendsPage extends ConsumerWidget {
     List<LimitedUser> friends,
     WidgetRef ref,
   ) {
-    // フレンドをロケーションごとにグループ化
     final friendGroups = <String, List<LimitedUser>>{};
-
-    // オンライン/オフライン/アクティブオフラインでまず大きく分ける
     final offlineFriends = <LimitedUser>[];
-    final activeOfflineFriends = <LimitedUser>[]; // アクティブオフライン用のリスト追加
+    final activeOfflineFriends = <LimitedUser>[];
     final privateFriends = <LimitedUser>[];
     final onlineFriends = <LimitedUser>[];
 
     for (final friend in friends) {
-      // locationがofflineでもstatusが設定されている場合はアクティブグループに
       if (friend.location == 'offline' &&
           friend.status != UserStatus.offline &&
           friend.status.toString().isNotEmpty) {
@@ -96,7 +88,6 @@ class FriendsPage extends ConsumerWidget {
       }
     }
 
-    // オンラインのフレンドをさらにロケーションごとにグループ化
     for (final friend in onlineFriends) {
       final location = friend.location ?? 'unknown';
       if (!friendGroups.containsKey(location)) {
@@ -105,24 +96,20 @@ class FriendsPage extends ConsumerWidget {
       friendGroups[location]!.add(friend);
     }
 
-    // ワールド情報の事前取得
     for (final location in friendGroups.keys) {
       ref.read(instanceDetailProvider(location));
     }
 
-    // 人数の多い順にグループをソート
     final sortedLocations =
         friendGroups.keys.toList()..sort(
           (a, b) => friendGroups[b]!.length.compareTo(friendGroups[a]!.length),
         );
 
-    // グループ化したフレンドリストを構築
     final groupWidgets = <Widget>[];
 
-    // オンラインワールドグループを人数順に表示
+    // オンラインワールドグループ
     for (final location in sortedLocations) {
       final locationFriends = friendGroups[location]!;
-
       groupWidgets.add(
         FriendLocationGroup(
           locationName: location,
@@ -137,26 +124,26 @@ class FriendsPage extends ConsumerWidget {
       );
     }
 
-    // プライベートグループを表示（人数に関わらず、パブリックグループの後に表示）
+    // プライベートグループ
     if (privateFriends.isNotEmpty) {
       groupWidgets.add(
         FriendLocationGroup(
-          locationName: 'プライベート',
+          locationName: t.friends.private,
           locationIcon: Icons.lock_outline,
           friends: privateFriends,
           onTapFriend: (friend) => context.push('/user/${friend.id}'),
           iconColor: Colors.redAccent,
           isPrivate: true,
-          compact: false, // コンパクトモードをオフに
+          compact: false,
         ),
       );
     }
 
-    // アクティブなオフラインフレンドが存在する場合はプライベートの後に表示
+    // アクティブオフライン
     if (activeOfflineFriends.isNotEmpty) {
       groupWidgets.add(
         FriendLocationGroup(
-          locationName: 'アクティブ',
+          locationName: t.friends.active,
           locationIcon: Icons.circle,
           friends: activeOfflineFriends,
           onTapFriend: (friend) => context.push('/user/${friend.id}'),
@@ -168,11 +155,11 @@ class FriendsPage extends ConsumerWidget {
       );
     }
 
-    // オフラインフレンドが存在する場合は最後に表示
+    // オフライン
     if (offlineFriends.isNotEmpty) {
       groupWidgets.add(
         FriendLocationGroup(
-          locationName: 'オフライン',
+          locationName: t.friends.offline,
           locationIcon: Icons.offline_bolt,
           friends: offlineFriends,
           onTapFriend: (friend) => context.push('/user/${friend.id}'),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/avatar_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -31,10 +32,10 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
     return Scaffold(
       body: avatarDetailAsync.when(
         data: (avatar) => _buildAvatarDetail(context, avatar, isDarkMode),
-        loading: () => const LoadingIndicator(message: 'アバター情報を読み込み中...'),
+        loading: () => LoadingIndicator(message: t.avatarDetail.loading),
         error:
             (error, stackTrace) => ErrorContainer(
-              message: 'アバター情報の取得に失敗しました: ${error.toString()}',
+              message: t.avatarDetail.error(error: error.toString()),
               onRetry: () => ref.refresh(avatarDetailProvider(widget.avatarId)),
             ),
       ),
@@ -47,9 +48,7 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
     bool isDarkMode,
   ) {
     final vrchatApi = ref.watch(vrchatProvider).value;
-    final headers = {
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -181,7 +180,7 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
         Row(
           children: [
             Text(
-              '作成者: ',
+              '${t.avatarDetail.creator}: ',
               style: GoogleFonts.notoSans(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -207,7 +206,7 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
             ),
             const SizedBox(width: 4),
             Text(
-              '作成: ${_formatDate(avatar.createdAt)}',
+              '${t.avatarDetail.created}: ${_formatDate(avatar.createdAt)}',
               style: GoogleFonts.notoSans(
                 fontSize: 14,
                 color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
@@ -221,7 +220,7 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
             ),
             const SizedBox(width: 4),
             Text(
-              '更新: ${_formatDate(avatar.updatedAt)}',
+              '${t.avatarDetail.updated}: ${_formatDate(avatar.updatedAt)}',
               style: GoogleFonts.notoSans(
                 fontSize: 14,
                 color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
@@ -258,7 +257,7 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '説明',
+          t.avatarDetail.description,
           style: GoogleFonts.notoSans(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -278,7 +277,7 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
           child: Text(
             avatar.description.isNotEmpty
                 ? avatar.description
-                : 'No description',
+                : t.avatarDetail.noDescription,
             style: GoogleFonts.notoSans(
               fontSize: 16,
               color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
@@ -300,7 +299,7 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'タグ',
+          t.avatarDetail.tags,
           style: GoogleFonts.notoSans(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -372,7 +371,11 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
 
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('アバター「${avatar.name}」に変更しました'),
+                                content: Text(
+                                  t.avatarDetail.changeSuccess(
+                                    name: avatar.name,
+                                  ),
+                                ),
                                 backgroundColor: Colors.green,
                               ),
                             );
@@ -388,7 +391,11 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
 
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('アバターの変更に失敗しました: $e'),
+                                content: Text(
+                                  t.avatarDetail.changeFailed(
+                                    error: e.toString(),
+                                  ),
+                                ),
                                 backgroundColor: Colors.red,
                               ),
                             );
@@ -404,7 +411,9 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
                       )
                       : const Icon(Icons.person),
               label: Text(
-                _isLoading ? '変更中...' : 'このアバターを使用',
+                _isLoading
+                    ? t.avatarDetail.changing
+                    : t.avatarDetail.useThisAvatar,
                 style: GoogleFonts.notoSans(
                   fontWeight: FontWeight.w500,
                   fontSize: 16,
@@ -432,7 +441,7 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
         //     },
         //     icon: const Icon(Icons.favorite_border),
         //     label: Text(
-        //       'お気に入りに追加',
+        //       t.avatarDetail.addToFavorites,
         //       style: GoogleFonts.notoSans(
         //         fontWeight: FontWeight.w500,
         //         fontSize: 16,
@@ -459,13 +468,13 @@ class _AvatarDetailPageState extends ConsumerState<AvatarDetailPage> {
   String _getReleaseStatusText(ReleaseStatus status) {
     switch (status) {
       case ReleaseStatus.public:
-        return '公開';
+        return t.avatarDetail.public;
       case ReleaseStatus.private:
-        return '非公開';
+        return t.avatarDetail.private;
       case ReleaseStatus.hidden:
-        return '非表示';
+        return t.avatarDetail.hidden;
       default:
-        return '不明';
+        return t.avatarDetail.unknown;
     }
   }
 

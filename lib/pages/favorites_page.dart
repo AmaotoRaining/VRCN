@@ -5,6 +5,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/avatar_provider.dart';
 import 'package:vrchat/provider/favorite_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
@@ -96,7 +97,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage>
                 forceElevated: innerBoxIsScrolled,
                 backgroundColor: backgroundColor,
                 title: Text(
-                  'お気に入り',
+                  t.favorites.title,
                   style: GoogleFonts.notoSans(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -113,12 +114,12 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage>
                         colors:
                             isDarkMode
                                 ? [
-                                  Colors.purple.withValues(alpha: 0.3),
-                                  Colors.blue.withValues(alpha: 0.2),
+                                  Colors.purple.withAlpha(77),
+                                  Colors.blue.withAlpha(51),
                                 ]
                                 : [
-                                  Colors.purple.withValues(alpha: 0.1),
-                                  Colors.blue.withValues(alpha: 0.05),
+                                  Colors.purple.withAlpha(26),
+                                  Colors.blue.withAlpha(13),
                                 ],
                       ),
                     ),
@@ -137,14 +138,14 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage>
                   unselectedLabelColor:
                       isDarkMode ? Colors.grey[400] : Colors.grey[600],
                   indicatorSize: TabBarIndicatorSize.label,
-                  tabs: const [
+                  tabs: [
                     Tab(
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.people, size: 20),
-                          SizedBox(width: 6),
-                          Text('フレンド'),
+                          const Icon(Icons.people, size: 20),
+                          const SizedBox(width: 6),
+                          Text(t.favorites.friendsTab),
                         ],
                       ),
                     ),
@@ -152,9 +153,9 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.public, size: 20),
-                          SizedBox(width: 6),
-                          Text('ワールド'),
+                          const Icon(Icons.public, size: 20),
+                          const SizedBox(width: 6),
+                          Text(t.favorites.worldsTab),
                         ],
                       ),
                     ),
@@ -162,9 +163,9 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.face, size: 20),
-                          SizedBox(width: 6),
-                          Text('アバター'),
+                          const Icon(Icons.face, size: 20),
+                          const SizedBox(width: 6),
+                          Text(t.favorites.avatarsTab),
                         ],
                       ),
                     ),
@@ -212,8 +213,8 @@ class _FavoriteFriendsTab extends ConsumerWidget {
             if (friendGroups.isEmpty) {
               return _buildEmptyState(
                 context,
-                'お気に入りフォルダがありません',
-                'VRChat内でお気に入りフォルダを作成してください',
+                t.favorites.emptyFolderTitle,
+                t.favorites.emptyFolderDescription,
                 Icons.folder_outlined,
                 isDarkMode,
               );
@@ -266,7 +267,7 @@ class _FavoriteFriendsTab extends ConsumerWidget {
                             if (folderFavorites.isEmpty)
                               _buildEmptyFolderMessage(
                                 context,
-                                'このフォルダにはフレンドがいません',
+                                t.favorites.emptyFriends,
                                 Icons.people_outline,
                                 isDarkMode,
                               )
@@ -324,10 +325,10 @@ class _FavoriteFriendsTab extends ConsumerWidget {
               ),
             );
           },
-          loading: () => const LoadingIndicator(message: 'フォルダ情報を読み込み中...'),
+          loading: () => LoadingIndicator(message: t.favorites.loadingFolder),
           error:
               (_, _) => ErrorContainer(
-                message: '情報の取得に失敗しました',
+                message: t.favorites.errorFolder,
                 onRetry: () {
                   ref.invalidate(myFavoriteGroupsProvider);
                   ref.invalidate(favoriteFriendsProvider);
@@ -335,10 +336,10 @@ class _FavoriteFriendsTab extends ConsumerWidget {
               ),
         );
       },
-      loading: () => const LoadingIndicator(message: 'お気に入りを読み込み中...'),
+      loading: () => LoadingIndicator(message: t.favorites.loading),
       error:
           (error, stack) => ErrorContainer(
-            message: 'お気に入りの読み込みに失敗しました: $error',
+            message: t.favorites.error(error: error.toString()),
             onRetry: () => ref.invalidate(favoriteFriendsProvider),
           ),
     );
@@ -362,8 +363,8 @@ class _FavoriteWorldsTab extends ConsumerWidget {
         if (favorites.isEmpty) {
           return _buildEmptyState(
             context,
-            'お気に入りのワールドがありません',
-            'ワールド詳細画面からお気に入りに登録できます',
+            t.favorites.emptyWorldsTabTitle,
+            t.favorites.emptyWorldsTabDescription,
             Icons.public,
             isDarkMode,
           );
@@ -411,7 +412,7 @@ class _FavoriteWorldsTab extends ConsumerWidget {
                             if (folderFavorites.isEmpty)
                               _buildEmptyFolderMessage(
                                 context,
-                                'このフォルダにはワールドがありません',
+                                t.favorites.emptyWorlds,
                                 Icons.public,
                                 isDarkMode,
                               )
@@ -485,10 +486,10 @@ class _FavoriteWorldsTab extends ConsumerWidget {
               ),
             );
           },
-          loading: () => const LoadingIndicator(message: 'フォルダ情報を読み込み中...'),
+          loading: () => LoadingIndicator(message: t.favorites.loadingFolder),
           error:
               (_, _) => ErrorContainer(
-                message: '情報の取得に失敗しました',
+                message: t.favorites.errorFolder,
                 onRetry: () {
                   ref.invalidate(myFavoriteGroupsProvider);
                   ref.invalidate(favoriteWorldsProvider);
@@ -496,10 +497,10 @@ class _FavoriteWorldsTab extends ConsumerWidget {
               ),
         );
       },
-      loading: () => const LoadingIndicator(message: 'お気に入りを読み込み中...'),
+      loading: () => LoadingIndicator(message: t.favorites.loading),
       error:
           (error, stack) => ErrorContainer(
-            message: 'お気に入りの読み込みに失敗しました: $error',
+            message: t.favorites.error(error: error.toString()),
             onRetry: () => ref.refresh(favoriteWorldsProvider),
           ),
     );
@@ -523,8 +524,8 @@ class _FavoriteAvatarsTab extends ConsumerWidget {
         if (favorites.isEmpty) {
           return _buildEmptyState(
             context,
-            'お気に入りのアバターがありません',
-            'アバター詳細画面からお気に入りに登録できます',
+            t.favorites.emptyAvatarsTabTitle,
+            t.favorites.emptyAvatarsTabDescription,
             Icons.face,
             isDarkMode,
           );
@@ -572,7 +573,7 @@ class _FavoriteAvatarsTab extends ConsumerWidget {
                             if (folderFavorites.isEmpty)
                               _buildEmptyFolderMessage(
                                 context,
-                                'このフォルダにはアバターがありません',
+                                t.favorites.emptyAvatars,
                                 Icons.face,
                                 isDarkMode,
                               )
@@ -641,10 +642,10 @@ class _FavoriteAvatarsTab extends ConsumerWidget {
               ),
             );
           },
-          loading: () => const LoadingIndicator(message: 'フォルダ情報を読み込み中...'),
+          loading: () => LoadingIndicator(message: t.favorites.loadingFolder),
           error:
               (_, _) => ErrorContainer(
-                message: '情報の取得に失敗しました',
+                message: t.favorites.errorFolder,
                 onRetry: () {
                   ref.invalidate(myFavoriteGroupsProvider);
                   ref.invalidate(favoriteAvatarsProvider);
@@ -652,10 +653,10 @@ class _FavoriteAvatarsTab extends ConsumerWidget {
               ),
         );
       },
-      loading: () => const LoadingIndicator(message: 'お気に入りを読み込み中...'),
+      loading: () => LoadingIndicator(message: t.favorites.loading),
       error:
           (error, stack) => ErrorContainer(
-            message: 'お気に入りの読み込みに失敗しました: $error',
+            message: t.favorites.error(error: error.toString()),
             onRetry: () => ref.refresh(favoriteAvatarsProvider),
           ),
     );
@@ -696,7 +697,7 @@ class _StylishFolderHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: color.withValues(alpha: .3),
+                    color: color.withAlpha(77),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
@@ -721,7 +722,7 @@ class _StylishFolderHeader extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '$itemCount アイテム',
+                    t.favorites.itemsCount(count: itemCount.toString()),
                     style: GoogleFonts.notoSans(
                       fontSize: 12,
                       color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
@@ -763,7 +764,7 @@ Widget _buildEnhancedFriendItem(
 ) {
   final vrchatApi = ref.watch(vrchatProvider).value;
   final headers = <String, String>{
-    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
+    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN',
   };
 
   return Card(
@@ -847,7 +848,6 @@ Widget _buildEnhancedFriendItem(
                       friend.statusDescription,
                       style: GoogleFonts.notoSans(
                         fontSize: 14,
-                        fontStyle: FontStyle.italic,
                         color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                       ),
                       maxLines: 1,
@@ -923,7 +923,7 @@ Widget _buildEnhancedWorldItem(
 ) {
   final vrchatApi = ref.watch(vrchatProvider).value;
   final headers = <String, String>{
-    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
+    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN',
   };
 
   return Card(
@@ -968,10 +968,7 @@ Widget _buildEnhancedWorldItem(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.7),
-                      ],
+                      colors: [Colors.transparent, Colors.black.withAlpha(179)],
                       stops: const [0.6, 1.0],
                     ),
                   ),
@@ -991,7 +988,7 @@ Widget _buildEnhancedWorldItem(
                     color: Colors.white,
                     shadows: [
                       Shadow(
-                        color: Colors.black.withValues(alpha: 0.8),
+                        color: Colors.black.withAlpha(204),
                         blurRadius: 3,
                         offset: const Offset(0, 1),
                       ),
@@ -1008,7 +1005,7 @@ Widget _buildEnhancedWorldItem(
                 right: 8,
                 child: Material(
                   elevation: 2,
-                  color: Colors.black.withValues(alpha: 0.5),
+                  color: Colors.black.withAlpha(128),
                   borderRadius: BorderRadius.circular(20),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(20),
@@ -1088,7 +1085,7 @@ Widget _buildEnhancedAvatarItem(
 ) {
   final vrchatApi = ref.watch(vrchatProvider).value;
   final headers = <String, String>{
-    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
+    'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN',
   };
 
   // リリースステータスに応じた色を取得
@@ -1144,10 +1141,7 @@ Widget _buildEnhancedAvatarItem(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.7),
-                      ],
+                      colors: [Colors.transparent, Colors.black.withAlpha(179)],
                       stops: const [0.6, 1.0],
                     ),
                   ),
@@ -1164,7 +1158,7 @@ Widget _buildEnhancedAvatarItem(
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.8),
+                    color: statusColor.withAlpha(204),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -1184,7 +1178,7 @@ Widget _buildEnhancedAvatarItem(
                 right: 8,
                 child: Material(
                   elevation: 2,
-                  color: Colors.black.withValues(alpha: 0.5),
+                  color: Colors.black.withAlpha(128),
                   borderRadius: BorderRadius.circular(20),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(20),
@@ -1224,9 +1218,7 @@ Widget _buildEnhancedAvatarItem(
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-
                 const SizedBox(height: 4),
-
                 Row(
                   children: [
                     Expanded(
@@ -1241,7 +1233,6 @@ Widget _buildEnhancedAvatarItem(
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-
                     // 追加情報（バージョンなど）
                     Text(
                       'v${avatar.version}',
@@ -1273,10 +1264,7 @@ Widget _buildEmptyFolderMessage(
     margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
     padding: const EdgeInsets.symmetric(vertical: 20),
     decoration: BoxDecoration(
-      color:
-          isDarkMode
-              ? Colors.grey[850]!.withValues(alpha: 0.5)
-              : Colors.grey[100]!,
+      color: isDarkMode ? Colors.grey[850]!.withAlpha(128) : Colors.grey[100]!,
       borderRadius: BorderRadius.circular(16),
       border: Border.all(
         color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
@@ -1386,11 +1374,9 @@ Widget _buildErrorItem(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color:
-                  isDarkMode
-                      ? Colors.red[900]!.withValues(alpha: 0.2)
-                      : Colors.red[50],
+                  isDarkMode ? Colors.red[900]!.withAlpha(51) : Colors.red[50],
               border: Border.all(
-                color: Colors.red[300]!.withValues(alpha: 0.5),
+                color: Colors.red[300]!.withAlpha(128),
                 width: 2,
               ),
             ),
@@ -1405,7 +1391,7 @@ Widget _buildErrorItem(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '読み込みエラー',
+                  t.favorites.loadingError,
                   style: GoogleFonts.notoSans(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -1568,10 +1554,7 @@ Widget _buildWorldErrorItem(String favoriteId, bool isDarkMode) {
         AspectRatio(
           aspectRatio: 16 / 9,
           child: Container(
-            color:
-                isDarkMode
-                    ? Colors.red[900]!.withValues(alpha: 0.2)
-                    : Colors.red[50],
+            color: isDarkMode ? Colors.red[900]!.withAlpha(51) : Colors.red[50],
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1579,7 +1562,7 @@ Widget _buildWorldErrorItem(String favoriteId, bool isDarkMode) {
                   Icon(Icons.error_outline, color: Colors.red[300], size: 30),
                   const SizedBox(height: 8),
                   Text(
-                    '読み込みエラー',
+                    t.favorites.loadingError,
                     style: GoogleFonts.notoSans(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -1628,10 +1611,7 @@ Widget _buildAvatarErrorItem(String favoriteId, bool isDarkMode) {
         AspectRatio(
           aspectRatio: 1.0,
           child: Container(
-            color:
-                isDarkMode
-                    ? Colors.red[900]!.withValues(alpha: 0.2)
-                    : Colors.red[50],
+            color: isDarkMode ? Colors.red[900]!.withAlpha(51) : Colors.red[50],
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1639,7 +1619,7 @@ Widget _buildAvatarErrorItem(String favoriteId, bool isDarkMode) {
                   Icon(Icons.error_outline, color: Colors.red[300], size: 30),
                   const SizedBox(height: 8),
                   Text(
-                    '読み込みエラー',
+                    t.favorites.loadingError,
                     style: GoogleFonts.notoSans(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -1689,13 +1669,13 @@ String _formatNumber(int number) {
 String _getReleaseStatusText(ReleaseStatus status) {
   switch (status) {
     case ReleaseStatus.public:
-      return '公開';
+      return t.favorites.public;
     case ReleaseStatus.private:
-      return '非公開';
+      return t.favorites.private;
     case ReleaseStatus.hidden:
-      return '非表示';
+      return t.favorites.hidden;
     default:
-      return '不明';
+      return t.favorites.unknown;
   }
 }
 
@@ -1810,15 +1790,15 @@ Future<void> _removeFavorite(
     ref.invalidate(favoriteAvatarsProvider);
 
     if (context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('$nameをお気に入りから削除しました')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.favorites.removeSuccess(name: name))),
+      );
     }
   } catch (e) {
     if (context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('削除に失敗しました: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.favorites.removeFailed(error: e.toString()))),
+      );
     }
   }
 }

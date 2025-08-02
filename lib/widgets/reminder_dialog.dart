@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/pages/event_calendar_page.dart';
 import 'package:vrchat/provider/event_reminder_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -35,7 +36,7 @@ class _ReminderDialogState extends ConsumerState<ReminderDialog> {
 
     return AlertDialog(
       title: Text(
-        'リマインダーを設定',
+        t.reminder.dialogTitle,
         style: GoogleFonts.notoSans(fontWeight: FontWeight.bold, fontSize: 18),
       ),
       content: Column(
@@ -72,7 +73,7 @@ class _ReminderDialogState extends ConsumerState<ReminderDialog> {
           ),
           const SizedBox(height: 16),
           Text(
-            'いつ通知を受け取りますか？',
+            t.reminder.receiveNotification,
             style: GoogleFonts.notoSans(
               fontWeight: FontWeight.w500,
               fontSize: 15,
@@ -100,7 +101,7 @@ class _ReminderDialogState extends ConsumerState<ReminderDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text('キャンセル', style: GoogleFonts.notoSans()),
+          child: Text(t.reminder.cancel, style: GoogleFonts.notoSans()),
         ),
         ElevatedButton(
           onPressed: _selectedTime == null ? null : () => _addReminder(context),
@@ -108,7 +109,7 @@ class _ReminderDialogState extends ConsumerState<ReminderDialog> {
             backgroundColor: AppTheme.primaryColor,
             foregroundColor: Colors.white,
           ),
-          child: Text('設定する', style: GoogleFonts.notoSans()),
+          child: Text(t.reminder.set, style: GoogleFonts.notoSans()),
         ),
       ],
     );
@@ -140,10 +141,12 @@ class _ReminderDialogState extends ConsumerState<ReminderDialog> {
                 decoration: BoxDecoration(
                   color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: Colors.green.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Text(
-                  '設定済み',
+                  t.reminder.alreadySet,
                   style: GoogleFonts.notoSans(
                     fontSize: 10,
                     color: Colors.green,
@@ -203,7 +206,7 @@ class _ReminderDialogState extends ConsumerState<ReminderDialog> {
     // 成功メッセージを表示
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${_selectedTime!.label}に通知を設定しました'),
+        content: Text('${_selectedTime!.label}${t.reminder.set}'),
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 2),
       ),

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:in_app_review/in_app_review.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart'; // 多言語化パッケージ
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -19,10 +21,9 @@ class AppDrawer extends ConsumerWidget {
     final currentUserAsync = ref.watch(currentUserProvider);
     final vrchatApi = ref.watch(vrchatProvider).value;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
-    final headers = <String, String>{
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final inAppReview = InAppReview.instance;
 
     return Drawer(
       backgroundColor: Colors.transparent,
@@ -54,11 +55,17 @@ class AppDrawer extends ConsumerWidget {
             // ユーザー情報ヘッダー
             currentUserAsync.when(
               data:
-                  (user) =>
-                      _buildEnhancedHeader(context, user, headers, isDarkMode),
-              loading: () => _buildStylishLoadingHeader(context, isDarkMode),
+                  (user) => _buildEnhancedHeader(
+                    context,
+                    user,
+                    headers,
+                    isDarkMode,
+                    t,
+                  ),
+              loading: () => _buildStylishLoadingHeader(context, isDarkMode, t),
               error:
-                  (_, _) => _buildEnhancedErrorHeader(context, ref, isDarkMode),
+                  (_, _) =>
+                      _buildEnhancedErrorHeader(context, ref, isDarkMode, t),
             ),
 
             // メニュー項目
@@ -87,7 +94,7 @@ class AppDrawer extends ConsumerWidget {
                           items: [
                             _MenuItem(
                               icon: Icons.home_rounded,
-                              title: 'ホーム',
+                              title: t.drawer.home,
                               isSelected:
                                   GoRouterState.of(context).uri.path == '/',
                               onTap: () {
@@ -97,7 +104,7 @@ class AppDrawer extends ConsumerWidget {
                             ),
                             _MenuItem(
                               icon: Icons.person_rounded,
-                              title: 'プロフィール',
+                              title: t.drawer.profile,
                               isSelected:
                                   GoRouterState.of(context).uri.path ==
                                   '/profile',
@@ -108,7 +115,7 @@ class AppDrawer extends ConsumerWidget {
                             ),
                             _MenuItem(
                               icon: Icons.favorite_rounded,
-                              title: 'お気に入り',
+                              title: t.drawer.favorite,
                               isSelected: GoRouterState.of(
                                 context,
                               ).uri.path.startsWith('/favorites'),
@@ -130,7 +137,7 @@ class AppDrawer extends ConsumerWidget {
                             // ),
                             _MenuItem(
                               icon: Icons.calendar_month,
-                              title: 'イベントカレンダー',
+                              title: t.drawer.eventCalendar,
                               isSelected: GoRouterState.of(
                                 context,
                               ).uri.path.startsWith('/event_calendar'),
@@ -154,14 +161,17 @@ class AppDrawer extends ConsumerWidget {
                         ),
 
                         // コンテンツセクション
-                        _buildSectionHeader('コンテンツ', isDarkMode),
+                        _buildSectionHeader(
+                          t.drawer.section.content,
+                          isDarkMode,
+                        ),
                         _buildNavigationSection(
                           context: context,
                           isDarkMode: isDarkMode,
                           items: [
                             _MenuItem(
                               icon: Icons.face_rounded,
-                              title: 'アバター',
+                              title: t.drawer.avatar,
                               isSelected: GoRouterState.of(
                                 context,
                               ).uri.path.startsWith('/avatars'),
@@ -172,7 +182,7 @@ class AppDrawer extends ConsumerWidget {
                             ),
                             _MenuItem(
                               icon: Icons.group_rounded,
-                              title: 'グループ',
+                              title: t.drawer.group,
                               isSelected: GoRouterState.of(
                                 context,
                               ).uri.path.startsWith('/groups'),
@@ -183,7 +193,7 @@ class AppDrawer extends ConsumerWidget {
                             ),
                             _MenuItem(
                               icon: Icons.inventory,
-                              title: 'インベントリ',
+                              title: t.drawer.inventory,
                               isSelected: GoRouterState.of(
                                 context,
                               ).uri.path.startsWith('/inventory'),
@@ -196,14 +206,14 @@ class AppDrawer extends ConsumerWidget {
                         ),
 
                         // 設定セクション
-                        _buildSectionHeader('その他', isDarkMode),
+                        _buildSectionHeader(t.drawer.section.other, isDarkMode),
                         _buildNavigationSection(
                           context: context,
                           isDarkMode: isDarkMode,
                           items: [
                             _MenuItem(
                               imagePath: 'assets/images/logo.png',
-                              title: 'VRCNSync (β)',
+                              title: t.drawer.vrcnsync,
                               isSelected:
                                   GoRouterState.of(context).uri.path ==
                                   '/vrcnsync',
@@ -213,8 +223,17 @@ class AppDrawer extends ConsumerWidget {
                               },
                             ),
                             _MenuItem(
+                              icon: Icons.star_outlined,
+                              title: t.drawer.review,
+                              isSelected: false,
+                              onTap: () {
+                                Navigator.pop(context);
+                                inAppReview.requestReview();
+                              },
+                            ),
+                            _MenuItem(
                               icon: Icons.feedback_outlined,
-                              title: 'フィードバック',
+                              title: t.drawer.feedback,
                               isSelected: false,
                               onTap: () {
                                 Navigator.pop(context);
@@ -226,7 +245,7 @@ class AppDrawer extends ConsumerWidget {
                             ),
                             _MenuItem(
                               icon: Icons.settings_rounded,
-                              title: '設定',
+                              title: t.drawer.settings,
                               isSelected:
                                   GoRouterState.of(context).uri.path ==
                                   '/settings',
@@ -422,6 +441,7 @@ class AppDrawer extends ConsumerWidget {
     CurrentUser user,
     Map<String, String> headers,
     bool isDarkMode,
+    Translations t, // 追加
   ) {
     final statusColor = StatusHelper.getStatusColor(user.status);
 
@@ -563,8 +583,8 @@ class AppDrawer extends ConsumerWidget {
 
                 const SizedBox(height: 2),
 
-                // ユーザーID
                 Text(
+                  // ユーザーID
                   // ignore: deprecated_member_use
                   '@${user.username}',
                   style: GoogleFonts.notoSans(
@@ -616,7 +636,11 @@ class AppDrawer extends ConsumerWidget {
   }
 
   // ローディングヘッダー
-  Widget _buildStylishLoadingHeader(BuildContext context, bool isDarkMode) {
+  Widget _buildStylishLoadingHeader(
+    BuildContext context,
+    bool isDarkMode,
+    Translations t,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 50),
       decoration: BoxDecoration(
@@ -664,7 +688,7 @@ class AppDrawer extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'ユーザー情報を読み込み中...',
+                t.drawer.userLoading,
                 style: GoogleFonts.notoSans(
                   fontSize: 14,
                   color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
@@ -683,6 +707,7 @@ class AppDrawer extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     bool isDarkMode,
+    Translations t,
   ) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 30),
@@ -722,7 +747,7 @@ class AppDrawer extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'ユーザー情報の取得に失敗しました',
+                t.drawer.userError,
                 style: GoogleFonts.notoSans(
                   fontSize: 15,
                   color: Colors.white,
@@ -734,13 +759,11 @@ class AppDrawer extends ConsumerWidget {
               // スタイリッシュなリトライボタン
               ElevatedButton.icon(
                 onPressed: () {
-                  // プロバイダーをリフレッシュして再取得
                   final refreshedUser = ref.refresh(currentUserProvider);
-                  // ユーザー情報が更新されるのを待つ
                   refreshedUser.whenData((_) => {});
                 },
                 icon: const Icon(Icons.refresh_rounded),
-                label: Text('再試行', style: GoogleFonts.notoSans()),
+                label: Text(t.drawer.retry, style: GoogleFonts.notoSans()),
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.red[700],
                   backgroundColor: Colors.white,
@@ -777,8 +800,5 @@ class _MenuItem {
     required this.title,
     required this.isSelected,
     required this.onTap,
-  }) : assert(
-         icon != null || imagePath != null,
-         'icon または imagePath のいずれかが必要です',
-       );
+  });
 }

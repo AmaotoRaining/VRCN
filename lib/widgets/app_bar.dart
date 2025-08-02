@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
@@ -14,7 +15,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final VoidCallback? onAvatarPressed;
   final bool showSearchBar; // 検索バーを表示するかどうか
   final ValueChanged<String>? onSearchChanged; // 検索テキスト変更時のコールバック
-  final String searchHint; // 検索バーのヒントテキスト
+
   final TextEditingController? searchController; // 検索コントローラー
 
   const CustomAppBar({
@@ -25,7 +26,6 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     this.onAvatarPressed,
     this.showSearchBar = false,
     this.onSearchChanged,
-    this.searchHint = '検索',
     this.searchController,
   });
 
@@ -37,9 +37,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final currentUserAsync = ref.watch(currentUserProvider);
     final vrchatApi = ref.watch(vrchatProvider).value;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final headers = {
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     // ドロワーを開くための関数
     void openDrawer() {
@@ -66,7 +64,9 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     ),
                   )
                   : CircleAvatar(
-                    backgroundImage: const AssetImage('assets/icons/default.png'),
+                    backgroundImage: const AssetImage(
+                      'assets/icons/default.png',
+                    ),
                     backgroundColor: Theme.of(context).colorScheme.surface,
                   )),
       iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
@@ -151,7 +151,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
       child: TextField(
         controller: searchController,
         decoration: InputDecoration(
-          hintText: searchHint,
+          hintText: t.common.search,
           prefixIcon: Icon(
             Icons.search,
             color: isDarkMode ? Colors.grey[400] : Colors.grey[600],

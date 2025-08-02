@@ -1,6 +1,8 @@
 import 'package:app_links/app_links.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +17,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vrchat/analytics_repository.dart';
 import 'package:vrchat/firebase_options.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/event_reminder_provider.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/provider/streaming_provider.dart';
@@ -34,13 +37,21 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // クラッシュハンドラ
-  // FlutterError.onError = (errorDetails) {
-  //   FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-  // };
-  // PlatformDispatcher.instance.onError = (error, stack) {
-  //   FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-  //   return true;
-  // };
+  FlutterError.onError = (errorDetails) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
+  // App Check初期化
+  await FirebaseAppCheck.instance.activate(
+    androidProvider:
+        kReleaseMode ? AndroidProvider.playIntegrity : AndroidProvider.debug,
+    appleProvider:
+        kReleaseMode ? AppleProvider.deviceCheck : AppleProvider.debug,
+  );
 
   // システムUIの設定
   SystemChrome.setSystemUIOverlayStyle(
@@ -57,6 +68,19 @@ Future<void> main() async {
 
   // SharedPreferencesの初期化
   final prefs = await SharedPreferences.getInstance();
+
+  // 言語設定
+  final savedLocale = prefs.getString('locale');
+
+  if (savedLocale != null) {
+    // 保存された言語設定がある場合
+    await LocaleSettings.setLocaleRaw(savedLocale);
+  } else {
+    // 初回起動時は端末の言語を使用し、設定として保存
+    await LocaleSettings.useDeviceLocale();
+    final currentLocale = LocaleSettings.currentLocale;
+    await prefs.setString('locale', currentLocale.languageCode);
+  }
 
   // 通知の初期化
   final notifications = await initializeNotifications();
@@ -91,7 +115,10 @@ Future<void> main() async {
   }
 
   runApp(
-    UncontrolledProviderScope(container: container, child: const VRChatApp()),
+    UncontrolledProviderScope(
+      container: container,
+      child: TranslationProvider(child: const VRChatApp()),
+    ),
   );
 }
 
@@ -172,7 +199,7 @@ class _VRChatAppState extends ConsumerState<VRChatApp>
   }
 
   void _handleIncomingLink(Uri uri) {
-    if (uri.scheme == 'vrcn' && uri.host == 'avatar-api-url') {
+    if (uri.scheme == 'vrcn' && uri.host == 'avatar-api') {
       final apiUrl = uri.queryParameters['url'];
       if (apiUrl != null && apiUrl.isNotEmpty) {
         ref.read(settingsProvider.notifier).setAvatarSearchApiUrl(apiUrl);
@@ -265,12 +292,9 @@ class _VRChatAppState extends ConsumerState<VRChatApp>
     // ルーター使用かホーム画面使用かで分岐
     if (useRouter && router != null) {
       return MaterialApp.router(
-        supportedLocales: const [Locale('ja')],
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
+        locale: TranslationProvider.of(context).flutterLocale,
+        supportedLocales: AppLocaleUtils.supportedLocales,
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
@@ -281,12 +305,9 @@ class _VRChatAppState extends ConsumerState<VRChatApp>
     }
 
     return MaterialApp(
-      supportedLocales: const [Locale('ja')],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      locale: TranslationProvider.of(context).flutterLocale,
+      supportedLocales: AppLocaleUtils.supportedLocales,
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

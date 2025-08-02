@@ -77,7 +77,6 @@ class Navigation extends ConsumerWidget {
               ref.read(searchQueryProvider.notifier).state = query;
             }
           },
-          searchHint: '検索',
           onAvatarPressed: () => scaffoldKey.currentState?.openDrawer(),
           actions: const [
             // IconButton(

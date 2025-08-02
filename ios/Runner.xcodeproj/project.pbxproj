@@ -217,6 +217,7 @@
 		261F43CE2E3B5155007EC37F /* sasami_st@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "sasami_st@2x~ipad.png"; sourceTree = "<group>"; };
 		261F43CF2E3B5155007EC37F /* sasami_st@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "sasami_st@3x.png"; sourceTree = "<group>"; };
 		261F43D02E3B5155007EC37F /* sasami_st@3x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "sasami_st@3x~ipad.png"; sourceTree = "<group>"; };
+		261F43D52E3BD62B007EC37F /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		264F94FFAA083ACF613C160A /* Pods-RunnerTests.release-production.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release-production.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release-production.xcconfig"; sourceTree = "<group>"; };
 		268F4BB02DC113F20060165E /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Main.strings; sourceTree = "<group>"; };
 		268F4BB12DC113F20060165E /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
@@ -417,6 +418,7 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				261F43D52E3BD62B007EC37F /* Runner.entitlements */,
 				268F4BB52DC122750060165E /* InfoPlist.xcstrings */,
 				260FE9BC2DBFD92A00E1BDC5 /* Icons */,
 				97C146FA1CF9000F007C117D /* Main.storyboard */,
@@ -475,6 +477,7 @@
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				8A423344710F1231CFB1B487 /* [CP] Embed Pods Frameworks */,
 				8BC71A1B75DB160670F63FC4 /* [CP] Copy Pods Resources */,
+				AAB973A22390BCAC097C65F8 /* FlutterFire: "flutterfire upload-crashlytics-symbols" */,
 			);
 			buildRules = (
 			);
@@ -512,6 +515,10 @@
 			knownRegions = (
 				Base,
 				ja,
+				en,
+				ko,
+				"zh-Hans",
+				"zh-Hant",
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
 			productRefGroup = 97C146EF1CF9000F007C117D /* Products */;
@@ -697,6 +704,24 @@
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\n";
 		};
+		AAB973A22390BCAC097C65F8 /* FlutterFire: "flutterfire upload-crashlytics-symbols" */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "FlutterFire: \"flutterfire upload-crashlytics-symbols\"";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\nif [ -z \"$PODS_ROOT\" ] || [ ! -d \"$PODS_ROOT/FirebaseCrashlytics\" ]; then\n  echo \"Warning: PODS_ROOT not found or FirebaseCrashlytics pod missing. Trying SPM path.\"\n  DERIVED_DATA_PATH=$(echo \"$BUILD_ROOT\" | sed -E 's|(.*DerivedData/[^/]+).*|\\1|')\n  PATH_TO_CRASHLYTICS_UPLOAD_SCRIPT=\"${DERIVED_DATA_PATH}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\nelse\n  PATH_TO_CRASHLYTICS_UPLOAD_SCRIPT=\"$PODS_ROOT/FirebaseCrashlytics/run\"\nfi\n\nif [ ! -f \"$PATH_TO_CRASHLYTICS_UPLOAD_SCRIPT\" ]; then\n    echo \"error: Crashlytics native script not found at $PATH_TO_CRASHLYTICS_UPLOAD_SCRIPT\"\n    exit 1\nfi\n\nGSP_PATH=\"${PROJECT_DIR}/Runner/GoogleService-Info.plist\"\nif [ ! -f \"$GSP_PATH\" ]; then\n    echo \"error: GoogleService-Info.plist not found at $GSP_PATH\"\n    exit 1\nfi\n\nDSYM_PATH=\"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}\"\nif [ ! -d \"$DSYM_PATH\" ]; then\n    echo \"error: dSYM file not found at $DSYM_PATH\"\nfi\n\necho \"Attempting to run native Crashlytics script directly...\"\n\"$PATH_TO_CRASHLYTICS_UPLOAD_SCRIPT\" -gsp \"$GSP_PATH\" -p ios \"$DSYM_PATH\"\n\nif [ $? -ne 0 ]; then\n    echo \"warning: Native Crashlytics script finished with non-zero exit code. Upload might have failed.\"\nfi\n\necho \"Native Crashlytics script execution initiated.\"\n";
+		};
 		BEB1CAC123333E7E315ECCC1 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -857,6 +882,7 @@
 				APP_DISPLAY_NAME = "【プロファイル】";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
@@ -948,6 +974,7 @@
 				APP_DISPLAY_NAME = "";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
@@ -1063,6 +1090,7 @@
 				APP_DISPLAY_NAME = "【デバッグ】";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
@@ -1305,6 +1333,7 @@
 				APP_DISPLAY_NAME = "【デバッグ】";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
@@ -1338,6 +1367,7 @@
 				APP_DISPLAY_NAME = "";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";

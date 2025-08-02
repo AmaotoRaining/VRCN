@@ -5,6 +5,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/files_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -36,10 +37,7 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final printFilesAsync = ref.watch(getPrintFilesProvider);
     final vrchatApi = ref.watch(vrchatProvider).value;
-
-    final headers = <String, String>{
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     return RefreshIndicator(
       onRefresh: _refreshFiles,
@@ -48,13 +46,17 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
           if (files.isEmpty) {
             return _buildEmptyState(isDarkMode);
           }
-
           return _buildFilesGrid(files, headers, isDarkMode);
         },
-        loading: () => const LoadingIndicator(message: 'プリントを読み込み中...'),
+        loading:
+            () => LoadingIndicator(
+              message: t.inventory.tabs.printInventory.loading,
+            ),
         error:
             (error, stackTrace) => ErrorContainer(
-              message: 'プリントの取得に失敗しました: $error',
+              message: t.inventory.tabs.printInventory.error(
+                error: error.toString(),
+              ),
               onRetry: _refreshFiles,
             ),
       ),
@@ -83,7 +85,7 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
             ),
             const SizedBox(height: 32),
             Text(
-              'プリントがありません',
+              t.inventory.tabs.printInventory.emptyTitle,
               style: GoogleFonts.notoSans(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -92,7 +94,7 @@ class _PrintInventoryTabState extends ConsumerState<PrintInventoryTab>
             ),
             const SizedBox(height: 16),
             Text(
-              'VRChatでアップロードしたプリント画像がここに表示されます',
+              t.inventory.tabs.printInventory.emptyDescription,
               style: GoogleFonts.notoSans(
                 fontSize: 16,
                 color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
@@ -467,7 +469,7 @@ class _FullScreenPrintViewerState extends State<_FullScreenPrintViewer>
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    'ダブルタップでズーム',
+                    t.inventory.tabs.printInventory.zoomHint,
                     style: GoogleFonts.notoSans(
                       fontSize: 12,
                       color: Colors.white,

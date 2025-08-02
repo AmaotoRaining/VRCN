@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 
 class ErrorContainer extends StatelessWidget {
   final String message;
@@ -33,7 +34,7 @@ class ErrorContainer extends StatelessWidget {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: onRetry,
-                child: Text('再試行', style: GoogleFonts.notoSans()),
+                child: Text(t.common.retry,style: GoogleFonts.notoSans()),
               ),
             ],
           ],

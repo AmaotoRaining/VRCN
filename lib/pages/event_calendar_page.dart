@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/config/app_config.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/event_filter_provider.dart';
 import 'package:vrchat/provider/event_reminder_provider.dart';
 import 'package:vrchat/provider/settings_provider.dart';
@@ -279,7 +280,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
-          'イベントカレンダー',
+          t.eventCalendar.title,
           style: GoogleFonts.notoSans(
             fontWeight: FontWeight.bold,
             fontSize: 20,
@@ -328,10 +329,10 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                       isDarkMode,
                       eventDataAsync.value!.genres,
                     ),
-            tooltip: 'イベントを絞り込む',
+            tooltip: t.eventCalendar.filter,
           ),
 
-          // リフレッシュボタン（既存のコード）
+          // リフレッシュボタン
           AnimatedBuilder(
             animation: _animationController,
             builder: (context, child) {
@@ -348,7 +349,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                             : Colors.black87,
                   ),
                   onPressed: _isRefreshing ? null : _refreshEvents,
-                  tooltip: 'イベント情報を更新',
+                  tooltip: t.eventCalendar.refresh,
                 ),
               );
             },
@@ -375,11 +376,12 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                   isDarkMode,
                   accentColor,
                   secondaryColor,
+                  t,
                 ),
-            loading: () => const LoadingIndicator(message: 'イベント情報を取得中...'),
+            loading: () => LoadingIndicator(message: t.eventCalendar.loading),
             error:
                 (error, stack) => ErrorContainer(
-                  message: 'イベント情報の取得に失敗しました: $error',
+                  message: t.eventCalendar.error(error: error.toString()),
                   onRetry: _refreshEvents,
                 ),
           ),
@@ -395,6 +397,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
     bool isDarkMode,
     Color accentColor,
     Color secondaryColor,
+    Translations t,
   ) {
     // フィルターを取得
     final filter = ref.watch(eventFilterProvider);
@@ -452,7 +455,9 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'フィルター適用中（${filteredEvents.length}件）',
+                    t.eventCalendar.filterActive(
+                      count: filteredEvents.length.toString(),
+                    ),
                     style: GoogleFonts.notoSans(
                       fontSize: 14,
                       color: Colors.blue,
@@ -463,7 +468,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                   onPressed:
                       () => ref.read(eventFilterProvider.notifier).clearAll(),
                   child: Text(
-                    'クリア',
+                    t.eventCalendar.clear,
                     style: GoogleFonts.notoSans(
                       fontSize: 14,
                       color: Colors.blue,
@@ -487,7 +492,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    '条件に一致するイベントがありません',
+                    t.eventCalendar.noEvents,
                     style: GoogleFonts.notoSans(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -499,7 +504,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                     onPressed:
                         () => ref.read(eventFilterProvider.notifier).clearAll(),
                     icon: const Icon(Icons.filter_list_off),
-                    label: const Text('フィルターをクリア'),
+                    label: Text(t.eventCalendar.clearFilter),
                   ),
                 ],
               ),
@@ -526,6 +531,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                   accentColor,
                   secondaryColor,
                   index,
+                  t,
                 );
               },
             ),
@@ -542,6 +548,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
     Color accentColor,
     Color secondaryColor,
     int index,
+    Translations t,
   ) {
     // 日付をフォーマット
     final date = DateFormat('yyyy-MM-dd').parse(dateKey);
@@ -642,7 +649,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          '今日',
+                          t.eventCalendar.today,
                           style: GoogleFonts.notoSans(
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -668,6 +675,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                         isDarkMode,
                         accentColor,
                         eventIndex,
+                        t,
                       )
                       .animate()
                       .fadeIn(
@@ -704,6 +712,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
     bool isDarkMode,
     Color accentColor,
     int index,
+    Translations t,
   ) {
     // 時間をフォーマット（日本時間として表示）
     final startTime = DateFormat('HH:mm').format(event.start);
@@ -750,7 +759,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
             IconButton(
               icon: const Icon(Icons.notifications_outlined, size: 20),
               splashRadius: 20,
-              tooltip: 'リマインダーを設定',
+              tooltip: t.eventCalendar.reminderSet,
               onPressed: () => _showReminderDialog(context, event, isDarkMode),
               color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
             ),
@@ -783,7 +792,10 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
-                      '$startTime〜$endTime',
+                      t.eventCalendar.startToEnd(
+                        start: startTime,
+                        end: endTime,
+                      ),
                       style: GoogleFonts.notoSans(
                         fontSize: 13,
                         color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
@@ -792,9 +804,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                     ),
                   ),
                   const SizedBox(width: 8),
-                  if (event.quest) _buildQuestBadge(isDarkMode),
-
-                  // リマインダー状態表示 - スペースがあれば表示
+                  if (event.quest) _buildQuestBadge(isDarkMode, t),
                   Consumer(
                     builder: (context, ref, child) {
                       final reminders =
@@ -806,22 +816,22 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                       if (reminders.isEmpty) return const SizedBox.shrink();
 
                       return Padding(
-                        padding: const EdgeInsets.only(
-                          left: 4,
-                        ), // 間隔を少し狭める (8→4)
+                        padding: const EdgeInsets.only(left: 4),
                         child: Row(
-                          mainAxisSize: MainAxisSize.min, // 必要最小限のサイズに
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               Icons.notifications_active,
                               size: 14,
                               color: eventColor.withValues(alpha: 0.7),
                             ),
-                            const SizedBox(width: 2), // 間隔を少し狭める (4→2)
+                            const SizedBox(width: 2),
                             Text(
-                              '${reminders.length}件',
+                              t.eventCalendar.reminderCount(
+                                count: reminders.length.toString(),
+                              ),
                               style: GoogleFonts.notoSans(
-                                fontSize: 11, // フォントサイズを少し小さく (12→11)
+                                fontSize: 11,
                                 color: eventColor.withValues(alpha: 0.7),
                                 fontWeight: FontWeight.w500,
                               ),
@@ -885,7 +895,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                 ),
 
                 _buildInfoSection(
-                  '主催者',
+                  t.eventCalendar.organizer,
                   event.author,
                   Icons.person_outline_rounded,
                   isDarkMode,
@@ -894,7 +904,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                 const SizedBox(height: 16),
 
                 _buildInfoSection(
-                  '説明',
+                  t.eventCalendar.description,
                   event.body,
                   Icons.description_outlined,
                   isDarkMode,
@@ -902,11 +912,11 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                 ),
                 const SizedBox(height: 16),
 
-                _buildGenreChips(event.genres, isDarkMode, eventColor),
+                _buildGenreChips(event.genres, isDarkMode, eventColor, t),
                 const SizedBox(height: 16),
 
                 _buildInfoSection(
-                  '参加条件',
+                  t.eventCalendar.condition,
                   event.condition,
                   Icons.verified_user_outlined,
                   isDarkMode,
@@ -915,7 +925,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                 const SizedBox(height: 16),
 
                 _buildInfoSection(
-                  '参加方法',
+                  t.eventCalendar.way,
                   event.way,
                   Icons.login_rounded,
                   isDarkMode,
@@ -924,7 +934,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                 if (event.note.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   _buildInfoWithLink(
-                    '備考',
+                    t.eventCalendar.note,
                     event.note,
                     Icons.sticky_note_2_outlined,
                     isDarkMode,
@@ -939,7 +949,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                     onPressed:
                         () => _showReminderDialog(context, event, isDarkMode),
                     icon: const Icon(Icons.notifications_active_outlined),
-                    label: const Text('リマインダーを設定'),
+                    label: Text(t.eventCalendar.reminderSet),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: eventColor,
                       side: BorderSide(color: eventColor),
@@ -955,7 +965,13 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                 ),
 
                 // 設定済みリマインダーの表示
-                _buildExistingReminders(context, event, isDarkMode, eventColor),
+                _buildExistingReminders(
+                  context,
+                  event,
+                  isDarkMode,
+                  eventColor,
+                  t,
+                ),
               ],
             ),
           ),
@@ -979,6 +995,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
     Event event,
     bool isDarkMode,
     Color eventColor,
+    Translations t,
   ) {
     return Consumer(
       builder: (context, ref, child) {
@@ -997,7 +1014,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
           children: [
             const SizedBox(height: 16),
             Text(
-              '設定済みリマインダー',
+              t.eventCalendar.reminderSetDone,
               style: GoogleFonts.notoSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -1012,6 +1029,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                 isDarkMode,
                 eventColor,
                 ref,
+                t,
               ),
             ),
           ],
@@ -1027,6 +1045,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
     bool isDarkMode,
     Color eventColor,
     WidgetRef ref,
+    Translations t,
   ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -1066,7 +1085,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                   .removeReminder(reminder.eventId, reminder.reminderTime);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('リマインダーを削除しました'),
+                  content: Text(t.eventCalendar.reminderDeleted),
                   backgroundColor: Colors.red[700],
                   duration: const Duration(seconds: 2),
                 ),
@@ -1078,7 +1097,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
     );
   }
 
-  Widget _buildQuestBadge(bool isDarkMode) {
+  Widget _buildQuestBadge(bool isDarkMode, Translations t) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
@@ -1099,7 +1118,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
           ),
           const SizedBox(width: 3),
           Text(
-            'Quest対応',
+            t.eventCalendar.quest,
             style: GoogleFonts.notoSans(
               fontSize: 10,
               fontWeight: FontWeight.bold,
@@ -1221,6 +1240,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
     List<String> genres,
     bool isDarkMode,
     Color baseColor,
+    Translations t,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1234,7 +1254,7 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
             ),
             const SizedBox(width: 8),
             Text(
-              'ジャンル',
+              t.eventCalendar.genre,
               style: GoogleFonts.notoSans(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,

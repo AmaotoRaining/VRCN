@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/pages/tabs/search/avatar_search_tab.dart';
 import 'package:vrchat/pages/tabs/search/group_search_tab.dart';
 import 'package:vrchat/pages/tabs/search/user_search_tab.dart';
@@ -144,10 +145,10 @@ class SearchPageState extends ConsumerState<SearchPage>
                 fontWeight: FontWeight.w400,
               ),
               tabs: [
-                const Tab(text: 'ユーザー'),
-                const Tab(text: 'ワールド'),
-                if (hasAvatarApiUrl) const Tab(text: 'アバター'),
-                const Tab(text: 'グループ'),
+                Tab(text: t.search.userTab),
+                Tab(text: t.search.worldTab),
+                if (hasAvatarApiUrl) Tab(text: t.search.avatarTab),
+                Tab(text: t.search.groupTab),
               ],
             ),
           ),

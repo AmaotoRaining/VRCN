@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -6,32 +8,53 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:palette_generator/palette_generator.dart';
+import 'package:material_color_utilities/material_color_utilities.dart';
 import 'package:vrchat/provider/instance_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
+import 'package:vrchat/utils/instance_helper.dart';
 import 'package:vrchat/widgets/friend_list_item.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
 // サムネイルからのパレットプロバイダー
-final worldPaletteProvider = FutureProvider.family<PaletteGenerator?, String>((
+final worldPaletteProvider = FutureProvider.family<CorePalette?, String>((
   ref,
   imageUrl,
 ) async {
   if (imageUrl.isEmpty) return null;
 
   try {
-    final headers = <String, String>{'User-Agent': 'VRChat/1.0'};
-    final paletteGenerator = await PaletteGenerator.fromImageProvider(
-      CachedNetworkImageProvider(
-        imageUrl,
-        cacheManager: JsonCacheManager(),
-        headers: headers,
-      ),
-      size: const Size(100, 100),
-      maximumColorCount: 8,
+    final headers = <String, String>{'User-Agent': 'VRCN'};
+    final imageProvider = CachedNetworkImageProvider(
+      imageUrl,
+      cacheManager: JsonCacheManager(),
+      headers: headers,
     );
-    return paletteGenerator;
+    final completer = Completer<ui.Image>();
+    final stream = imageProvider.resolve(const ImageConfiguration());
+    late ImageStreamListener listener;
+    listener = ImageStreamListener((info, _) {
+      completer.complete(info.image);
+      stream.removeListener(listener);
+    });
+    stream.addListener(listener);
+    final uiImage = await completer.future;
+
+    // 画像のピクセルデータを取得
+    final byteData = await uiImage.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
+    if (byteData == null) return null;
+    final pixels = byteData.buffer.asUint32List();
+
+    // quantizeImageで色抽出
+    final quantized = await QuantizerCelebi().quantize(pixels, 16);
+    final ranked = Score.score(quantized.colorToCount, desired: 1);
+    final topColor = ranked.isNotEmpty ? ranked.first : 0xFF888888;
+
+    // CorePaletteを生成
+    final palette = CorePalette.of(topColor);
+    return palette;
   } catch (e) {
     return null;
   }
@@ -124,11 +147,8 @@ class FriendLocationGroup extends ConsumerWidget {
       stops: const [0.3, 1.0],
     );
 
-    // VRChat APIのインスタンスからヘッダー情報を取得
     final vrchatApi = ref.watch(vrchatProvider).value;
-    final headers = <String, String>{
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     // 使用するワールドIDを決定
     final effectiveInstance = isTraveling ? travelingToLocation : location;
@@ -142,14 +162,22 @@ class FriendLocationGroup extends ConsumerWidget {
     // ワールド情報の展開
     var displayName = locationName;
     String? thumbnailUrl;
+    String? capacityCount;
     String? occupantCount;
     String? effectiveWorldId;
+    String? instanceName;
+    String? instanceRegion;
+    String? instanceType;
 
     instanceAsync?.whenData((instance) {
       displayName = instance.world.name;
       thumbnailUrl = instance.world.thumbnailImageUrl;
+      capacityCount = instance.capacity.toString();
       occupantCount = instance.userCount.toString();
       effectiveWorldId = instance.worldId.toString();
+      instanceName = instance.name;
+      instanceRegion = instance.region.value;
+      instanceType = instance.type.value;
     });
 
     // サムネイル画像のパレットを取得
@@ -215,9 +243,12 @@ class FriendLocationGroup extends ConsumerWidget {
                     statusText,
                     worldPalette,
                     ref,
+                    capacityCount,
                     occupantCount,
+                    instanceName,
+                    instanceRegion,
+                    instanceType,
                   ),
-
                   // フレンドのリスト
                   _buildFriendList(isDarkMode),
                 ],
@@ -239,23 +270,21 @@ class FriendLocationGroup extends ConsumerWidget {
     String displayName,
     String? effectiveWorldId,
     String statusText,
-    AsyncValue<PaletteGenerator?>? worldPalette,
-    WidgetRef ref, // ★ refパラメータを追加
+    AsyncValue<CorePalette?>? worldPalette,
+    WidgetRef ref,
+    String? capacityCount,
     String? occupantCount,
+    String? instanceName,
+    String? instanceRegion,
+    String? instanceType,
   ) {
     // サムネイルからカラーパレットを取得
     final dominantColor =
         worldPalette?.maybeWhen(
           data: (palette) {
             if (palette == null) return accentColor;
-
-            // 最適な色を選択（ビビッドな色が望ましい）
-            final color =
-                palette.vibrantColor?.color ??
-                palette.dominantColor?.color ??
-                palette.lightVibrantColor?.color ??
-                accentColor;
-
+            // CorePaletteのprimaryから色を取得
+            final color = Color(palette.primary.get(40));
             // 明るさを調整
             final hslColor = HSLColor.fromColor(color);
             return hslColor
@@ -339,23 +368,43 @@ class FriendLocationGroup extends ConsumerWidget {
                       // 人数情報を横並びに表示
                       Row(
                         children: [
-                          // ステータステキスト（友達の数）
-                          _buildStatusBadge(
-                            statusText,
-                            dominantColor,
-                            isDarkMode,
-                          ),
-
-                          // 総人数を表示（非プライベート、オンラインの場合のみ）
-                          if (occupantCount != null && !isPrivate && !isOffline)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8),
-                              child: _buildOccupantsBadge(
-                                occupantCount,
-                                dominantColor,
-                                isDarkMode,
-                              ),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                // ワールドにいるフレンド数/総人数バッジ
+                                if (occupantCount != null &&
+                                    !isPrivate &&
+                                    !isOffline)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: _buildFriendsAndOccupantsBadge(
+                                      '$occupantCount/$capacityCount (${friends.length})',
+                                      dominantColor,
+                                      isDarkMode,
+                                      Icons.group,
+                                    ),
+                                  ),
+                                // インスタンス名
+                                if (instanceName != null)
+                                  Container(
+                                    child: _buildFriendsAndOccupantsBadge(
+                                      '$instanceName ${InstanceHelper.getInstanceTypeText(instanceType)} ${InstanceHelper.regionEmoji(instanceRegion ?? '')}',
+                                      dominantColor,
+                                      isDarkMode,
+                                      Icons.tag_sharp,
+                                    ),
+                                  ),
+                                if (occupantCount == null ||
+                                    isPrivate ||
+                                    isOffline)
+                                  _buildStatusBadge(
+                                    statusText,
+                                    dominantColor,
+                                    isDarkMode,
+                                  ),
+                              ],
                             ),
+                          ),
                         ],
                       ),
                     ],
@@ -366,77 +415,6 @@ class FriendLocationGroup extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-
-  // ワールド内の総人数を表示するバッジ
-  Widget _buildOccupantsBadge(
-    String occupantCount,
-    Color accentColor,
-    bool isDarkMode,
-  ) {
-    final badgeGradient = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [
-        HSLColor.fromColor(
-          accentColor,
-        ).withLightness(0.7).toColor().withValues(alpha: 0.3),
-        HSLColor.fromColor(
-          accentColor,
-        ).withLightness(0.5).toColor().withValues(alpha: 0.2),
-      ],
-    );
-
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 800),
-      tween: Tween<double>(begin: 0.0, end: 1.0),
-      curve: Curves.elasticOut,
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: value,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              gradient: badgeGradient,
-              boxShadow: [
-                BoxShadow(
-                  color: accentColor.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.group,
-                  size: 12,
-                  color:
-                      HSLColor.fromColor(
-                        accentColor,
-                      ).withLightness(isDarkMode ? 0.75 : 0.35).toColor(),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  occupantCount,
-                  style: GoogleFonts.notoSans(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color:
-                        HSLColor.fromColor(
-                          accentColor,
-                        ).withLightness(isDarkMode ? 0.75 : 0.35).toColor(),
-                    letterSpacing: 0.1,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -656,6 +634,78 @@ class FriendLocationGroup extends ConsumerWidget {
     );
   }
 
+  // フレンド数/総人数バッジ
+  Widget _buildFriendsAndOccupantsBadge(
+    String message,
+    Color accentColor,
+    bool isDarkMode,
+    IconData icon,
+  ) {
+    final badgeGradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        HSLColor.fromColor(
+          accentColor,
+        ).withLightness(0.7).toColor().withValues(alpha: 0.3),
+        HSLColor.fromColor(
+          accentColor,
+        ).withLightness(0.5).toColor().withValues(alpha: 0.2),
+      ],
+    );
+
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 800),
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      curve: Curves.elasticOut,
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: value,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: badgeGradient,
+              boxShadow: [
+                BoxShadow(
+                  color: accentColor.withValues(alpha: 0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: 12,
+                  color:
+                      HSLColor.fromColor(
+                        accentColor,
+                      ).withLightness(isDarkMode ? 0.75 : 0.35).toColor(),
+                ),
+                Text(
+                  message,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color:
+                        HSLColor.fromColor(
+                          accentColor,
+                        ).withLightness(isDarkMode ? 0.75 : 0.35).toColor(),
+                    letterSpacing: 0.1,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildFriendList(bool isDarkMode) {
     return DecoratedBox(
@@ -715,67 +765,70 @@ class FriendLocationGroup extends ConsumerWidget {
   ) {
     // サムネイルURLがあり、プライベートでなく、オフラインでもない場合
     if (thumbnailUrl != null && !isPrivate && !isOffline) {
-      return Container(
-        width: 60,
+      return SizedBox(
         height: 60,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: accentColor.withValues(alpha: 0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+        child: AspectRatio(
+          aspectRatio: 4 / 3,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: accentColor.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+                BoxShadow(
+                  color: isDarkMode ? Colors.black38 : Colors.black26,
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            BoxShadow(
-              color: isDarkMode ? Colors.black38 : Colors.black26,
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: ShaderMask(
-            shaderCallback: (rect) {
-              return LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.transparent,
-                  HSLColor.fromColor(
-                    accentColor,
-                  ).withLightness(0.6).toColor().withValues(alpha: 0.3),
-                ],
-              ).createShader(rect);
-            },
-            blendMode: BlendMode.srcATop,
-            child: TweenAnimationBuilder<double>(
-              duration: const Duration(seconds: 10),
-              tween: Tween<double>(begin: 1.0, end: 1.05),
-              builder: (context, value, child) {
-                return Transform.scale(
-                  scale: value,
-                  child: CachedNetworkImage(
-                    key: ValueKey(thumbnailUrl), // キーを追加して強制的に再描画
-                    imageUrl: thumbnailUrl,
-                    httpHeaders: headers,
-                    cacheManager: JsonCacheManager(),
-                    fit: BoxFit.cover,
-                    placeholder:
-                        (context, url) => _buildImagePlaceholder(isDarkMode),
-                    errorWidget: (context, url, error) {
-                      // エラー時のログ追加
-                      debugPrint('画像読み込みエラー: $url - $error');
-                      return _buildImageError(isDarkMode, accentColor);
-                    },
-                    // キャッシュポリシーを調整
-                    cacheKey: '$thumbnailUrl-${DateTime.timestamp().day}',
-                    memCacheHeight: 120,
-                    memCacheWidth: 120,
-                  ),
-                );
-              },
-              onEnd: () {},
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: ShaderMask(
+                shaderCallback: (rect) {
+                  return LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.transparent,
+                      HSLColor.fromColor(
+                        accentColor,
+                      ).withLightness(0.6).toColor().withValues(alpha: 0.3),
+                    ],
+                  ).createShader(rect);
+                },
+                blendMode: BlendMode.srcATop,
+                child: TweenAnimationBuilder<double>(
+                  duration: const Duration(seconds: 10),
+                  tween: Tween<double>(begin: 1.0, end: 1.05),
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: value,
+                      child: CachedNetworkImage(
+                        key: ValueKey(thumbnailUrl),
+                        imageUrl: thumbnailUrl,
+                        httpHeaders: headers,
+                        cacheManager: JsonCacheManager(),
+                        fit: BoxFit.cover,
+                        placeholder:
+                            (context, url) =>
+                                _buildImagePlaceholder(isDarkMode),
+                        errorWidget: (context, url, error) {
+                          debugPrint('画像読み込みエラー: $url - $error');
+                          return _buildImageError(isDarkMode, accentColor);
+                        },
+                        cacheKey: '$thumbnailUrl-${DateTime.timestamp().day}',
+                        memCacheHeight: 120,
+                        memCacheWidth: 120,
+                      ),
+                    );
+                  },
+                  onEnd: () {},
+                ),
+              ),
             ),
           ),
         ),

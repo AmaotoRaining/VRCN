@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 
 class CreditsPage extends StatelessWidget {
   const CreditsPage({super.key});
@@ -22,7 +23,7 @@ class CreditsPage extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.transparent,
         title: Text(
-          'クレジット',
+          t.credits.title,
           style: GoogleFonts.notoSans(
             fontWeight: FontWeight.bold,
             fontSize: 24,
@@ -65,7 +66,7 @@ class CreditsPage extends StatelessWidget {
                 const SizedBox(height: 20),
                 _buildCreditSection(
                   context: context,
-                  title: '開発',
+                  title: t.credits.section.development,
                   credits: [
                     CreditItem(
                       name: 'null_base',
@@ -86,7 +87,7 @@ class CreditsPage extends StatelessWidget {
                 const SizedBox(height: 24),
                 _buildCreditSection(
                   context: context,
-                  title: '愉快なアイコンの人たち',
+                  title: t.credits.section.iconPeople,
                   credits: [
                     CreditItem(
                       name: 'annobu',
@@ -223,7 +224,7 @@ class CreditsPage extends StatelessWidget {
                 const SizedBox(height: 24),
                 _buildCreditSection(
                   context: context,
-                  title: 'テスト・フィードバック',
+                  title: t.credits.section.testFeedback,
                   credits: [
                     const CreditItem(
                       name: 'のっぷのお店',
@@ -241,7 +242,7 @@ class CreditsPage extends StatelessWidget {
                 const SizedBox(height: 24),
                 _buildCreditSection(
                   context: context,
-                  title: 'スペシャルサンクス',
+                  title: t.credits.section.specialThanks,
                   credits: [
                     const CreditItem(
                       name: 'VRChat API コミュニティ',

@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/search_providers.dart';
+import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/provider/world_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/utils/search_utils.dart';
@@ -100,7 +102,6 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
         WorldSearchParams(search: query, n: 60, offset: offset),
       ),
       (previous, current) {
-        // マイクロタスクにスケジュールして、ビルド中の状態変更を回避
         Future.microtask(() {
           if (current.isLoading) {
             ref.read(searchingProvider.notifier).state = true;
@@ -109,13 +110,11 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
 
             final newResults = current.value ?? [];
 
-            // 検索クエリが変わった場合はリセット、ページネーションの場合は追加
             if (offset == 0) {
               ref.read(worldSearchResultsProvider.notifier).state = newResults;
             } else if (newResults.isNotEmpty) {
               final combinedResults = <LimitedWorld>[...cachedResults];
 
-              // 重複を避けるために既存のIDをチェック
               final existingIds = cachedResults.map((w) => w.id).toSet();
               for (final world in newResults) {
                 if (!existingIds.contains(world.id)) {
@@ -134,12 +133,17 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
     );
 
     if (searchState.isLoading && offset == 0) {
-      return const Center(child: LoadingIndicator(message: '検索中...'));
+      return Center(
+        child: LoadingIndicator(message: t.search.tabs.worldSearch.searching),
+      );
     }
 
     // エラー状態の処理
     if (searchState.hasError && cachedResults.isEmpty) {
-      return buildErrorState(searchState.error.toString(), isDarkMode);
+      return buildErrorState(
+        t.search.tabs.worldSearch.error(error: searchState.error.toString()),
+        isDarkMode,
+      );
     }
 
     // 空の検索結果
@@ -155,7 +159,10 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
               right: 16,
               child: FloatingActionButton.small(
                 onPressed: _toggleViewMode,
-                tooltip: effectiveIsGridView ? 'リストビュー' : 'グリッドビュー',
+                tooltip:
+                    effectiveIsGridView
+                        ? t.search.tabs.worldSearch.listView
+                        : t.search.tabs.worldSearch.gridView,
                 elevation: 2,
                 backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
                 foregroundColor: isDarkMode ? Colors.white : Colors.grey[800],
@@ -200,7 +207,7 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
           ),
           const SizedBox(height: 24),
           Text(
-            'ワールドを探索',
+            t.search.tabs.worldSearch.emptyTitle,
             style: GoogleFonts.notoSans(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -209,7 +216,7 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
           ),
           const SizedBox(height: 16),
           Text(
-            'キーワードを入力して検索してください',
+            t.search.tabs.worldSearch.emptyDescription,
             style: GoogleFonts.notoSans(
               fontSize: 16,
               color: isDarkMode ? Colors.grey[500] : Colors.grey[700],
@@ -232,7 +239,7 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
           ),
           const SizedBox(height: 20),
           Text(
-            '「$query」に一致するワールドが\n見つかりませんでした',
+            t.search.tabs.worldSearch.noResultsWithQuery(query: query),
             textAlign: TextAlign.center,
             style: GoogleFonts.notoSans(
               fontSize: 18,
@@ -242,7 +249,7 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
           ),
           const SizedBox(height: 16),
           Text(
-            '検索キーワードを変えてみましょう',
+            t.search.tabs.worldSearch.noResultsHint,
             style: GoogleFonts.notoSans(
               fontSize: 14,
               color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
@@ -332,7 +339,8 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
   }
 
   Widget _buildWorldCard(LimitedWorld world, bool isDarkMode, bool isGrid) {
-    final headers = {'User-Agent': 'VRChat/1.0'};
+    final vrchatApi = ref.watch(vrchatProvider).value;
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     return Card(
       elevation: 3,
@@ -435,11 +443,12 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-
                   if (world.authorName.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
-                      'by ${world.authorName}',
+                      t.search.tabs.worldSearch.authorPrefix(
+                        authorName: world.authorName,
+                      ),
                       style: GoogleFonts.notoSans(
                         fontSize: 13,
                         color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
@@ -448,7 +457,6 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
-
                   if (world.tags.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     _buildWorldTags(world.tags, isDarkMode),
@@ -463,7 +471,6 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
   }
 
   Widget _buildWorldTags(List<String> tags, bool isDarkMode) {
-    // タグをフィルタリング
     final displayTags =
         tags
             .where((tag) => !tag.startsWith('author_'))
@@ -476,7 +483,6 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
       runSpacing: 6,
       children:
           displayTags.map((tag) {
-            // タグのカラーコードを取得
             final tagColor = _getTagColor(tag, isDarkMode);
 
             return Container(
@@ -502,7 +508,6 @@ class _WorldSearchTabState extends ConsumerState<WorldSearchTab>
     );
   }
 
-  // タグに応じた色を返す
   Color _getTagColor(String tag, bool isDarkMode) {
     if (tag.contains('game')) {
       return Colors.purple[isDarkMode ? 300 : 400]!;

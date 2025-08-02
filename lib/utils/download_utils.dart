@@ -9,6 +9,7 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/utils/cache_manager.dart';
 
 class DownloadUtils {
@@ -52,12 +53,12 @@ class DownloadUtils {
 
       if (context.mounted) {
         Navigator.of(context).pop(); // ダウンロードダイアログを閉じる
-        _showSuccessSnackBar(context, 'ダウンロードが完了しました');
+        _showSuccessSnackBar(context, t.download.success);
       }
     } catch (e) {
       if (context.mounted) {
         Navigator.of(context).pop(); // ダウンロードダイアログを閉じる
-        _showErrorSnackBar(context, 'ダウンロードに失敗しました: $e');
+        _showErrorSnackBar(context, t.download.failure(error: e.toString()));
       }
     }
   }
@@ -96,16 +97,17 @@ class DownloadUtils {
       if (context.mounted) {
         Navigator.of(context).pop(); // ダウンロードダイアログを閉じる
 
-        final params = ShareParams(
-          files: [XFile(fileToShare.path)],
-        );
+        final params = ShareParams(files: [XFile(fileToShare.path)]);
 
         await SharePlus.instance.share(params);
       }
     } catch (e) {
       if (context.mounted) {
         Navigator.of(context).pop(); // ダウンロードダイアログを閉じる
-        _showErrorSnackBar(context, '共有に失敗しました: $e');
+        _showErrorSnackBar(
+          context,
+          t.download.shareFailure(error: e.toString()),
+        );
       }
     }
   }
@@ -140,14 +142,14 @@ class DownloadUtils {
 
         if (permission.isPermanentlyDenied) {
           if (context.mounted) {
-            _showPermissionDeniedDialog(context, 'フォト');
+            _showPermissionDeniedDialog(context, t.download.permissionPhoto);
           }
           return false;
         }
 
         if (!permission.isGranted) {
           if (context.mounted) {
-            _showErrorSnackBar(context, '写真への保存権限が必要です');
+            _showErrorSnackBar(context, t.download.permissionPhotoRequired);
           }
           return false;
         }
@@ -161,14 +163,14 @@ class DownloadUtils {
 
         if (permission.isPermanentlyDenied) {
           if (context.mounted) {
-            _showPermissionDeniedDialog(context, 'ストレージ');
+            _showPermissionDeniedDialog(context, t.download.permissionStorage);
           }
           return false;
         }
 
         if (!permission.isGranted) {
           if (context.mounted) {
-            _showErrorSnackBar(context, 'ストレージへのアクセス権限が必要です');
+            _showErrorSnackBar(context, t.download.permissionStorageRequired);
           }
           return false;
         }
@@ -177,7 +179,10 @@ class DownloadUtils {
       return true;
     } catch (e) {
       if (context.mounted) {
-        _showErrorSnackBar(context, '権限チェック中にエラーが発生しました: $e');
+        _showErrorSnackBar(
+          context,
+          t.download.permissionError(error: e.toString()),
+        );
       }
       return false;
     }
@@ -198,7 +203,10 @@ class DownloadUtils {
       // 権限が永続的に拒否されている場合
       if (permission.isPermanentlyDenied) {
         if (context.mounted) {
-          _showPermissionDeniedDialog(context, 'フォトライブラリ');
+          _showPermissionDeniedDialog(
+            context,
+            t.download.permissionPhotoLibrary,
+          );
         }
         return false;
       }
@@ -206,7 +214,10 @@ class DownloadUtils {
       // 権限が付与されていない場合
       if (!permission.isGranted) {
         if (context.mounted) {
-          _showErrorSnackBar(context, 'フォトライブラリへの保存権限が必要です');
+          _showErrorSnackBar(
+            context,
+            t.download.permissionPhotoLibraryRequired,
+          );
         }
         return false;
       }
@@ -214,7 +225,10 @@ class DownloadUtils {
       return true;
     } catch (e) {
       if (context.mounted) {
-        _showErrorSnackBar(context, '権限チェック中にエラーが発生しました: $e');
+        _showErrorSnackBar(
+          context,
+          t.download.permissionError(error: e.toString()),
+        );
       }
       return false;
     }
@@ -232,24 +246,30 @@ class DownloadUtils {
       builder:
           (context) => AlertDialog(
             title: Text(
-              '権限が必要です',
+              t.download.permissionTitle,
               style: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
             ),
             content: Text(
-              '$permissionTypeへの保存権限が拒否されています。\n設定アプリから権限を有効にしてください。',
+              t.download.permissionDenied(permissionType: permissionType),
               style: GoogleFonts.notoSans(),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('キャンセル', style: GoogleFonts.notoSans()),
+                child: Text(
+                  t.download.permissionCancel,
+                  style: GoogleFonts.notoSans(),
+                ),
               ),
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                   openAppSettings(); // 設定アプリを開く
                 },
-                child: Text('設定を開く', style: GoogleFonts.notoSans()),
+                child: Text(
+                  t.download.permissionOpenSettings,
+                  style: GoogleFonts.notoSans(),
+                ),
               ),
             ],
           ),
@@ -300,7 +320,9 @@ class DownloadUtils {
                 const CircularProgressIndicator(),
                 const SizedBox(height: 16),
                 Text(
-                  isShare ? '$fileName を共有準備中...' : '$fileName をダウンロード中...',
+                  isShare
+                      ? t.download.sharing(fileName: fileName)
+                      : t.download.downloading(fileName: fileName),
                   style: GoogleFonts.notoSans(),
                   textAlign: TextAlign.center,
                 ),

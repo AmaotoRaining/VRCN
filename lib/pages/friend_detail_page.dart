@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/instance_provider.dart';
 import 'package:vrchat/provider/playermoderation_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
@@ -37,10 +38,10 @@ class FriendDetailPage extends ConsumerWidget {
     return Scaffold(
       body: friendDetailAsync.when(
         data: (user) => _buildUserDetail(context, user, ref, isDarkMode),
-        loading: () => const LoadingIndicator(message: 'ユーザー情報を読み込み中...'),
+        loading: () => LoadingIndicator(message: t.friendDetail.loading),
         error:
             (error, stackTrace) => ErrorContainer(
-              message: 'ユーザー情報の取得に失敗しました: ${error.toString()}',
+              message: t.friendDetail.error(error: error.toString()),
               onRetry: () => ref.refresh(userDetailProvider(userId)),
             ),
       ),
@@ -62,9 +63,7 @@ class FriendDetailPage extends ConsumerWidget {
     }
 
     final vrchatApi = ref.watch(vrchatProvider).value;
-    final headers = {
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     final userRepresentedGroupAsync = ref.watch(
       userRepresentedGroupProvider(user.id),
@@ -192,7 +191,7 @@ class FriendDetailPage extends ConsumerWidget {
                           ],
                         ),
                   ),
-                  _buildUserHeader(user, statusColor),
+                  _buildUserHeader(user, statusColor, ref),
                 ],
               ),
             ),
@@ -208,7 +207,7 @@ class FriendDetailPage extends ConsumerWidget {
                   const SizedBox(height: 24),
                   if (user.location != 'offline' && user.location != null)
                     InfoCard(
-                      title: '現在の場所',
+                      title: t.friendDetail.currentLocation,
                       icon: Icons.location_on_outlined,
                       isDarkMode: isDarkMode,
                       customColor: Colors.green,
@@ -218,29 +217,29 @@ class FriendDetailPage extends ConsumerWidget {
                     ),
                   const SizedBox(height: 24),
                   InfoCard(
-                    title: '基本情報',
+                    title: t.friendDetail.basicInfo,
                     icon: Icons.person_outline,
                     isDarkMode: isDarkMode,
                     children: [
                       InfoRow(
                         icon: Icons.badge,
-                        label: 'ユーザーID',
+                        label: t.friendDetail.userId,
                         value: user.id,
                         isDarkMode: isDarkMode,
                       ),
                       InfoRow(
                         icon: Icons.calendar_today,
-                        label: '登録日',
+                        label: t.friendDetail.dateJoined,
                         value:
                             user.dateJoined !=
                                     DateTime.fromMillisecondsSinceEpoch(0)
                                 ? DateFormatter.formatDate(user.dateJoined)
-                                : 'Unknown',
+                                : t.friendDetail.unknownGroup,
                         isDarkMode: isDarkMode,
                       ),
                       InfoRow(
                         icon: Icons.timer,
-                        label: '最終ログイン',
+                        label: t.friendDetail.lastLogin,
                         value: DateFormatter.formatDate(user.lastLogin),
                         isDarkMode: isDarkMode,
                       ),
@@ -387,7 +386,7 @@ class FriendDetailPage extends ConsumerWidget {
     }
   }
 
-  Widget _buildUserHeader(User user, Color statusColor) {
+  Widget _buildUserHeader(User user, Color statusColor, WidgetRef ref) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -405,7 +404,7 @@ class FriendDetailPage extends ConsumerWidget {
               ),
             ],
           ),
-          child: ClipOval(child: _buildUserAvatar(user)),
+          child: ClipOval(child: _buildUserAvatar(user, ref)),
         ),
         const SizedBox(height: 16),
         Text(
@@ -435,8 +434,9 @@ class FriendDetailPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildUserAvatar(User user) {
-    final headers = {'User-Agent': 'VRChat/1.0'};
+  Widget _buildUserAvatar(User user, WidgetRef ref) {
+    final vrchatApi = ref.watch(vrchatProvider).value;
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     if (user.userIcon.isNotEmpty) {
       return CachedNetworkImage(
@@ -496,7 +496,7 @@ class FriendDetailPage extends ConsumerWidget {
     if (user.bio.isEmpty) return const SizedBox.shrink();
 
     return InfoCard(
-      title: '自己紹介',
+      title: t.friendDetail.bio,
       icon: Icons.info_outline,
       isDarkMode: isDarkMode,
       children: [
@@ -564,7 +564,7 @@ class FriendDetailPage extends ConsumerWidget {
         final linkData = snapshot.data as List<Map<String, dynamic>>? ?? [];
 
         return InfoCard(
-          title: 'リンク',
+          title: t.friendDetail.links,
           icon: Icons.link,
           isDarkMode: isDarkMode,
           customColor: Colors.teal,
@@ -682,7 +682,7 @@ class FriendDetailPage extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'リンク情報を読み込み中...',
+            t.friendDetail.loadingLinks,
             style: GoogleFonts.notoSans(
               color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
             ),
@@ -731,7 +731,7 @@ class FriendDetailPage extends ConsumerWidget {
       data: (group) {
         if (group?.groupId != null) {
           return InfoCard(
-            title: '所属グループ',
+            title: t.friendDetail.group,
             icon: Icons.group_outlined,
             isDarkMode: isDarkMode,
             customColor: Colors.indigo,
@@ -798,7 +798,7 @@ class FriendDetailPage extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          group?.name ?? 'Unknown Group',
+                          group?.name ?? t.friendDetail.unknownGroup,
                           style: GoogleFonts.notoSans(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -808,7 +808,7 @@ class FriendDetailPage extends ConsumerWidget {
                         const SizedBox(height: 8),
                         if (group?.shortCode != null) ...[
                           Text(
-                            'グループコード: ${group?.shortCode}',
+                            t.friendDetail.groupCode(code: group!.shortCode!),
                             style: GoogleFonts.notoSans(
                               fontSize: 14,
                               color:
@@ -821,7 +821,9 @@ class FriendDetailPage extends ConsumerWidget {
                         ],
                         if (group?.memberCount != null)
                           Text(
-                            'メンバー数: ${group?.memberCount}人',
+                            t.friendDetail.memberCount(
+                              count: group!.memberCount.toString(),
+                            ),
                             style: GoogleFonts.notoSans(
                               fontSize: 14,
                               color:
@@ -841,7 +843,10 @@ class FriendDetailPage extends ConsumerWidget {
                   context.push('/group/${group?.groupId}');
                 },
                 icon: const Icon(Icons.visibility_outlined),
-                label: Text('グループ詳細を表示', style: GoogleFonts.notoSans()),
+                label: Text(
+                  t.friendDetail.groupDetail,
+                  style: GoogleFonts.notoSans(),
+                ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.indigo,
                   side: const BorderSide(color: Colors.indigo),
@@ -882,7 +887,6 @@ class FriendDetailPage extends ConsumerWidget {
     );
   }
 
-  // モデレーションメニューを構築するメソッド
   Widget _buildModerationMenu(
     BuildContext context,
     WidgetRef ref,
@@ -899,12 +903,12 @@ class FriendDetailPage extends ConsumerWidget {
             _showModerationConfirmDialog(
               context,
               ref,
-              '${user.displayName}をブロックしますか？',
-              'ブロックすると、このユーザーからのフレンド申請やメッセージを受け取らなくなります。',
+              t.friendDetail.confirmBlockTitle(name: user.displayName),
+              t.friendDetail.confirmBlockMessage,
               () => _moderateUser(
                 ref,
                 PlayerModerationUtil.blockUser(user.id),
-                'ブロックしました',
+                t.friendDetail.blockSuccess,
               ),
               isDarkMode,
             );
@@ -912,36 +916,44 @@ class FriendDetailPage extends ConsumerWidget {
             _showModerationConfirmDialog(
               context,
               ref,
-              '${user.displayName}をミュートしますか？',
-              'ミュートすると、このユーザーの音声が聞こえなくなります。',
+              t.friendDetail.confirmMuteTitle(name: user.displayName),
+              t.friendDetail.confirmMuteMessage,
               () => _moderateUser(
                 ref,
                 PlayerModerationUtil.muteUser(user.id),
-                'ミュートしました',
+                t.friendDetail.muteSuccess,
               ),
               isDarkMode,
             );
           case 'website':
-            // VRChatウェブサイトでユーザーページを開く
             await _openUserWebsite(user.id);
           case 'share':
-            // ユーザーのURLを共有
             await _shareUserProfile(user);
         }
       },
       itemBuilder:
           (context) => [
-            _buildPopupMenuItem('block', 'ブロック', Icons.block, isDarkMode),
-            _buildPopupMenuItem('mute', 'ミュート', Icons.volume_off, isDarkMode),
+            _buildPopupMenuItem(
+              'block',
+              t.friendDetail.block,
+              Icons.block,
+              isDarkMode,
+            ),
+            _buildPopupMenuItem(
+              'mute',
+              t.friendDetail.mute,
+              Icons.volume_off,
+              isDarkMode,
+            ),
             _buildPopupMenuItem(
               'website',
-              'ウェブサイトで開く',
+              t.friendDetail.openWebsite,
               Icons.public,
               isDarkMode,
             ),
             _buildPopupMenuItem(
               'share',
-              'プロフィールを共有',
+              t.friendDetail.shareProfile,
               Icons.share_outlined,
               isDarkMode,
             ),
@@ -1000,7 +1012,7 @@ class FriendDetailPage extends ConsumerWidget {
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
-                  'キャンセル',
+                  t.common.cancel,
                   style: GoogleFonts.notoSans(
                     color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
                   ),
@@ -1018,7 +1030,7 @@ class FriendDetailPage extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text('確定', style: GoogleFonts.notoSans()),
+                child: Text(t.common.confirm, style: GoogleFonts.notoSans()),
               ),
             ],
           ),
@@ -1032,10 +1044,7 @@ class FriendDetailPage extends ConsumerWidget {
     String successMessage,
   ) async {
     try {
-      // モデレーションを実行
       await ref.read(moderateUserProvider(request).future);
-
-      // 成功メッセージを表示
       if (ref.context.mounted) {
         ScaffoldMessenger.of(ref.context).showSnackBar(
           SnackBar(
@@ -1046,11 +1055,10 @@ class FriendDetailPage extends ConsumerWidget {
         );
       }
     } catch (e) {
-      // エラーメッセージを表示
       if (ref.context.mounted) {
         ScaffoldMessenger.of(ref.context).showSnackBar(
           SnackBar(
-            content: Text('操作に失敗しました: $e'),
+            content: Text(t.friendDetail.operationFailed(error: e.toString())),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Colors.red[700],
           ),
@@ -1092,10 +1100,7 @@ Widget _buildPronouns(String pronouns, Color statusColor) {
     decoration: BoxDecoration(
       color: Colors.black26,
       borderRadius: BorderRadius.circular(20),
-      border: Border.all(
-        color: Colors.purple.shade300, // pronouns用の色
-        width: 1.5,
-      ),
+      border: Border.all(color: Colors.purple.shade300, width: 1.5),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,

@@ -124,14 +124,14 @@ class VrcnSyncService {
     try {
       if (_serverPort == null) return;
 
-      // デバイス名を生成（iOS/Android + デバイス情報）
+      // デバイス名
       String deviceName;
       if (Platform.isIOS) {
         deviceName = 'VRCN-iOS';
       } else if (Platform.isAndroid) {
         deviceName = 'VRCN-Android';
       } else {
-        deviceName = 'VRCN-Mobile';
+        deviceName = 'VRCN';
       }
 
       // 一意性を保つためにランダムな識別子を追加

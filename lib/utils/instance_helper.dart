@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 
 class InstanceHelper {
   static IconData getInstanceTypeIcon(String? type) {
@@ -33,18 +34,34 @@ class InstanceHelper {
     }
   }
 
+  // TODO: グループ判定
   static String getInstanceTypeText(String? type) {
     switch (type?.toLowerCase()) {
       case 'public':
-        return 'パプリック';
+        return t.instance.type.public;
       case 'hidden':
-        return 'フレンド+';
+        return t.instance.type.hidden;
       case 'friends':
-        return 'フレンド';
+        return t.instance.type.friends;
       case 'private':
-        return 'インバイト+';
+        return t.instance.type.private;
       default:
-        return type ?? '不明';
+        return type ?? t.instance.type.unknown;
+    }
+  }
+
+  static String regionEmoji(String region) {
+    switch (region.toLowerCase()) {
+      case 'us':
+        return '🇺🇸';
+      case 'use':
+        return '🇺🇸';
+      case 'eu':
+        return '🇪🇺';
+      case 'jp':
+        return '🇯🇵';
+      default:
+        return '';
     }
   }
 }

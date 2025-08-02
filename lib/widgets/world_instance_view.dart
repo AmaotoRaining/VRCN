@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/utils/instance_helper.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
@@ -76,7 +77,11 @@ class WorldInstanceView extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'インスタンスタイプ: ${InstanceHelper.getInstanceTypeText(instanceInfo.type.toString())}',
+                  t.location.instanceType(
+                    type: InstanceHelper.getInstanceTypeText(
+                      instanceInfo.type.toString(),
+                    ),
+                  ),
                   style: GoogleFonts.notoSans(
                     fontSize: 15,
                     color: isDarkMode ? Colors.green[100] : Colors.green[800],
@@ -94,7 +99,10 @@ class WorldInstanceView extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'プレイヤー数: ${instanceInfo.userCount} / ${instanceInfo.capacity}',
+                  t.location.playerCount(
+                    userCount: instanceInfo.userCount.toString(),
+                    capacity: instanceInfo.capacity.toString(),
+                  ),
                   style: GoogleFonts.notoSans(
                     fontSize: 15,
                     color: isDarkMode ? Colors.green[100] : Colors.green[800],
@@ -145,7 +153,11 @@ class WorldInstanceView extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'インスタンスタイプ: ${InstanceHelper.getInstanceTypeText(instanceInfo.type.toString())}',
+                      t.location.instanceType(
+                        type: InstanceHelper.getInstanceTypeText(
+                          instanceInfo.type.toString(),
+                        ),
+                      ),
                       style: GoogleFonts.notoSans(
                         fontSize: 15,
                         color:
@@ -164,7 +176,10 @@ class WorldInstanceView extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'プレイヤー数: ${instanceInfo.userCount} / ${instanceInfo.capacity}',
+                      t.location.playerCount(
+                        userCount: instanceInfo.userCount.toString(),
+                        capacity: instanceInfo.capacity.toString(),
+                      ),
                       style: GoogleFonts.notoSans(
                         fontSize: 15,
                         color:
@@ -404,7 +419,9 @@ class WorldInstanceView extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  isPrivateLocation ? 'プライベートな場所にいます' : 'ロケーション情報の取得に失敗しました',
+                  isPrivateLocation
+                      ? t.location.privateLocation
+                      : t.location.fetchError,
                   style: GoogleFonts.notoSans(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -418,7 +435,7 @@ class WorldInstanceView extends StatelessWidget {
           if (!isPrivateLocation && errorMessage.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
-              'エラー: $errorMessage',
+              t.common.error(error: errorMessage),
               style: GoogleFonts.notoSans(fontSize: 12, color: Colors.red[200]),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -441,7 +458,7 @@ class WorldInstanceView extends StatelessWidget {
         ),
       ),
       child: Text(
-        'ロケーション情報はありません',
+        t.location.noInfo,
         style: GoogleFonts.notoSans(
           fontSize: 16,
           color: isDarkMode ? Colors.grey[400] : Colors.grey[600],

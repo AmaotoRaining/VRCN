@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/utils/first_launch_utils.dart';
 
@@ -134,7 +135,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
                                   ),
                                   const SizedBox(height: 24),
                                   Text(
-                                    'VRCN へようこそ',
+                                    t.termsAgreement.welcomeTitle,
                                     style: TextStyle(
                                       fontSize: 28,
                                       fontWeight: FontWeight.bold,
@@ -146,7 +147,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    'アプリをご利用いただく前に\n利用規約とプライバシーポリシーをご確認ください',
+                                    t.termsAgreement.welcomeMessage,
                                     style: TextStyle(
                                       fontSize: 16,
                                       color:
@@ -163,19 +164,19 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
                             const SizedBox(height: 48),
 
                             // 利用規約とプライバシーポリシーのチェックボックス
-                            _buildAgreementSection(isDarkMode),
+                            _buildAgreementSection(isDarkMode, t),
 
                             const SizedBox(height: 32),
 
                             // 注意事項
-                            _buildNoticeSection(isDarkMode),
+                            _buildNoticeSection(isDarkMode, t),
                           ],
                         ),
                       ),
                     ),
 
                     // 同意ボタン
-                    _buildActionButtons(isDarkMode),
+                    _buildActionButtons(isDarkMode, t),
                   ],
                 ),
               ),
@@ -186,7 +187,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
     );
   }
 
-  Widget _buildAgreementSection(bool isDarkMode) {
+  Widget _buildAgreementSection(bool isDarkMode, Translations t) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -206,28 +207,30 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
         children: [
           // 利用規約
           _buildCheckboxTile(
-            title: '利用規約',
-            subtitle: 'アプリのご利用条件について',
+            title: t.termsAgreement.termsTitle,
+            subtitle: t.termsAgreement.termsSubtitle,
             value: _termsAccepted,
             onChanged:
                 (value) => setState(() => _termsAccepted = value ?? false),
             onLinkTap:
                 () => _launchURL('https://null-base.com/vrcn/terms-of-service'),
             isDarkMode: isDarkMode,
+            t: t,
           ),
 
           const SizedBox(height: 16),
 
           // プライバシーポリシー
           _buildCheckboxTile(
-            title: 'プライバシーポリシー',
-            subtitle: '個人情報の取り扱いについて',
+            title: t.termsAgreement.privacyTitle,
+            subtitle: t.termsAgreement.privacySubtitle,
             value: _privacyAccepted,
             onChanged:
                 (value) => setState(() => _privacyAccepted = value ?? false),
             onLinkTap:
                 () => _launchURL('https://null-base.com/vrcn/privacy-policy/'),
             isDarkMode: isDarkMode,
+            t: t,
           ),
         ],
       ),
@@ -241,6 +244,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
     required ValueChanged<bool?> onChanged,
     required VoidCallback onLinkTap,
     required bool isDarkMode,
+    required Translations t,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,7 +263,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
                 children: [
                   Expanded(
                     child: Text(
-                      '「$title」に同意する',
+                      t.termsAgreement.agreeTerms(title: title),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -273,7 +277,10 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
                       foregroundColor: AppTheme.primaryColor,
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                     ),
-                    child: const Text('内容を確認', style: TextStyle(fontSize: 14)),
+                    child: Text(
+                      t.termsAgreement.checkContent,
+                      style: const TextStyle(fontSize: 14),
+                    ),
                   ),
                 ],
               ),
@@ -291,7 +298,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
     );
   }
 
-  Widget _buildNoticeSection(bool isDarkMode) {
+  Widget _buildNoticeSection(bool isDarkMode, Translations t) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -305,7 +312,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'このアプリはVRChat Inc.の非公式アプリです。\nVRChat Inc.とは一切関係ありません。',
+              t.termsAgreement.notice,
               style: TextStyle(
                 fontSize: 13,
                 color: isDarkMode ? Colors.amber[200] : Colors.amber[800],
@@ -317,7 +324,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
     );
   }
 
-  Widget _buildActionButtons(bool isDarkMode) {
+  Widget _buildActionButtons(bool isDarkMode, Translations t) {
     final canProceed = _termsAccepted && _privacyAccepted;
 
     return Column(
@@ -345,9 +352,9 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                    : const Text(
-                      '同意する',
-                      style: TextStyle(
+                    : Text(
+                      t.common.agree,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -358,7 +365,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
         TextButton(
           onPressed: _isLoading ? null : _handleDecline,
           child: Text(
-            '同意しない',
+            t.common.decline,
             style: TextStyle(
               fontSize: 14,
               color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
@@ -387,7 +394,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラーが発生しました: $e'),
+            content: Text(t.common.error(error: e.toString())),
             backgroundColor: Colors.red,
           ),
         );

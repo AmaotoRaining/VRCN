@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/notification_provider.dart';
 
 class NotificationsPage extends ConsumerWidget {
@@ -43,77 +44,102 @@ class NotificationsPage extends ConsumerWidget {
       case NotificationType.friendRequest:
         icon = Icons.person_add;
         color = Colors.blue;
-        message = '${notification.userName}さんからフレンドリクエストが届いています';
+        message = t.notifications.friendRequest(
+          userName: notification.userName,
+        );
       case NotificationType.invite:
         icon = Icons.insert_invitation;
         color = Colors.green;
-        message =
-            '${notification.userName}さんから${notification.worldName ?? "ワールド"}への招待が届いています';
+        message = t.notifications.invite(
+          userName: notification.userName,
+          worldName: notification.worldName ?? 'ワールド',
+        );
       case NotificationType.friendOnline:
         icon = Icons.login;
         color = Colors.amber;
-        message = '${notification.userName}さんがオンラインになりました';
+        message = t.notifications.friendOnline(userName: notification.userName);
       case NotificationType.friendOffline:
         icon = Icons.logout;
         color = Colors.grey;
-        message = '${notification.userName}さんがオフラインになりました';
+        message = t.notifications.friendOffline(
+          userName: notification.userName,
+        );
       case NotificationType.friendActive:
         icon = Icons.schedule;
         color = Colors.teal;
-        message = '${notification.userName}さんがアクティブになりました';
+        message = t.notifications.friendActive(userName: notification.userName);
       case NotificationType.friendAdd:
         icon = Icons.person_add_alt_1;
         color = Colors.indigo;
-        message = '${notification.userName}さんがフレンドに追加されました';
+        message = t.notifications.friendAdd(userName: notification.userName);
       case NotificationType.friendRemove:
         icon = Icons.person_remove;
         color = Colors.red;
-        message = '${notification.userName}さんがフレンドから削除されました';
+        message = t.notifications.friendRemove(userName: notification.userName);
       case NotificationType.statusUpdate:
         icon = Icons.update;
         color = Colors.purple;
-        final status = notification.extraData ?? '不明';
-        message = '${notification.userName}さんのステータスが更新されました: $status';
-        if (notification.worldName != null &&
-            notification.worldName!.isNotEmpty) {
-          message += ' (${notification.worldName})';
-        }
+        final status = notification.extraData ?? t.worldDetail.unknown;
+        final world =
+            (notification.worldName != null &&
+                    notification.worldName!.isNotEmpty)
+                ? ' (${notification.worldName})'
+                : '';
+        message = t.notifications.statusUpdate(
+          userName: notification.userName,
+          status: status,
+          world: world,
+        );
       case NotificationType.locationChange:
         icon = Icons.location_on;
         color = Colors.orange;
-        message = '${notification.userName}さんが${notification.worldName}に移動しました';
+        message = t.notifications.locationChange(
+          userName: notification.userName,
+          worldName: notification.worldName ?? t.worldDetail.unknown,
+        );
       case NotificationType.userUpdate:
         icon = Icons.person_outline;
         color = Colors.cyan;
-        message = 'あなたの情報が更新されました';
-        if (notification.worldName != null &&
-            notification.worldName!.isNotEmpty) {
-          message += ': ${notification.worldName}';
-        }
+        final world =
+            (notification.worldName != null &&
+                    notification.worldName!.isNotEmpty)
+                ? ': ${notification.worldName}'
+                : '';
+        message = t.notifications.userUpdate(world: world);
       case NotificationType.myLocationChange:
         icon = Icons.my_location;
         color = Colors.deepOrange;
-        message = 'あなたの移動: ${notification.worldName}';
+        message = t.notifications.myLocationChange(
+          worldName: notification.worldName ?? t.worldDetail.unknown,
+        );
       case NotificationType.requestInvite:
         icon = Icons.directions_run;
         color = Colors.lightGreen;
-        message = '${notification.userName}さんから参加リクエストが届いています';
+        message = t.notifications.requestInvite(
+          userName: notification.userName,
+        );
       case NotificationType.votekick:
         icon = Icons.gavel;
         color = Colors.red;
-        message = '${notification.userName}さんから投票キックがありました';
+        message = t.notifications.votekick(userName: notification.userName);
       case NotificationType.responseReceived:
         icon = Icons.feedback;
         color = Colors.blueGrey;
-        message = '通知ID:${notification.userName}の応答を受信しました';
+        message = t.notifications.responseReceived(
+          userName: notification.userName,
+        );
       case NotificationType.error:
         icon = Icons.error_outline;
         color = Colors.red;
-        message = 'エラー: ${notification.worldName}';
+        message = t.notifications.error(
+          worldName: notification.worldName ?? '',
+        );
       case NotificationType.system:
         icon = Icons.info_outline;
         color = Colors.grey;
-        message = 'システム通知: ${notification.extraData ?? ""}';
+        message = t.notifications.system(
+          extraData: notification.extraData ?? '',
+        );
     }
 
     final timeAgo = _getTimeAgo(notification.timestamp);
@@ -154,11 +180,15 @@ class NotificationsPage extends ConsumerWidget {
     final difference = now.difference(time);
 
     if (difference.inSeconds < 60) {
-      return '${difference.inSeconds}秒前';
+      return t.notifications.secondsAgo(
+        seconds: difference.inSeconds.toString(),
+      );
     } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}分前';
+      return t.notifications.minutesAgo(
+        minutes: difference.inMinutes.toString(),
+      );
     } else if (difference.inHours < 24) {
-      return '${difference.inHours}時間前';
+      return t.notifications.hoursAgo(hours: difference.inHours.toString());
     } else {
       final formatter = DateFormat('MM/dd HH:mm');
       return formatter.format(time);
@@ -177,7 +207,7 @@ class NotificationsPage extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            '通知はありません',
+            t.notifications.emptyTitle,
             style: GoogleFonts.notoSans(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -186,7 +216,7 @@ class NotificationsPage extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'フレンドリクエストや招待など\n新しい通知がここに表示されます',
+            t.notifications.emptyDescription,
             textAlign: TextAlign.center,
             style: GoogleFonts.notoSans(
               fontSize: 14,

@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/auth_storage_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
@@ -88,7 +89,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
       }
     } catch (e) {
       if (kDebugMode) {
-        print('環境変数からの認証情報読み込みに失敗しました: $e');
+        debugPrint('環境変数からの認証情報読み込みに失敗しました: $e');
       }
     }
   }
@@ -126,7 +127,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
 
       if (result.failure != null) {
         setState(() {
-          _errorMessage = 'ログインに失敗しました。メールアドレスとパスワードを確認してください。';
+          _errorMessage = t.login.errorLoginFailed;
         });
       } else if (result.success?.data.requiresTwoFactorAuth == true) {
         // 二段階認証が必要な場合
@@ -153,7 +154,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = 'エラーが発生しました: ${e.toString()}';
+        _errorMessage = t.common.error(error: e.toString());
       });
     } finally {
       if (mounted) {
@@ -167,7 +168,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
   Future<void> _verifyTwoFactorCode() async {
     if (_twoFactorCodeController.text.isEmpty) {
       setState(() {
-        _errorMessage = '認証コードを入力してください';
+        _errorMessage = t.login.errorEmpty2fa;
       });
       return;
     }
@@ -185,7 +186,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
 
       if (result.failure != null) {
         setState(() {
-          _errorMessage = '二段階認証に失敗しました。コードが正しいか確認してください。';
+          _errorMessage = t.login.error2faFailed;
         });
       } else {
         await _handleLoginSuccess();
@@ -193,7 +194,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = 'エラーが発生しました: ${e.toString()}';
+        _errorMessage = t.common.error(error: e.toString());
       });
     } finally {
       if (mounted) {
@@ -266,7 +267,6 @@ class _LoginPageState extends ConsumerState<LoginPage>
           // ログインフォーム
           SafeArea(
             child: Align(
-              // 中央から少し下に配置（0.0が最上部、1.0が最下部）
               alignment: const Alignment(0.0, 0.3),
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
@@ -310,7 +310,9 @@ class _LoginPageState extends ConsumerState<LoginPage>
                             children: [
                               // タイトル
                               Text(
-                                _showTwoFactorAuth ? '二段階認証' : 'VRCN',
+                                _showTwoFactorAuth
+                                    ? t.login.twoFactorTitle
+                                    : t.common.title,
                                 style: GoogleFonts.notoSans(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
@@ -324,8 +326,8 @@ class _LoginPageState extends ConsumerState<LoginPage>
                               const SizedBox(height: 8),
                               Text(
                                 _showTwoFactorAuth
-                                    ? '認証コードを入力してください'
-                                    : 'VRChatのアカウント情報でログイン',
+                                    ? t.login.twoFactorSubtitle
+                                    : t.login.subtitle,
                                 style: GoogleFonts.notoSans(
                                   fontSize: 16,
                                   color: subtitleColor,
@@ -335,16 +337,16 @@ class _LoginPageState extends ConsumerState<LoginPage>
 
                               const SizedBox(height: 32),
 
-                              // ログインフォーム または 2FA フォーム（既存のコードをそのまま使用）
+                              // ログインフォーム または 2FA フォーム
                               if (!_showTwoFactorAuth) ...[
                                 _buildTextField(
                                   controller: _usernameController,
-                                  labelText: 'メールアドレス',
-                                  hintText: 'メールまたはユーザー名を入力',
+                                  labelText: t.login.email,
+                                  hintText: t.login.emailHint,
                                   prefixIcon: Icons.person_outline_rounded,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return 'ユーザー名またはメールアドレスを入力してください';
+                                      return t.login.errorEmptyEmail;
                                     }
                                     return null;
                                   },
@@ -356,11 +358,10 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                 ),
                                 const SizedBox(height: 20),
 
-                                // パスワードフィールド（既存のまま）
                                 _buildTextField(
                                   controller: _passwordController,
-                                  labelText: 'パスワード',
-                                  hintText: 'パスワードを入力',
+                                  labelText: t.common.password,
+                                  hintText: t.login.passwordHint,
                                   prefixIcon: Icons.lock_outline_rounded,
                                   obscureText: _obscurePassword,
                                   suffixIcon: IconButton(
@@ -378,7 +379,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                   ),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return 'パスワードを入力してください';
+                                      return t.login.errorEmptyPassword;
                                     }
                                     return null;
                                   },
@@ -407,7 +408,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                           MaterialTapTargetSize.shrinkWrap,
                                     ),
                                     child: Text(
-                                      'パスワードをお忘れですか？',
+                                      t.login.forgotPassword,
                                       style: GoogleFonts.notoSans(fontSize: 14),
                                     ),
                                   ),
@@ -428,7 +429,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                       activeColor: primaryColor,
                                     ),
                                     Text(
-                                      'ログイン状態を保存',
+                                      t.login.rememberMe,
                                       style: GoogleFonts.notoSans(
                                         fontSize: 14,
                                         color: subtitleColor,
@@ -442,13 +443,16 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                 // ログインボタン
                                 _buildGradientButton(
                                   onPressed: _isLoading ? null : _login,
-                                  text: 'ログイン',
+                                  text:
+                                      _isLoading
+                                          ? t.login.loggingIn
+                                          : t.common.login,
                                   isLoading: _isLoading,
                                 ),
                               ] else ...[
-                                // 二段階認証のUI（既存のコード）
+                                // 二段階認証のUI
                                 Text(
-                                  '認証アプリに表示されている\n6桁のコードを入力してください',
+                                  t.login.twoFactorInstruction,
                                   style: GoogleFonts.notoSans(
                                     fontSize: 16,
                                     color: subtitleColor,
@@ -458,14 +462,17 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                 const SizedBox(height: 36),
 
                                 // OTP入力フィールド
-                                _buildOtpInputField(),
+                                _buildOtpInputField(t),
                                 const SizedBox(height: 40),
 
                                 // 認証ボタン
                                 _buildGradientButton(
                                   onPressed:
                                       _isLoading ? null : _verifyTwoFactorCode,
-                                  text: '認証',
+                                  text:
+                                      _isLoading
+                                          ? t.login.verifying
+                                          : t.login.verify,
                                   isLoading: _isLoading,
                                 ),
 
@@ -481,15 +488,13 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                                 _showTwoFactorAuth = false;
                                                 _errorMessage = null;
                                               });
-
-                                              // アニメーションをリセットして再生
                                               _animationController.reset();
                                               _animationController.forward();
                                             }
                                             : null,
                                     icon: const Icon(Icons.arrow_back_rounded),
                                     label: Text(
-                                      'ログイン画面に戻る',
+                                      t.login.backToLogin,
                                       style: GoogleFonts.notoSans(),
                                     ),
                                     style: TextButton.styleFrom(
@@ -593,14 +598,13 @@ class _LoginPageState extends ConsumerState<LoginPage>
   }
 
   // OTP入力フィールドを構築
-  Widget _buildOtpInputField() {
+  Widget _buildOtpInputField(Translations t) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 非表示のマスターフィールド（これまでと同じ）
         Offstage(
           child: TextField(
             controller: _hiddenController,
@@ -636,7 +640,6 @@ class _LoginPageState extends ConsumerState<LoginPage>
           ),
         ),
 
-        // OTP入力フィールド
         GestureDetector(
           onTap: _hiddenFocusNode.requestFocus,
           child: Container(
@@ -659,14 +662,13 @@ class _LoginPageState extends ConsumerState<LoginPage>
           ),
         ),
 
-        // ペーストボタンを追加
         Padding(
           padding: const EdgeInsets.only(top: 20.0),
           child: Center(
             child: TextButton.icon(
               onPressed: _pasteFromClipboard,
               icon: const Icon(Icons.content_paste_rounded),
-              label: Text('ペースト', style: GoogleFonts.notoSans()),
+              label: Text(t.login.paste, style: GoogleFonts.notoSans()),
               style: TextButton.styleFrom(
                 foregroundColor: primaryColor,
                 padding: const EdgeInsets.symmetric(

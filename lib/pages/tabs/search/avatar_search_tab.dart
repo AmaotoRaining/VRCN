@@ -5,6 +5,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/models/avtrdb_search_result.dart';
 import 'package:vrchat/provider/avtrdb_provider.dart';
 import 'package:vrchat/provider/search_providers.dart';
@@ -22,7 +23,11 @@ class AvatarSearchTab extends ConsumerWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     if (query.isEmpty) {
-      return buildEmptySearchState('アバター', Icons.person_outline, isDarkMode);
+      return buildEmptySearchState(
+        t.search.tabs.avatarSearch.avatar,
+        Icons.person_outline,
+        isDarkMode,
+      );
     }
 
     final searchResultAsync = ref.watch(avtrDbSearchProvider(query));
@@ -35,7 +40,8 @@ class AvatarSearchTab extends ConsumerWidget {
 
         return _buildSearchResults(context, avatars, isDarkMode);
       },
-      loading: () => const LoadingIndicator(message: 'アバターを検索中...'),
+      loading:
+          () => LoadingIndicator(message: t.search.tabs.avatarSearch.searching),
       error:
           (error, stack) => ErrorContainer(
             message: error.toString(),
@@ -72,7 +78,7 @@ class AvatarSearchTab extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  '検索結果が見つかりませんでした',
+                  t.search.tabs.avatarSearch.noResults,
                   style: GoogleFonts.notoSans(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -81,7 +87,7 @@ class AvatarSearchTab extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  '別のキーワードで試してみましょう',
+                  t.search.tabs.avatarSearch.noResultsHint,
                   style: GoogleFonts.notoSans(
                     fontSize: 15,
                     color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
@@ -138,7 +144,6 @@ class AvatarSearchTab extends ConsumerWidget {
     AvtrDbSearchResult avatar,
     bool isDarkMode,
   ) {
-    final headers = {'User-Agent': 'VRChat/1.0'};
 
     // ランダムな要素を追加してデザインのバリエーションを増やす
     final cardHeight = 240.0 + (avatar.name.length % 3) * 10;
@@ -164,58 +169,55 @@ class AvatarSearchTab extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Stack(
-                  children: [
-                    SizedBox(
-                      height: cardHeight,
-                      child: CachedNetworkImage(
-                        imageUrl: avatar.imageUrl,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        httpHeaders: headers,
-                        cacheManager: JsonCacheManager(),
-                        placeholder:
-                            (context, url) => Container(
-                              color:
-                                  isDarkMode
-                                      ? Colors.grey[800]
-                                      : Colors.grey[300],
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              ),
+                children: [
+                  SizedBox(
+                    height: cardHeight,
+                    child: CachedNetworkImage(
+                      imageUrl: avatar.imageUrl,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      cacheManager: JsonCacheManager(),
+                      placeholder:
+                          (context, url) => Container(
+                            color:
+                                isDarkMode
+                                    ? Colors.grey[800]
+                                    : Colors.grey[300],
+                            child: const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             ),
-                        errorWidget:
-                            (context, url, error) => Container(
-                              color:
-                                  isDarkMode
-                                      ? Colors.grey[800]
-                                      : Colors.grey[300],
-                              child: const Icon(Icons.broken_image),
-                            ),
-                      ),
-                    ),
-                    // 画像上にグラデーションオーバーレイを追加
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        height: 80,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.7),
-                            ],
                           ),
+                      errorWidget:
+                          (context, url, error) => Container(
+                            color:
+                                isDarkMode
+                                    ? Colors.grey[800]
+                                    : Colors.grey[300],
+                            child: const Icon(Icons.broken_image),
+                          ),
+                    ),
+                  ),
+                  // 画像上にグラデーションオーバーレイを追加
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      height: 80,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.7),
+                          ],
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
 
               // アバター情報
               Padding(

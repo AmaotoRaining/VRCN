@@ -1,10 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart' hide Badge;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
-
-class UserBadgesView extends StatelessWidget {
+class UserBadgesView extends ConsumerWidget {
   final User user;
   final bool isDarkMode;
 
@@ -15,7 +16,7 @@ class UserBadgesView extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final badges = user.badges;
     if (badges == null || badges.isEmpty) {
       return const SizedBox.shrink();
@@ -41,7 +42,7 @@ class UserBadgesView extends StatelessWidget {
           ...badges.take(3).map((badge) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: _buildBadgeIcon(badge),
+              child: _buildBadgeIcon(badge, ref),
             );
           }),
 
@@ -63,8 +64,9 @@ class UserBadgesView extends StatelessWidget {
     );
   }
 
-  Widget _buildBadgeIcon(Badge badge) {
-    final headers = {'User-Agent': 'VRChat/1.0'};
+  Widget _buildBadgeIcon(Badge badge, WidgetRef ref) {
+    final vrchatApi = ref.watch(vrchatProvider).value;
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     return Tooltip(
       message: badge.badgeName,

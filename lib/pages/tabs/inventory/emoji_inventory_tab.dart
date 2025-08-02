@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/files_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
@@ -36,9 +37,7 @@ class _EmojiInventoryTabState extends ConsumerState<EmojiInventoryTab>
     final emojiFilesAsync = ref.watch(getFilesByTagProvider('emoji'));
     final vrchatApi = ref.watch(vrchatProvider).value;
 
-    final headers = <String, String>{
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     return RefreshIndicator(
       onRefresh: _refreshFiles,
@@ -50,10 +49,15 @@ class _EmojiInventoryTabState extends ConsumerState<EmojiInventoryTab>
 
           return _buildFilesGrid(files, headers, isDarkMode);
         },
-        loading: () => const LoadingIndicator(message: '絵文字を読み込み中...'),
+        loading:
+            () => LoadingIndicator(
+              message: t.inventory.tabs.emojiInventory.loading,
+            ),
         error:
             (error, stackTrace) => ErrorContainer(
-              message: '絵文字の取得に失敗しました: $error',
+              message: t.inventory.tabs.emojiInventory.error(
+                error: error.toString(),
+              ),
               onRetry: _refreshFiles,
             ),
       ),
@@ -82,7 +86,7 @@ class _EmojiInventoryTabState extends ConsumerState<EmojiInventoryTab>
             ),
             const SizedBox(height: 32),
             Text(
-              '絵文字がありません',
+              t.inventory.tabs.emojiInventory.emptyTitle,
               style: GoogleFonts.notoSans(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -91,7 +95,7 @@ class _EmojiInventoryTabState extends ConsumerState<EmojiInventoryTab>
             ),
             const SizedBox(height: 16),
             Text(
-              'VRChatでアップロードした絵文字がここに表示されます',
+              t.inventory.tabs.emojiInventory.emptyDescription,
               style: GoogleFonts.notoSans(
                 fontSize: 16,
                 color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
@@ -179,9 +183,6 @@ class _EmojiInventoryTabState extends ConsumerState<EmojiInventoryTab>
     );
   }
 
-
-
-
   void _showFullScreenImage(File file, Map<String, String> headers) {
     Navigator.of(context).push(
       PageRouteBuilder(
@@ -255,7 +256,7 @@ class _FullScreenFileViewerState extends State<_FullScreenFileViewer>
       );
     } else {
       final position = _doubleTapDetails!.localPosition;
-      const scale = 3.0; // 絵文字は小さいので少し大きめにズーム
+      const scale = 3.0;
       final x = -position.dx * (scale - 1);
       final y = -position.dy * (scale - 1);
       final zoomed =
@@ -277,8 +278,6 @@ class _FullScreenFileViewerState extends State<_FullScreenFileViewer>
     });
     _animationController.forward();
   }
-
-
 
   void _shareFile() {
     final url = widget.file.versions.last.file!.url.toString();
@@ -314,7 +313,7 @@ class _FullScreenFileViewerState extends State<_FullScreenFileViewer>
               child: InteractiveViewer(
                 transformationController: _transformationController,
                 minScale: 0.5,
-                maxScale: 6.0, // 絵文字なので最大ズームを大きめに
+                maxScale: 6.0,
                 child: CachedNetworkImage(
                   imageUrl: widget.file.versions.last.file!.url.toString(),
                   httpHeaders: widget.headers,
@@ -414,7 +413,7 @@ class _FullScreenFileViewerState extends State<_FullScreenFileViewer>
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'ダブルタップでズーム',
+                  t.inventory.tabs.emojiInventory.zoomHint,
                   style: GoogleFonts.notoSans(
                     fontSize: 12,
                     color: Colors.white,

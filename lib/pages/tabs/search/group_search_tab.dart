@@ -5,8 +5,10 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/group_provider.dart' as gp;
 import 'package:vrchat/provider/search_providers.dart';
+import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat/widgets/search_widgets.dart';
@@ -134,12 +136,17 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
 
     // 検索クエリが変わった場合、ローディング状態を優先表示
     if (searchState.isLoading && offset == 0) {
-      return const Center(child: LoadingIndicator(message: '検索中...'));
+      return Center(
+        child: LoadingIndicator(message: t.search.tabs.groupSearch.searching),
+      );
     }
 
     // エラー状態の処理
     if (searchState.hasError && cachedResults.isEmpty) {
-      return buildErrorState(searchState.error.toString(), isDarkMode);
+      return buildErrorState(
+        t.search.tabs.groupSearch.error(error: searchState.error.toString()),
+        isDarkMode,
+      );
     }
 
     // 空の検索結果
@@ -155,7 +162,10 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
               right: 16,
               child: FloatingActionButton.small(
                 onPressed: _toggleViewMode,
-                tooltip: effectiveIsGridView ? 'リストビュー' : 'グリッドビュー',
+                tooltip:
+                    effectiveIsGridView
+                        ? t.search.tabs.groupSearch.listView
+                        : t.search.tabs.groupSearch.gridView,
                 elevation: 2,
                 backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
                 foregroundColor: isDarkMode ? Colors.white : Colors.grey[800],
@@ -283,7 +293,8 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
     LimitedGroup group,
     bool isDarkMode,
   ) {
-    final headers = {'User-Agent': 'VRChat/1.0'};
+    final vrchatApi = ref.watch(vrchatProvider).value;
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -397,7 +408,9 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${group.memberCount ?? "?"}',
+                            t.search.tabs.groupSearch.memberCount(
+                              count: '${group.memberCount ?? "?"}',
+                            ),
                             style: GoogleFonts.notoSans(
                               color: Colors.white,
                               fontSize: 12,
@@ -466,7 +479,8 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
 
   // グループリストアイテムのウィジェット
   Widget _buildGroupListItem(LimitedGroup group, bool isDarkMode) {
-    final headers = {'User-Agent': 'VRChat/1.0'};
+    final vrchatApi = ref.watch(vrchatProvider).value;
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -594,7 +608,9 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '${group.memberCount ?? "?"} メンバー',
+                          t.search.tabs.groupSearch.memberCount(
+                            count: '${group.memberCount ?? "?"}',
+                          ),
                           style: GoogleFonts.notoSans(
                             fontSize: 13,
                             color:
@@ -634,7 +650,7 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
           ),
           const SizedBox(height: 24),
           Text(
-            'グループを検索',
+            t.search.tabs.groupSearch.emptyTitle,
             style: GoogleFonts.notoSans(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -643,7 +659,7 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
           ),
           const SizedBox(height: 16),
           Text(
-            'キーワードを入力して検索してください',
+            t.search.tabs.groupSearch.emptyDescription,
             style: GoogleFonts.notoSans(
               fontSize: 16,
               color: isDarkMode ? Colors.grey[500] : Colors.grey[700],
@@ -667,7 +683,7 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
           ),
           const SizedBox(height: 20),
           Text(
-            '「$query」に一致するグループが\n見つかりませんでした',
+            t.search.tabs.groupSearch.noResultsWithQuery(query: query),
             textAlign: TextAlign.center,
             style: GoogleFonts.notoSans(
               fontSize: 18,
@@ -677,7 +693,7 @@ class _GroupSearchTabState extends ConsumerState<GroupSearchTab>
           ),
           const SizedBox(height: 16),
           Text(
-            '検索キーワードを変えてみましょう',
+            t.search.tabs.groupSearch.noResultsHint,
             style: GoogleFonts.notoSans(
               fontSize: 14,
               color: isDarkMode ? Colors.grey[500] : Colors.grey[600],

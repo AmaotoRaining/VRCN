@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
@@ -12,7 +13,7 @@ import 'package:vrchat_dart/vrchat_dart.dart';
 class FriendListItem extends ConsumerWidget {
   final LimitedUser friend;
   final VoidCallback onTap;
-  final bool compact; // コンパクト表示モード（ロケーション情報を非表示）
+  final bool compact;
 
   const FriendListItem({
     super.key,
@@ -23,14 +24,9 @@ class FriendListItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // VRChat APIのインスタンスから User-Agent を取得
     final vrchatApi = ref.watch(vrchatProvider).value;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    // User-Agent ヘッダーの定義
-    final headers = <String, String>{
-      'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRChat/1.0',
-    };
+    final headers = {'User-Agent': vrchatApi?.userAgent.toString() ?? 'VRCN'};
 
     final statusColor = StatusHelper.getStatusColor(friend.status);
     final userTypeColor = UserTypeHelper.getUserTypeColor(friend.tags);
@@ -186,7 +182,6 @@ class FriendListItem extends ConsumerWidget {
                                 isDarkMode
                                     ? Colors.grey[400]
                                     : Colors.grey[600],
-                            fontStyle: FontStyle.italic,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -212,7 +207,7 @@ class FriendListItem extends ConsumerWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'プライベート',
+                                t.friends.private,
                                 style: GoogleFonts.notoSans(
                                   fontSize: 12,
                                   color:
@@ -225,10 +220,8 @@ class FriendListItem extends ConsumerWidget {
                               ),
                             ],
                           ),
-                        ] else if (userDetailAsync != null) ...[
-                          // 既存のユーザー詳細情報表示コード
-                          // ...
-                        ],
+                        ] else if (userDetailAsync != null)
+                          ...[],
                       ],
                     ],
                   ),
