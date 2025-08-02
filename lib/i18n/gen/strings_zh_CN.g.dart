@@ -660,6 +660,8 @@ class _TranslationsSettingsZhCn implements TranslationsSettingsJa {
 
 	// Translations
 	@override String get appearance => '外观';
+	@override String get language => '语言';
+	@override String get languageDescription => '您可以选择应用程序的显示语言';
 	@override String get appIcon => '应用图标';
 	@override String get appIconDescription => '更改主屏幕上显示的应用图标';
 	@override String get contentSettings => '内容设置';
@@ -1610,6 +1612,8 @@ extension on TranslationsZhCn {
 			case 'feedback.success': return '反馈已发送。谢谢！';
 			case 'feedback.fail': return '反馈发送失败';
 			case 'settings.appearance': return '外观';
+			case 'settings.language': return '语言';
+			case 'settings.languageDescription': return '您可以选择应用程序的显示语言';
 			case 'settings.appIcon': return '应用图标';
 			case 'settings.appIconDescription': return '更改主屏幕上显示的应用图标';
 			case 'settings.contentSettings': return '内容设置';

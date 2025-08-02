@@ -544,6 +544,8 @@
   },
   "settings": {
     "appearance": "外観",
+    "language": "言語",
+    "languageDescription": "アプリの表示言語を選択できます",
     "appIcon": "アプリアイコン",
     "appIconDescription": "ホーム画面に表示されるアプリのアイコンを変更します",
     "contentSettings": "コンテンツ設定",

@@ -660,6 +660,8 @@ class _TranslationsSettingsKo implements TranslationsSettingsJa {
 
 	// Translations
 	@override String get appearance => '화면';
+	@override String get language => '언어';
+	@override String get languageDescription => '앱의 표시 언어를 선택할 수 있습니다.';
 	@override String get appIcon => '앱 아이콘';
 	@override String get appIconDescription => '홈 화면에 표시되는 앱 아이콘을 변경합니다';
 	@override String get contentSettings => '콘텐츠 설정';
@@ -1610,6 +1612,8 @@ extension on TranslationsKo {
 			case 'feedback.success': return '피드백을 전송했습니다. 감사합니다!';
 			case 'feedback.fail': return '피드백 전송에 실패했습니다';
 			case 'settings.appearance': return '화면';
+			case 'settings.language': return '언어';
+			case 'settings.languageDescription': return '앱의 표시 언어를 선택할 수 있습니다.';
 			case 'settings.appIcon': return '앱 아이콘';
 			case 'settings.appIconDescription': return '홈 화면에 표시되는 앱 아이콘을 변경합니다';
 			case 'settings.contentSettings': return '콘텐츠 설정';

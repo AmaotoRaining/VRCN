@@ -544,6 +544,8 @@
   },
   "settings": {
     "appearance": "Appearance",
+    "language": "Language",
+    "languageDescription": "You can select the display language for the app.",
     "appIcon": "App Icon",
     "appIconDescription": "Change the app icon displayed on the home screen.",
     "contentSettings": "Content Settings",

@@ -27,8 +27,6 @@ import 'package:vrchat/widgets/loading_indicator.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await LocaleSettings.useDeviceLocale();
-
   // スプラッシュ画面
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
@@ -51,6 +49,19 @@ Future<void> main() async {
 
   // SharedPreferencesの初期化
   final prefs = await SharedPreferences.getInstance();
+
+  // 言語設定
+  final savedLocale = prefs.getString('locale');
+
+  if (savedLocale != null) {
+    // 保存された言語設定がある場合
+    await LocaleSettings.setLocaleRaw(savedLocale);
+  } else {
+    // 初回起動時は端末の言語を使用し、設定として保存
+    await LocaleSettings.useDeviceLocale();
+    final currentLocale = LocaleSettings.currentLocale;
+    await prefs.setString('locale', currentLocale.languageCode);
+  }
 
   // 通知の初期化
   final notifications = await initializeNotifications();

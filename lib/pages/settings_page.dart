@@ -136,6 +136,21 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                   secondaryTextColor,
                                   buttonColor,
                                 ),
+                                // 言語設定を追加
+                                _buildLanguageSetting(
+                                  isDarkMode,
+                                  textColor,
+                                  secondaryTextColor,
+                                  buttonColor,
+                                ),
+                                if (Platform.isIOS || Platform.isAndroid)
+                                  _buildAppIconSection(
+                                    context,
+                                    ref,
+                                    isDarkMode,
+                                    textColor,
+                                    secondaryTextColor,
+                                  ),
                               ],
                             )
                             .animate()
@@ -915,6 +930,175 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             Icon(Icons.edit, size: 18, color: secondaryTextColor),
           ],
         ),
+      ),
+    );
+  }
+
+  // 言語設定メソッドを修正
+  Widget _buildLanguageSetting(
+    bool isDarkMode,
+    Color textColor,
+    Color secondaryTextColor,
+    Color buttonColor,
+  ) {
+    final currentLocale = ref.watch(settingsProvider).locale;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(
+                0xFF52B69A,
+              ).withValues(alpha: isDarkMode ? 0.2 : 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.language,
+              size: 20,
+              color: Color(0xFF52B69A),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  t.settings.language,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  t.settings.languageDescription,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 13,
+                    color: secondaryTextColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: buttonColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
+                width: 1,
+              ),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<AppLocale>(
+                value: currentLocale,
+                isDense: true,
+                icon: Icon(
+                  Icons.keyboard_arrow_down,
+                  color: secondaryTextColor,
+                  size: 20,
+                ),
+                style: GoogleFonts.notoSans(
+                  fontSize: 14,
+                  color: textColor,
+                  fontWeight: FontWeight.w500,
+                ),
+                dropdownColor:
+                    isDarkMode ? const Color(0xFF2E2E36) : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                items: [
+                  DropdownMenuItem(
+                    value: AppLocale.ja,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '日本語',
+                          style: GoogleFonts.notoSans(
+                            color: textColor,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: AppLocale.en,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'English',
+                          style: GoogleFonts.notoSans(
+                            color: textColor,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: AppLocale.ko,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '한국어',
+                          style: GoogleFonts.notoSans(
+                            color: textColor,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: AppLocale.zhCn,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '简体中文',
+                          style: GoogleFonts.notoSans(
+                            color: textColor,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: AppLocale.zhTw,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '繁體中文',
+                          style: GoogleFonts.notoSans(
+                            color: textColor,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                onChanged: (newLocale) {
+                  if (newLocale != null) {
+                    ref.read(settingsProvider.notifier).setLocale(newLocale);
+                  }
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

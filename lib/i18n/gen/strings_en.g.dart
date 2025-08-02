@@ -660,6 +660,8 @@ class _TranslationsSettingsEn implements TranslationsSettingsJa {
 
 	// Translations
 	@override String get appearance => 'Appearance';
+	@override String get language => 'Language';
+	@override String get languageDescription => 'You can select the display language for the app.';
 	@override String get appIcon => 'App Icon';
 	@override String get appIconDescription => 'Change the app icon displayed on the home screen.';
 	@override String get contentSettings => 'Content Settings';
@@ -1610,6 +1612,8 @@ extension on TranslationsEn {
 			case 'feedback.success': return 'Feedback sent. Thank you!';
 			case 'feedback.fail': return 'Failed to send feedback.';
 			case 'settings.appearance': return 'Appearance';
+			case 'settings.language': return 'Language';
+			case 'settings.languageDescription': return 'You can select the display language for the app.';
 			case 'settings.appIcon': return 'App Icon';
 			case 'settings.appIconDescription': return 'Change the app icon displayed on the home screen.';
 			case 'settings.contentSettings': return 'Content Settings';

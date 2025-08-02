@@ -663,6 +663,8 @@ class TranslationsSettingsJa {
 
 	// Translations
 	String get appearance => '外観';
+	String get language => '言語';
+	String get languageDescription => 'アプリの表示言語を選択できます';
 	String get appIcon => 'アプリアイコン';
 	String get appIconDescription => 'ホーム画面に表示されるアプリのアイコンを変更します';
 	String get contentSettings => 'コンテンツ設定';
@@ -1613,6 +1615,8 @@ extension on Translations {
 			case 'feedback.success': return 'フィードバックを送信しました。ありがとうございます！';
 			case 'feedback.fail': return 'フィードバックの送信に失敗しました';
 			case 'settings.appearance': return '外観';
+			case 'settings.language': return '言語';
+			case 'settings.languageDescription': return 'アプリの表示言語を選択できます';
 			case 'settings.appIcon': return 'アプリアイコン';
 			case 'settings.appIconDescription': return 'ホーム画面に表示されるアプリのアイコンを変更します';
 			case 'settings.contentSettings': return 'コンテンツ設定';

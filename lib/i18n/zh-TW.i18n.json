@@ -544,6 +544,8 @@
   },
   "settings": {
     "appearance": "外觀",
+    "language": "語言",
+    "languageDescription": "您可以選擇應用程式的顯示語言",
     "appIcon": "應用程式圖示",
     "appIconDescription": "變更顯示在主畫面的應用程式圖示",
     "contentSettings": "內容設定",

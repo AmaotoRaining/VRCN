@@ -660,6 +660,8 @@ class _TranslationsSettingsZhTw implements TranslationsSettingsJa {
 
 	// Translations
 	@override String get appearance => '外觀';
+	@override String get language => '語言';
+	@override String get languageDescription => '您可以選擇應用程式的顯示語言';
 	@override String get appIcon => '應用程式圖示';
 	@override String get appIconDescription => '變更顯示在主畫面的應用程式圖示';
 	@override String get contentSettings => '內容設定';
@@ -1610,6 +1612,8 @@ extension on TranslationsZhTw {
 			case 'feedback.success': return '意見回饋已成功傳送，感謝您！';
 			case 'feedback.fail': return '傳送意見回饋失敗';
 			case 'settings.appearance': return '外觀';
+			case 'settings.language': return '語言';
+			case 'settings.languageDescription': return '您可以選擇應用程式的顯示語言';
 			case 'settings.appIcon': return '應用程式圖示';
 			case 'settings.appIconDescription': return '變更顯示在主畫面的應用程式圖示';
 			case 'settings.contentSettings': return '內容設定';
