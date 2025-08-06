@@ -25,7 +25,6 @@ import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -37,13 +36,15 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // クラッシュハンドラ
-  FlutterError.onError = (errorDetails) {
-    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-  };
-  PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    return true;
-  };
+  if(!kDebugMode){
+    FlutterError.onError = (errorDetails) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    };
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+  }
 
   // App Check初期化
   await FirebaseAppCheck.instance.activate(

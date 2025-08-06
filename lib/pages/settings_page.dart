@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -308,16 +308,30 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                     textColor: textColor,
                                     secondaryTextColor: secondaryTextColor,
                                   ),
-                                  if (kDebugMode) ...[
-                                    _buildInfoItem(
-                                      icon: Icons.code,
-                                      iconColor: const Color(0xFF9381FF),
-                                      title: t.settings.packageName,
-                                      value: _packageInfo!.packageName,
-                                      textColor: textColor,
-                                      secondaryTextColor: secondaryTextColor,
-                                    ),
-                                  ],
+                                  _buildInfoItem(
+                                    icon: Icons.code,
+                                    iconColor: const Color(0xFF9381FF),
+                                    title: t.settings.packageName,
+                                    value: _packageInfo!.packageName,
+                                    textColor: textColor,
+                                    secondaryTextColor: secondaryTextColor,
+                                  ),
+                                  FutureBuilder<String?>(
+                                    future:
+                                        FirebaseMessaging.instance.getToken(),
+                                    builder: (context, snapshot) {
+                                      final fcmToken = snapshot.data;
+                                      return _buildInfoItem(
+                                        icon: Icons.code,
+                                        iconColor: const Color(0xFF9381FF),
+                                        title: 'FCM',
+                                        value: fcmToken ?? '未設定',
+                                        textColor: textColor,
+                                        secondaryTextColor: secondaryTextColor,
+                                      );
+                                    },
+                                  ),
+
                                   const Divider(height: 1),
                                   _buildLinkItem(
                                     icon: Icons.person,
@@ -1131,7 +1145,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   ),
                 ),
                 const SizedBox(height: 4),
-                SelectableText(
+                Text(
                   value,
                   style: GoogleFonts.notoSans(
                     fontSize: 13,
