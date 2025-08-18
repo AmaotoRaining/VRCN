@@ -3,6 +3,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_messaging/firebase_messaging.dart'; // 追加
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,6 +26,54 @@ import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
+
+// FCMバックグラウンドメッセージハンドラー（トップレベル関数として定義）
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Firebase の初期化が必要
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  debugPrint('🔔 バックグラウンドメッセージを受信:');
+  debugPrint('📱 Message ID: ${message.messageId}');
+  debugPrint('📰 Title: ${message.notification?.title}');
+  debugPrint('📝 Body: ${message.notification?.body}');
+  debugPrint('📊 Data: ${message.data}');
+
+  // バックグラウンドでローカル通知を表示
+  await _showLocalNotification(message);
+}
+
+// ローカル通知を表示するヘルパー関数
+Future<void> _showLocalNotification(RemoteMessage message) async {
+  const androidDetails = AndroidNotificationDetails(
+    'fcm_default_channel',
+    'FCM通知',
+    channelDescription: 'Firebase Cloud Messagingからの通知',
+    importance: Importance.high,
+    priority: Priority.high,
+    showWhen: true,
+  );
+
+  const notificationDetails = NotificationDetails(
+    android: androidDetails,
+    iOS: DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    ),
+  );
+
+  final notifications = FlutterLocalNotificationsPlugin();
+
+  await notifications.show(
+    message.hashCode,
+    message.notification?.title ?? 'VRCNからの通知',
+    message.notification?.body ?? 'メッセージを受信しました',
+    notificationDetails,
+    payload: message.data.toString(),
+  );
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -35,8 +84,11 @@ Future<void> main() async {
   // Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  // FCMバックグラウンドメッセージハンドラーを設定
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   // クラッシュハンドラ
-  if(!kDebugMode){
+  if (!kDebugMode) {
     FlutterError.onError = (errorDetails) {
       FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
     };
@@ -53,6 +105,9 @@ Future<void> main() async {
     appleProvider:
         kReleaseMode ? AppleProvider.deviceCheck : AppleProvider.debug,
   );
+
+  // FCMの初期化とデバッグ情報表示
+  await _initializeFCM();
 
   // システムUIの設定
   SystemChrome.setSystemUIOverlayStyle(
@@ -123,6 +178,77 @@ Future<void> main() async {
   );
 }
 
+/// FCMの初期化とデバッグ情報表示
+Future<void> _initializeFCM() async {
+  final messaging = FirebaseMessaging.instance;
+
+  try {
+    // 通知権限をリクエスト
+    final settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+
+    debugPrint('🔔 ========== FCM設定情報 ==========');
+    debugPrint('📱 通知権限ステータス: ${settings.authorizationStatus}');
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      debugPrint('✅ 通知権限が許可されています');
+    } else if (settings.authorizationStatus ==
+        AuthorizationStatus.provisional) {
+      debugPrint('⚠️ 通知権限が仮許可されています');
+    } else {
+      debugPrint('❌ 通知権限が拒否されています');
+    }
+
+    // FCMトークンを取得してデバッグ出力
+    final token = await messaging.getToken();
+    debugPrint('🔑 FCMトークン: $token');
+
+    // トークンの更新を監視
+    messaging.onTokenRefresh.listen((newToken) {
+      debugPrint('🔄 FCMトークンが更新されました: $newToken');
+    });
+
+    // フォアグラウンドメッセージを処理
+    FirebaseMessaging.onMessage.listen((message) {
+      debugPrint('📬 フォアグラウンドメッセージを受信:');
+      debugPrint('📱 Message ID: ${message.messageId}');
+      debugPrint('📰 Title: ${message.notification?.title}');
+      debugPrint('📝 Body: ${message.notification?.body}');
+      debugPrint('📊 Data: ${message.data}');
+
+      // フォアグラウンドでもローカル通知を表示
+      _showLocalNotification(message);
+    });
+
+    // アプリが終了状態から通知タップで起動された場合
+    messaging.getInitialMessage().then((message) {
+      if (message != null) {
+        debugPrint('🚀 アプリが通知から起動されました:');
+        debugPrint('📱 Message ID: ${message.messageId}');
+        debugPrint('📊 Data: ${message.data}');
+      }
+    });
+
+    // アプリがバックグラウンドから通知タップで復帰した場合
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      debugPrint('📱 バックグラウンドから通知タップで復帰:');
+      debugPrint('📱 Message ID: ${message.messageId}');
+      debugPrint('📊 Data: ${message.data}');
+    });
+
+    debugPrint('🔔 ========== FCM初期化完了 ==========');
+  } catch (e) {
+    debugPrint('❌ FCM初期化エラー: $e');
+  }
+}
+
 /// 通知の初期化
 Future<FlutterLocalNotificationsPlugin> initializeNotifications() async {
   final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -151,6 +277,20 @@ Future<FlutterLocalNotificationsPlugin> initializeNotifications() async {
     onDidReceiveNotificationResponse: _handleNotificationResponse,
   );
 
+  // FCM用のAndroid通知チャンネルを作成
+  const channel = AndroidNotificationChannel(
+    'fcm_default_channel',
+    'FCM通知',
+    description: 'Firebase Cloud Messagingからの通知',
+    importance: Importance.high,
+  );
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >()
+      ?.createNotificationChannel(channel);
+
   return flutterLocalNotificationsPlugin;
 }
 
@@ -164,6 +304,8 @@ void _handleNotificationResponse(NotificationResponse details) {
         .read(eventReminderProvider.notifier)
         .removeReminderByNotificationId(notificationId);
   }
+
+  debugPrint('🔔 通知がタップされました: ${details.payload}');
 }
 
 class VRChatApp extends ConsumerStatefulWidget {
