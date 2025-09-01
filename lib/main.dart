@@ -27,8 +27,7 @@ import 'package:vrchat/router/app_router.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 
-// FCMバックグラウンドメッセージハンドラー（トップレベル関数として定義）
-@pragma('vm:entry-point')
+// FCMバックグラウンドメッセージハンドラー
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Firebase の初期化が必要
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
