@@ -22,7 +22,6 @@ def flutter_root
   end
   raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
 end
-
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
 
 flutter_ios_podfile_setup
@@ -30,6 +29,8 @@ flutter_ios_podfile_setup
 target 'Runner' do
   use_frameworks!
   use_modular_headers!
+
+  pod 'GoogleUtilities'
 
   # Firebase関連の最適化設定
   pod 'Firebase/Analytics', :modular_headers => true
@@ -51,6 +52,12 @@ target 'Runner' do
   target 'RunnerTests' do
     inherit! :search_paths
   end
+end
+
+target 'ImageNotification' do
+  use_frameworks!
+  pod 'GoogleUtilities'
+  pod 'Firebase/Messaging'
 end
 
 post_install do |installer|
