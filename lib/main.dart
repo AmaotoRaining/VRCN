@@ -158,7 +158,6 @@ Future<void> main() async {
     }
   }
 
-  // ProviderContainerを正しく初期化
   final container = ProviderContainer(
     overrides: [
       sharedPreferencesProvider.overrideWithValue(prefs),

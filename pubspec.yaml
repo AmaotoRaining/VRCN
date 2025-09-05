@@ -182,6 +182,9 @@ dependencies:
   receive_sharing_intent: ^1.8.1
   new_version_plus: ^0.1.1
 
+  # AppsFlyer
+  appsflyer_sdk: ^6.17.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
