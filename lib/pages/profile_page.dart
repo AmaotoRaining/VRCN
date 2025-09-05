@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/avatar_provider.dart';
 import 'package:vrchat/provider/user_provider.dart';
@@ -12,6 +11,7 @@ import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/utils/status_helpers.dart';
+import 'package:vrchat/utils/url_launcher_utils.dart';
 import 'package:vrchat/utils/user_type_helpers.dart';
 import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/info_card.dart';
@@ -1551,7 +1551,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
     final domain = linkData['domain'] as String;
 
     return InkWell(
-      onTap: () => _launchURL(url),
+      onTap: () => UrlLauncherUtils.launchURL(url),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -1654,14 +1654,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
     );
   }
 
-  Future<void> _launchURL(String urlString) async {
-    final url = Uri.parse(_ensureHttpPrefix(urlString));
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      debugPrint('URLを開けませんでした: $urlString');
-    }
-  }
 
   String _ensureHttpPrefix(String url) {
     if (url.startsWith('http://') || url.startsWith('https://')) {

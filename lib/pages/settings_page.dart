@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/auth_storage_provider.dart';
 import 'package:vrchat/provider/cache_provider.dart';
@@ -15,6 +14,7 @@ import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
 import 'package:vrchat/theme/app_theme.dart';
+import 'package:vrchat/utils/url_launcher_utils.dart';
 import 'package:vrchat/widgets/reminder_management_dialog.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
@@ -331,7 +331,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                     title: t.settings.contact,
                                     subtitle: t.settings.contactDescription,
                                     onTap:
-                                        () => _launchURL(
+                                        () => UrlLauncherUtils.launchURL(
                                           'https://discord.gg/wNgbkdXq6M',
                                         ),
                                     textColor: textColor,
@@ -344,7 +344,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                     subtitle:
                                         t.settings.privacyPolicyDescription,
                                     onTap:
-                                        () => _launchURL(
+                                        () => UrlLauncherUtils.launchURL(
                                           'https://null-base.com/vrcn/privacy-policy/',
                                         ),
                                     textColor: textColor,
@@ -357,7 +357,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                     subtitle:
                                         t.settings.termsOfServiceDescription,
                                     onTap:
-                                        () => _launchURL(
+                                        () => UrlLauncherUtils.launchURL(
                                           'https://null-base.com/vrcn/terms-of-service',
                                         ),
                                     textColor: textColor,
@@ -378,7 +378,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                     title: t.settings.github,
                                     subtitle: t.settings.githubDescription,
                                     onTap:
-                                        () => _launchURL(
+                                        () => UrlLauncherUtils.launchURL(
                                           'https://github.com/null-base/vrcn',
                                         ),
                                     textColor: textColor,
@@ -1818,11 +1818,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
         }
       }
     }
-  }
-
-  Future<void> _launchURL(String urlString) async {
-    final url = Uri.parse(urlString);
-    await launchUrl(url);
   }
 
   // ライセンス表示メソッド
