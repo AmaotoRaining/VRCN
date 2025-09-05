@@ -14,6 +14,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:new_version_plus/new_version_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vrchat/analytics_repository.dart';
@@ -22,10 +23,12 @@ import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/event_reminder_provider.dart';
 import 'package:vrchat/provider/settings_provider.dart';
 import 'package:vrchat/provider/streaming_provider.dart';
+import 'package:vrchat/provider/version_check_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
+import 'package:vrchat/widgets/update_dialog.dart';
 
 // FCMバックグラウンドメッセージハンドラー
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -387,6 +390,32 @@ class _VRChatAppState extends ConsumerState<VRChatApp>
       });
     }
 
+    // バージョンチェックと更新ダイアログの表示
+    ref.listen<AsyncValue<VersionStatus?>>(versionCheckProvider, (
+      previous,
+      next,
+    ) {
+      next.whenData((versionStatus) {
+        if (versionStatus != null &&
+            versionStatus.canUpdate &&
+            !ref.read(updateDialogShownProvider)) {
+          // ダイアログ表示済みフラグを設定
+          ref.read(updateDialogShownProvider.notifier).state = true;
+
+          // 少し遅延を入れてダイアログを表示
+          Future.delayed(const Duration(milliseconds: 1500), () {
+            if (context.mounted) {
+              showDialog(
+                context: context,
+                builder:
+                    (context) => UpdateDialog(versionStatus: versionStatus),
+              );
+            }
+          });
+        }
+      });
+    });
+
     // APIの初期化を開始
     ref.watch(vrchatProvider);
 
@@ -398,6 +427,11 @@ class _VRChatAppState extends ConsumerState<VRChatApp>
         Future.microtask(
           () => ref.read(streamingControllerProvider).startConnection(),
         );
+
+        // ログイン後にバージョンチェックを実行
+        Future.microtask(() {
+          ref.read(versionCheckProvider);
+        });
       }
     });
 

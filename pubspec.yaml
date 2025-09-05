@@ -180,6 +180,7 @@ dependencies:
   audioplayers: ^6.5.0
 
   receive_sharing_intent: ^1.8.1
+  new_version_plus: ^0.1.1
 
 dev_dependencies:
   flutter_test:
