@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:app_links/app_links.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
@@ -27,6 +29,7 @@ import 'package:vrchat/provider/version_check_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/router/app_router.dart';
 import 'package:vrchat/theme/app_theme.dart';
+import 'package:vrchat/utils/url_launcher_utils.dart';
 import 'package:vrchat/widgets/loading_indicator.dart';
 import 'package:vrchat/widgets/update_dialog.dart';
 
@@ -208,6 +211,7 @@ Future<void> _initializeFCM() async {
     }
 
     // FCMトークンを取得してデバッグ出力
+    
     final token = await messaging.getToken();
     debugPrint('🔑 FCMトークン: $token');
 
@@ -226,6 +230,7 @@ Future<void> _initializeFCM() async {
 
       // フォアグラウンドでもローカル通知を表示
       _showLocalNotification(message);
+      _handleFcmMessageUrl(message.data);
     });
 
     // アプリが終了状態から通知タップで起動された場合
@@ -234,6 +239,8 @@ Future<void> _initializeFCM() async {
         debugPrint('🚀 アプリが通知から起動されました:');
         debugPrint('📱 Message ID: ${message.messageId}');
         debugPrint('📊 Data: ${message.data}');
+
+        _handleFcmMessageUrl(message.data);
       }
     });
 
@@ -242,6 +249,8 @@ Future<void> _initializeFCM() async {
       debugPrint('📱 バックグラウンドから通知タップで復帰:');
       debugPrint('📱 Message ID: ${message.messageId}');
       debugPrint('📊 Data: ${message.data}');
+
+      _handleFcmMessageUrl(message.data);
     });
 
     debugPrint('🔔 ========== FCM初期化完了 ==========');
@@ -307,6 +316,66 @@ void _handleNotificationResponse(NotificationResponse details) {
   }
 
   debugPrint('🔔 通知がタップされました: ${details.payload}');
+
+  _handleNotificationUrl(details.payload);
+}
+
+void _handleNotificationUrl(String? payload) {
+  if (payload == null || payload.isEmpty) return;
+
+  try {
+    // payloadをMapとして解析
+    final data = <String, dynamic>{};
+
+    // payload文字列からデータを抽出（FCMのdataは文字列として渡される）
+    if (payload.startsWith('{') && payload.endsWith('}')) {
+      // JSON形式の場合
+      final jsonData = jsonDecode(payload) as Map<String, dynamic>;
+      data.addAll(jsonData);
+    } else {
+      // key=value形式の場合（FCMのデフォルト形式）
+      final pairs = payload.split(', ');
+      for (final pair in pairs) {
+        if (pair.contains('=')) {
+          final parts = pair.split('=');
+          if (parts.length == 2) {
+            data[parts[0].trim()] = parts[1].trim();
+          }
+        }
+      }
+    }
+
+    // urlキーが存在する場合、URLを開く
+    final url = data['url'] as String?;
+    if (url != null && url.isNotEmpty) {
+      debugPrint('🔗 通知からURLを開きます: $url');
+
+      // URLを開く（外部ブラウザで開く）
+      Future.microtask(() async {
+        final success = await UrlLauncherUtils.launchURL(url);
+        if (!success) {
+          debugPrint('❌ URLを開けませんでした: $url');
+        }
+      });
+    }
+  } catch (e) {
+    debugPrint('❌ 通知データの解析エラー: $e');
+  }
+}
+
+void _handleFcmMessageUrl(Map<String, dynamic> data) {
+  final url = data['url'] as String?;
+  if (url != null && url.isNotEmpty) {
+    debugPrint('🔗 FCMメッセージからURLを開きます: $url');
+
+    // URLを開く（外部ブラウザで開く）
+    Future.microtask(() async {
+      final success = await UrlLauncherUtils.launchURL(url);
+      if (!success) {
+        debugPrint('❌ URLを開けませんでした: $url');
+      }
+    });
+  }
 }
 
 class VRChatApp extends ConsumerStatefulWidget {
