@@ -150,6 +150,7 @@ class _TranslationsLoginZhCn implements TranslationsLoginJa {
 
 	// Translations
 	@override String get forgotPassword => '忘记密码？';
+	@override String get createAccount => '注册';
 	@override String get subtitle => '使用您的 VRChat 账户登录';
 	@override String get email => '邮箱地址';
 	@override String get emailHint => '输入邮箱或用户名';
@@ -794,6 +795,11 @@ class _TranslationsLocationZhCn implements TranslationsLocationJa {
 	@override String get inviteSent => '邀请已发送。您可以从通知中加入';
 	@override String inviteFailed({required Object error}) => '发送邀请失败：${error}';
 	@override String get inviteButton => '向自己发送邀请';
+	@override String isPrivate({required Object number}) => '${number}人私密';
+	@override String isActive({required Object number}) => '${number}人在线';
+	@override String isOffline({required Object number}) => '${number}人离线';
+	@override String isTraveling({required Object number}) => '${number}人移动中';
+	@override String isStaying({required Object number}) => '${number}人停留中';
 }
 
 // Path: reminder
@@ -1199,6 +1205,7 @@ extension on TranslationsZhCn {
 			case 'drawer.section.content': return '内容';
 			case 'drawer.section.other': return '其他';
 			case 'login.forgotPassword': return '忘记密码？';
+			case 'login.createAccount': return '注册';
 			case 'login.subtitle': return '使用您的 VRChat 账户登录';
 			case 'login.email': return '邮箱地址';
 			case 'login.emailHint': return '输入邮箱或用户名';
@@ -1708,6 +1715,11 @@ extension on TranslationsZhCn {
 			case 'location.inviteSent': return '邀请已发送。您可以从通知中加入';
 			case 'location.inviteFailed': return ({required Object error}) => '发送邀请失败：${error}';
 			case 'location.inviteButton': return '向自己发送邀请';
+			case 'location.isPrivate': return ({required Object number}) => '${number}人私密';
+			case 'location.isActive': return ({required Object number}) => '${number}人在线';
+			case 'location.isOffline': return ({required Object number}) => '${number}人离线';
+			case 'location.isTraveling': return ({required Object number}) => '${number}人移动中';
+			case 'location.isStaying': return ({required Object number}) => '${number}人停留中';
 			case 'reminder.dialogTitle': return '设置提醒';
 			case 'reminder.alreadySet': return '已设置';
 			case 'reminder.set': return '设置';

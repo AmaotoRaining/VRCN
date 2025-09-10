@@ -150,6 +150,7 @@ class _TranslationsLoginKo implements TranslationsLoginJa {
 
 	// Translations
 	@override String get forgotPassword => '비밀번호를 잊으셨나요?';
+	@override String get createAccount => '계정 만들기';
 	@override String get subtitle => 'VRChat 계정 정보로 로그인';
 	@override String get email => '이메일 주소';
 	@override String get emailHint => '이메일 또는 사용자 이름 입력';
@@ -794,6 +795,11 @@ class _TranslationsLocationKo implements TranslationsLocationJa {
 	@override String get inviteSent => '초대를 보냈습니다. 알림에서 참여할 수 있습니다';
 	@override String inviteFailed({required Object error}) => '초대 보내기에 실패했습니다: ${error}';
 	@override String get inviteButton => '나에게 초대 보내기';
+	@override String isPrivate({required Object number}) => '${number}명이 비공개';
+	@override String isActive({required Object number}) => '${number}명이 활동 중';
+	@override String isOffline({required Object number}) => '${number}명이 오프라인';
+	@override String isTraveling({required Object number}) => '${number}명이 이동 중';
+	@override String isStaying({required Object number}) => '${number}명이 체류 중';
 }
 
 // Path: reminder
@@ -1199,6 +1205,7 @@ extension on TranslationsKo {
 			case 'drawer.section.content': return '콘텐츠';
 			case 'drawer.section.other': return '기타';
 			case 'login.forgotPassword': return '비밀번호를 잊으셨나요?';
+			case 'login.createAccount': return '계정 만들기';
 			case 'login.subtitle': return 'VRChat 계정 정보로 로그인';
 			case 'login.email': return '이메일 주소';
 			case 'login.emailHint': return '이메일 또는 사용자 이름 입력';
@@ -1708,6 +1715,11 @@ extension on TranslationsKo {
 			case 'location.inviteSent': return '초대를 보냈습니다. 알림에서 참여할 수 있습니다';
 			case 'location.inviteFailed': return ({required Object error}) => '초대 보내기에 실패했습니다: ${error}';
 			case 'location.inviteButton': return '나에게 초대 보내기';
+			case 'location.isPrivate': return ({required Object number}) => '${number}명이 비공개';
+			case 'location.isActive': return ({required Object number}) => '${number}명이 활동 중';
+			case 'location.isOffline': return ({required Object number}) => '${number}명이 오프라인';
+			case 'location.isTraveling': return ({required Object number}) => '${number}명이 이동 중';
+			case 'location.isStaying': return ({required Object number}) => '${number}명이 체류 중';
 			case 'reminder.dialogTitle': return '리마인더 설정';
 			case 'reminder.alreadySet': return '설정됨';
 			case 'reminder.set': return '설정하기';

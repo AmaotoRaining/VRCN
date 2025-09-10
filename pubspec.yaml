@@ -1,7 +1,7 @@
 name: vrchat
 description: "VRCN for VRChat"
 publish_to: "none"
-version: 1.2.2+125
+version: 1.2.3+135
 
 environment:
   sdk: ^3.7.2
@@ -179,6 +179,12 @@ dependencies:
   # 音楽再生
   audioplayers: ^6.5.0
 
+  receive_sharing_intent: ^1.8.1
+  new_version_plus: ^0.1.1
+
+  # AppsFlyer
+  appsflyer_sdk: ^6.17.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -202,13 +208,16 @@ flutter:
         - dev
 
 flutter_launcher_icons:
-  image_path_android: assets/launcher_icon/android_icon.png
+  # image_path_android: assets/launcher_icon/android_icon.png
   # image_path_android: assets/launcher_icon/android_icon_shinra.png
+  image_path_android: assets/launcher_icon/android_icon_VRCLS.png
   adaptive_icon_background: "#000000"
-  adaptive_icon_foreground: assets/launcher_icon/android_icon.png
+  # adaptive_icon_foreground: assets/launcher_icon/android_icon.png
   # adaptive_icon_foreground: assets/launcher_icon/android_icon_shinra.png
-  image_path_ios: assets/launcher_icon/ios_icon.png
+  adaptive_icon_foreground: assets/launcher_icon/android_icon_VRCLS.png
+  # image_path_ios: assets/launcher_icon/ios_icon.png
   # image_path_ios: assets/launcher_icon/ios_icon_shinra.png
+  image_path_ios: assets/launcher_icon/ios_icon_VRCLS.png
   android: true
   adaptive_icon_padding: true
   min_sdk_android: 30
@@ -217,13 +226,20 @@ flutter_launcher_icons:
 
 flutter_native_splash:
   color: "#262626"
-  image: assets/images/splash.png
+  # image: assets/images/splash.png
+  image: assets/images/splash_VRCLS.png
   color_dark: "#262626"
-  image_dark: assets/images/splash.png
+  # image_dark: assets/images/splash.png
+  image_dark: assets/images/splash_VRCLS.png
   fullscreen: false
+  branding: "assets/launcher_icon/branding.png"
+  branding_dark: "assets/launcher_icon/branding.png"
+  branding_mode: bottom
   android_12:
     icon_background_color: "#262626"
-    image: assets/images/splash.png
+    # image: assets/images/splash.png
+    image: assets/images/splash_VRCLS.png
     icon_background_color_dark: "#262626"
-    image_dark: assets/images/splash.png
+    # image_dark: assets/images/splash.png
+    image_dark: assets/images/splash_VRCLS.png
     fullscreen: false

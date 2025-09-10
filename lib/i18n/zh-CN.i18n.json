@@ -57,6 +57,7 @@
   },
   "login": {
     "forgotPassword": "忘记密码？",
+    "createAccount": "注册",
     "subtitle": "使用您的 VRChat 账户登录",
     "email": "邮箱地址",
     "emailHint": "输入邮箱或用户名",
@@ -653,7 +654,12 @@
     "inviteSending": "发送邀请中...",
     "inviteSent": "邀请已发送。您可以从通知中加入",
     "inviteFailed": "发送邀请失败：${error}",
-    "inviteButton": "向自己发送邀请"
+    "inviteButton": "向自己发送邀请",
+    "isPrivate": "${number}人私密",
+    "isActive": "${number}人在线",
+    "isOffline": "${number}人离线",
+    "isTraveling": "${number}人移动中",
+    "isStaying": "${number}人停留中"
   },
   "reminder": {
     "dialogTitle": "设置提醒",

@@ -414,6 +414,33 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                   ),
                                 ),
 
+                                const SizedBox(height: 8),
+
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed: () {
+                                      final url = Uri.parse(
+                                        'https://vrchat.com/home/register',
+                                      );
+                                      launchUrl(url);
+                                    },
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: primaryColor,
+                                      padding: EdgeInsets.zero,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child: Text(
+                                      t.login.createAccount,
+                                      style: GoogleFonts.notoSans(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
                                 const SizedBox(height: 16),
 
                                 // ログイン状態を保存するオプション

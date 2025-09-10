@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/utils/first_launch_utils.dart';
+import 'package:vrchat/utils/url_launcher_utils.dart';
 
 class TermsAgreementPage extends ConsumerStatefulWidget {
   const TermsAgreementPage({super.key});
@@ -213,7 +213,9 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
             onChanged:
                 (value) => setState(() => _termsAccepted = value ?? false),
             onLinkTap:
-                () => _launchURL('https://null-base.com/vrcn/terms-of-service'),
+                () => UrlLauncherUtils.launchURL(
+                  'https://null-base.com/vrcn/terms-of-service',
+                ),
             isDarkMode: isDarkMode,
             t: t,
           ),
@@ -228,7 +230,9 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
             onChanged:
                 (value) => setState(() => _privacyAccepted = value ?? false),
             onLinkTap:
-                () => _launchURL('https://null-base.com/vrcn/privacy-policy/'),
+                () => UrlLauncherUtils.launchURL(
+                  'https://null-base.com/vrcn/privacy-policy/',
+                ),
             isDarkMode: isDarkMode,
             t: t,
           ),
@@ -409,12 +413,5 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage>
   void _handleDecline() {
     // アプリを終了
     SystemNavigator.pop();
-  }
-
-  Future<void> _launchURL(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
   }
 }

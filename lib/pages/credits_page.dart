@@ -217,6 +217,22 @@ class CreditsPage extends StatelessWidget {
                         child: Image.asset('assets/icons/yume@3x.png'),
                       ),
                     ),
+                    CreditItem(
+                      name: 'kabi_lun',
+                      role: 'VRChatやめたい',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/icons/kabi_lun@3x.png'),
+                      ),
+                    ),
+                    CreditItem(
+                      name: 'ささみすと',
+                      role: 'フランクみすとはここにいる！',
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset('assets/icons/sasami_st@3x.png'),
+                      ),
+                    ),
                   ],
                   isDarkMode: isDarkMode,
                   delay: 0.2,

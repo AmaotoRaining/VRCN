@@ -9,6 +9,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:material_color_utilities/material_color_utilities.dart';
+import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/instance_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
 import 'package:vrchat/utils/cache_manager.dart';
@@ -189,15 +190,15 @@ class FriendLocationGroup extends ConsumerWidget {
     // ステータステキスト
     String statusText;
     if (isPrivate) {
-      statusText = '${friends.length}人がプライベート';
+      statusText = t.location.isPrivate(number: friends.length).toString();
     } else if (isOffline && isActive) {
-      statusText = '${friends.length}人がアクティブ';
+      statusText = t.location.isActive(number: friends.length).toString();
     } else if (isOffline) {
-      statusText = '${friends.length}人がオフライン';
+      statusText = t.location.isOffline(number: friends.length).toString();
     } else if (isTraveling) {
-      statusText = '${friends.length}人が移動中';
+      statusText = t.location.isTraveling(number: friends.length).toString();
     } else {
-      statusText = '${friends.length}人が滞在中';
+      statusText = t.location.isStaying(number: friends.length).toString();
     }
 
     return AnimationConfiguration.synchronized(

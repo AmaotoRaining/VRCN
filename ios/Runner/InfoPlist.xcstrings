@@ -77,31 +77,31 @@
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Use the camera to scan QR codes"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "QRコードをスキャンするためにカメラを使用します。"
+            "value" : "QRコードをスキャンするためにカメラを使用します"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "QR 코드를 스캔하기 위해 카메라를 사용합니다"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "使用相机扫描二维码"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "使用相機掃描QR Code"
           }
         }
@@ -144,7 +144,6 @@
     },
     "NSLocalNetworkUsageDescription" : {
       "comment" : "Privacy - Local Network Usage Description",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -180,7 +179,6 @@
     },
     "NSPhotoLibraryAddUsageDescription" : {
       "comment" : "Privacy - Photo Library Additions Usage Description",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "en" : {
           "stringUnit" : {

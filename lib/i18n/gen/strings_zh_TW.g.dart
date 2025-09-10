@@ -150,6 +150,7 @@ class _TranslationsLoginZhTw implements TranslationsLoginJa {
 
 	// Translations
 	@override String get forgotPassword => '忘記密碼？';
+	@override String get createAccount => '註冊';
 	@override String get subtitle => '使用您的 VRChat 帳號資訊登入';
 	@override String get email => '電子郵件地址';
 	@override String get emailHint => '輸入電子郵件或使用者名稱';
@@ -794,6 +795,11 @@ class _TranslationsLocationZhTw implements TranslationsLocationJa {
 	@override String get inviteSent => '已傳送邀請。您可以從通知加入';
 	@override String inviteFailed({required Object error}) => '傳送邀請失敗：${error}';
 	@override String get inviteButton => '向自己傳送邀請';
+	@override String isPrivate({required Object number}) => '${number}人私密';
+	@override String isActive({required Object number}) => '${number}人線上';
+	@override String isOffline({required Object number}) => '${number}人離線';
+	@override String isTraveling({required Object number}) => '${number}人移動中';
+	@override String isStaying({required Object number}) => '${number}人停留中';
 }
 
 // Path: reminder
@@ -1199,6 +1205,7 @@ extension on TranslationsZhTw {
 			case 'drawer.section.content': return '內容';
 			case 'drawer.section.other': return '其他';
 			case 'login.forgotPassword': return '忘記密碼？';
+			case 'login.createAccount': return '註冊';
 			case 'login.subtitle': return '使用您的 VRChat 帳號資訊登入';
 			case 'login.email': return '電子郵件地址';
 			case 'login.emailHint': return '輸入電子郵件或使用者名稱';
@@ -1708,6 +1715,11 @@ extension on TranslationsZhTw {
 			case 'location.inviteSent': return '已傳送邀請。您可以從通知加入';
 			case 'location.inviteFailed': return ({required Object error}) => '傳送邀請失敗：${error}';
 			case 'location.inviteButton': return '向自己傳送邀請';
+			case 'location.isPrivate': return ({required Object number}) => '${number}人私密';
+			case 'location.isActive': return ({required Object number}) => '${number}人線上';
+			case 'location.isOffline': return ({required Object number}) => '${number}人離線';
+			case 'location.isTraveling': return ({required Object number}) => '${number}人移動中';
+			case 'location.isStaying': return ({required Object number}) => '${number}人停留中';
 			case 'reminder.dialogTitle': return '設定提醒';
 			case 'reminder.alreadySet': return '已設定';
 			case 'reminder.set': return '設定';

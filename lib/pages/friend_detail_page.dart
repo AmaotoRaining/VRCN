@@ -16,6 +16,7 @@ import 'package:vrchat/theme/app_theme.dart';
 import 'package:vrchat/utils/cache_manager.dart';
 import 'package:vrchat/utils/date_formatter.dart';
 import 'package:vrchat/utils/status_helpers.dart';
+import 'package:vrchat/utils/url_launcher_utils.dart';
 import 'package:vrchat/utils/user_type_helpers.dart';
 import 'package:vrchat/widgets/error_container.dart';
 import 'package:vrchat/widgets/info_card.dart';
@@ -589,7 +590,7 @@ class FriendDetailPage extends ConsumerWidget {
     final domain = linkData['domain'] as String;
 
     return InkWell(
-      onTap: () => _launchURL(url),
+      onTap: () => UrlLauncherUtils.launchURL(url),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -692,14 +693,6 @@ class FriendDetailPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _launchURL(String urlString) async {
-    final url = Uri.parse(_ensureHttpPrefix(urlString));
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      debugPrint('URLを開けませんでした: $urlString');
-    }
-  }
 
   String _ensureHttpPrefix(String url) {
     if (url.startsWith('http://') || url.startsWith('https://')) {
