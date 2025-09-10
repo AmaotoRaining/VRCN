@@ -57,6 +57,7 @@
   },
   "login": {
     "forgotPassword": "비밀번호를 잊으셨나요?",
+    "createAccount": "계정 만들기",
     "subtitle": "VRChat 계정 정보로 로그인",
     "email": "이메일 주소",
     "emailHint": "이메일 또는 사용자 이름 입력",
@@ -653,7 +654,12 @@
     "inviteSending": "초대 보내는 중...",
     "inviteSent": "초대를 보냈습니다. 알림에서 참여할 수 있습니다",
     "inviteFailed": "초대 보내기에 실패했습니다: ${error}",
-    "inviteButton": "나에게 초대 보내기"
+    "inviteButton": "나에게 초대 보내기",
+    "isPrivate": "${number}명이 비공개",
+    "isActive": "${number}명이 활동 중",
+    "isOffline": "${number}명이 오프라인",
+    "isTraveling": "${number}명이 이동 중",
+    "isStaying": "${number}명이 체류 중"
   },
   "reminder": {
     "dialogTitle": "리마인더 설정",

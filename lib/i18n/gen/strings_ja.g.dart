@@ -153,6 +153,7 @@ class TranslationsLoginJa {
 
 	// Translations
 	String get forgotPassword => 'パスワードを忘れた場合';
+	String get createAccount => 'アカウントを作成';
 	String get subtitle => 'VRChatのアカウント情報でログイン';
 	String get email => 'メールアドレス';
 	String get emailHint => 'メールまたはユーザー名を入力';
@@ -797,6 +798,11 @@ class TranslationsLocationJa {
 	String get inviteSent => '招待を送信しました。通知から参加できます';
 	String inviteFailed({required Object error}) => '招待の送信に失敗しました: ${error}';
 	String get inviteButton => '自分に招待を送信';
+	String isPrivate({required Object number}) => '${number}人がプライベート';
+	String isActive({required Object number}) => '${number}人がアクティブ';
+	String isOffline({required Object number}) => '${number}人がオフライン';
+	String isTraveling({required Object number}) => '${number}人が移動中';
+	String isStaying({required Object number}) => '${number}人が滞在中';
 }
 
 // Path: reminder
@@ -1202,6 +1208,7 @@ extension on Translations {
 			case 'drawer.section.content': return 'コンテンツ';
 			case 'drawer.section.other': return 'その他';
 			case 'login.forgotPassword': return 'パスワードを忘れた場合';
+			case 'login.createAccount': return 'アカウントを作成';
 			case 'login.subtitle': return 'VRChatのアカウント情報でログイン';
 			case 'login.email': return 'メールアドレス';
 			case 'login.emailHint': return 'メールまたはユーザー名を入力';
@@ -1711,6 +1718,11 @@ extension on Translations {
 			case 'location.inviteSent': return '招待を送信しました。通知から参加できます';
 			case 'location.inviteFailed': return ({required Object error}) => '招待の送信に失敗しました: ${error}';
 			case 'location.inviteButton': return '自分に招待を送信';
+			case 'location.isPrivate': return ({required Object number}) => '${number}人がプライベート';
+			case 'location.isActive': return ({required Object number}) => '${number}人がアクティブ';
+			case 'location.isOffline': return ({required Object number}) => '${number}人がオフライン';
+			case 'location.isTraveling': return ({required Object number}) => '${number}人が移動中';
+			case 'location.isStaying': return ({required Object number}) => '${number}人が滞在中';
 			case 'reminder.dialogTitle': return 'リマインダーを設定';
 			case 'reminder.alreadySet': return '設定済み';
 			case 'reminder.set': return '設定する';

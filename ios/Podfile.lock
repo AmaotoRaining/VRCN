@@ -5,6 +5,14 @@ PODS:
     - GoogleUtilities/Environment (~> 8.0)
     - GoogleUtilities/UserDefaults (~> 8.0)
     - PromisesObjC (~> 2.4)
+  - appsflyer_sdk (6.17.3):
+    - appsflyer_sdk/Core (= 6.17.3)
+  - appsflyer_sdk/Core (6.17.3):
+    - AppsFlyerFramework (= 6.17.5)
+    - Flutter
+  - AppsFlyerFramework (6.17.5):
+    - AppsFlyerFramework/Main (= 6.17.5)
+  - AppsFlyerFramework/Main (6.17.5)
   - audioplayers_darwin (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -402,6 +410,7 @@ PODS:
 
 DEPENDENCIES:
   - app_links (from `.symlinks/plugins/app_links/ios`)
+  - appsflyer_sdk (from `.symlinks/plugins/appsflyer_sdk/ios`)
   - audioplayers_darwin (from `.symlinks/plugins/audioplayers_darwin/darwin`)
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
@@ -458,6 +467,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - AppCheckCore
+    - AppsFlyerFramework
     - DKImagePickerController
     - DKPhotoGallery
     - Firebase
@@ -505,6 +515,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   app_links:
     :path: ".symlinks/plugins/app_links/ios"
+  appsflyer_sdk:
+    :path: ".symlinks/plugins/appsflyer_sdk/ios"
   audioplayers_darwin:
     :path: ".symlinks/plugins/audioplayers_darwin/darwin"
   cloud_firestore:
@@ -595,6 +607,8 @@ CHECKOUT OPTIONS:
 SPEC CHECKSUMS:
   app_links: 76b66b60cc809390ca1ad69bfd66b998d2387ac7
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
+  appsflyer_sdk: 23e08a1f2a2a0c3f5d58c91a5820dba768d738c8
+  AppsFlyerFramework: da52a40c07c9f81a7829952e0fd854b6eacf5a7d
   audioplayers_darwin: 4f9ca89d92d3d21cec7ec580e78ca888e5fb68bd
   cloud_firestore: a824d9a55c9dffddf8de7c1e8fbcd66ca13f1624
   device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe

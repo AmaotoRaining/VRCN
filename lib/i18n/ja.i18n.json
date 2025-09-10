@@ -57,6 +57,7 @@
   },
   "login": {
     "forgotPassword": "パスワードを忘れた場合",
+    "createAccount": "アカウントを作成",
     "subtitle": "VRChatのアカウント情報でログイン",
     "email": "メールアドレス",
     "emailHint": "メールまたはユーザー名を入力",
@@ -653,7 +654,12 @@
     "inviteSending": "招待を送信中...",
     "inviteSent": "招待を送信しました。通知から参加できます",
     "inviteFailed": "招待の送信に失敗しました: ${error}",
-    "inviteButton": "自分に招待を送信"
+    "inviteButton": "自分に招待を送信",
+    "isPrivate": "${number}人がプライベート",
+    "isActive": "${number}人がアクティブ",
+    "isOffline": "${number}人がオフライン",
+    "isTraveling": "${number}人が移動中",
+    "isStaying": "${number}人が滞在中"
   },
   "reminder": {
     "dialogTitle": "リマインダーを設定",

@@ -150,6 +150,7 @@ class _TranslationsLoginEn implements TranslationsLoginJa {
 
 	// Translations
 	@override String get forgotPassword => 'Forgot your password?';
+	@override String get createAccount => 'Sign up';
 	@override String get subtitle => 'Login with your VRChat account';
 	@override String get email => 'Email Address';
 	@override String get emailHint => 'Enter email or username';
@@ -794,6 +795,11 @@ class _TranslationsLocationEn implements TranslationsLocationJa {
 	@override String get inviteSent => 'Invite sent. You can join from your notifications.';
 	@override String inviteFailed({required Object error}) => 'Failed to send invite: ${error}';
 	@override String get inviteButton => 'Send Invite to Myself';
+	@override String isPrivate({required Object number}) => '${number} in private';
+	@override String isActive({required Object number}) => '${number} active';
+	@override String isOffline({required Object number}) => '${number} offline';
+	@override String isTraveling({required Object number}) => '${number} traveling';
+	@override String isStaying({required Object number}) => '${number} staying';
 }
 
 // Path: reminder
@@ -1199,6 +1205,7 @@ extension on TranslationsEn {
 			case 'drawer.section.content': return 'Content';
 			case 'drawer.section.other': return 'Other';
 			case 'login.forgotPassword': return 'Forgot your password?';
+			case 'login.createAccount': return 'Sign up';
 			case 'login.subtitle': return 'Login with your VRChat account';
 			case 'login.email': return 'Email Address';
 			case 'login.emailHint': return 'Enter email or username';
@@ -1708,6 +1715,11 @@ extension on TranslationsEn {
 			case 'location.inviteSent': return 'Invite sent. You can join from your notifications.';
 			case 'location.inviteFailed': return ({required Object error}) => 'Failed to send invite: ${error}';
 			case 'location.inviteButton': return 'Send Invite to Myself';
+			case 'location.isPrivate': return ({required Object number}) => '${number} in private';
+			case 'location.isActive': return ({required Object number}) => '${number} active';
+			case 'location.isOffline': return ({required Object number}) => '${number} offline';
+			case 'location.isTraveling': return ({required Object number}) => '${number} traveling';
+			case 'location.isStaying': return ({required Object number}) => '${number} staying';
 			case 'reminder.dialogTitle': return 'Set Reminder';
 			case 'reminder.alreadySet': return 'Already Set';
 			case 'reminder.set': return 'Set';

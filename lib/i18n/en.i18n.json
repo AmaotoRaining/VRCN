@@ -57,6 +57,7 @@
   },
   "login": {
     "forgotPassword": "Forgot your password?",
+    "createAccount": "Sign up",
     "subtitle": "Login with your VRChat account",
     "email": "Email Address",
     "emailHint": "Enter email or username",
@@ -653,7 +654,12 @@
     "inviteSending": "Sending invite...",
     "inviteSent": "Invite sent. You can join from your notifications.",
     "inviteFailed": "Failed to send invite: ${error}",
-    "inviteButton": "Send Invite to Myself"
+    "inviteButton": "Send Invite to Myself",
+    "isPrivate": "${number} in private",
+    "isActive": "${number} active",
+    "isOffline": "${number} offline",
+    "isTraveling": "${number} traveling",
+    "isStaying": "${number} staying"
   },
   "reminder": {
     "dialogTitle": "Set Reminder",
