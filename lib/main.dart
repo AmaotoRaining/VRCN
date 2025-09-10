@@ -19,6 +19,7 @@ import 'package:go_router/go_router.dart';
 import 'package:new_version_plus/new_version_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/analytics_repository.dart';
 import 'package:vrchat/firebase_options.dart';
 import 'package:vrchat/i18n/gen/strings.g.dart';
@@ -211,7 +212,7 @@ Future<void> _initializeFCM() async {
     }
 
     // FCMトークンを取得してデバッグ出力
-    
+
     final token = await messaging.getToken();
     debugPrint('🔑 FCMトークン: $token');
 
@@ -352,7 +353,10 @@ void _handleNotificationUrl(String? payload) {
 
       // URLを開く（外部ブラウザで開く）
       Future.microtask(() async {
-        final success = await UrlLauncherUtils.launchURL(url);
+        final success = await UrlLauncherUtils.launchURL(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
         if (!success) {
           debugPrint('❌ URLを開けませんでした: $url');
         }
@@ -368,9 +372,12 @@ void _handleFcmMessageUrl(Map<String, dynamic> data) {
   if (url != null && url.isNotEmpty) {
     debugPrint('🔗 FCMメッセージからURLを開きます: $url');
 
-    // URLを開く（外部ブラウザで開く）
+    // URLを開く
     Future.microtask(() async {
-      final success = await UrlLauncherUtils.launchURL(url);
+      final success = await UrlLauncherUtils.launchURL(
+        url,
+        mode: LaunchMode.externalApplication,
+      );
       if (!success) {
         debugPrint('❌ URLを開けませんでした: $url');
       }
