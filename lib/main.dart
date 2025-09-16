@@ -21,6 +21,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vrchat/analytics_repository.dart';
+import 'package:vrchat/config/app_config.dart';
 import 'package:vrchat/firebase_options.dart';
 import 'package:vrchat/i18n/gen/strings.g.dart';
 import 'package:vrchat/provider/event_reminder_provider.dart';
@@ -114,6 +115,9 @@ Future<void> main() async {
 
   // FCMの初期化とデバッグ情報表示
   await _initializeFCM();
+
+  // AppConfig初期化（Firebase初期化後）
+  await AppConfig.initialize();
 
   // システムUIの設定
   SystemChrome.setSystemUIOverlayStyle(
