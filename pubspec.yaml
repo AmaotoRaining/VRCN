@@ -1,7 +1,7 @@
 name: vrchat
 description: "VRCN for VRChat"
 publish_to: "none"
-version: 1.2.3+135
+version: 1.2.4+150
 
 environment:
   sdk: ^3.7.2
