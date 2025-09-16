@@ -1,0 +1,17 @@
+# flutter pub run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  image_path_android: assets/launcher_icon/android_icon.png
+  # image_path_android: assets/launcher_icon/android_icon_shinra.png
+  # image_path_android: assets/launcher_icon/android_icon_VRCLS.png
+  min_sdk_android: 30
+  # adaptive_icon_background: "#000000"
+  # adaptive_icon_foreground: assets/launcher_icon/android_icon.png
+  # adaptive_icon_foreground: assets/launcher_icon/android_icon_shinra.png
+  # adaptive_icon_foreground: assets/launcher_icon/android_icon_VRCLS.png
+
+  ios: true
+  image_path_ios: assets/launcher_icon/ios_icon.png
+  # image_path_ios: assets/launcher_icon/ios_icon_shinra.png
+  # image_path_ios: assets/launcher_icon/ios_icon_VRCLS.png
+  remove_alpha_ios: true
