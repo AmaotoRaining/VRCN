@@ -113,7 +113,7 @@ class Navigation extends ConsumerWidget {
         );
       default:
         return CustomAppBar(
-          title: 'VRChat',
+          title: 'VRCN',
           onAvatarPressed: () => scaffoldKey.currentState?.openDrawer(),
         );
     }
@@ -142,11 +142,11 @@ class Navigation extends ConsumerWidget {
           icon: Icons.search_outlined,
           activeIcon: Icons.search,
         ),
-      const NavigationTabInfo(
-        index: 2,
-        icon: Icons.notifications_none_outlined,
-        activeIcon: Icons.notifications,
-      ),
+      // const NavigationTabInfo(
+      //   index: 2,
+      //   icon: Icons.notifications_none_outlined,
+      //   activeIcon: Icons.notifications,
+      // ),
     ];
 
     return DecoratedBox(

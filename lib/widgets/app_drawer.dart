@@ -124,17 +124,17 @@ class AppDrawer extends ConsumerWidget {
                                 Navigator.pop(context);
                               },
                             ),
-                            // _MenuItem(
-                            //   icon: Icons.notifications,
-                            //   title: 'フレンドログ',
-                            //   isSelected: GoRouterState.of(
-                            //     context,
-                            //   ).uri.path.startsWith('/notifications'),
-                            //   onTap: () {
-                            //     context.push('/notifications');
-                            //     Navigator.pop(context);
-                            //   },
-                            // ),
+                            _MenuItem(
+                              icon: Icons.rss_feed,
+                              title: 'フレンドログ',
+                              isSelected: GoRouterState.of(
+                                context,
+                              ).uri.path.startsWith('/notifications'),
+                              onTap: () {
+                                context.push('/notifications');
+                                Navigator.pop(context);
+                              },
+                            ),
                             _MenuItem(
                               icon: Icons.calendar_month,
                               title: t.drawer.eventCalendar,

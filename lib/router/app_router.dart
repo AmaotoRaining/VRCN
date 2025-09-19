@@ -242,19 +242,19 @@ final routerProvider = Provider<GoRouter>((ref) {
               );
             },
           ),
-          GoRoute(
-            path: '/notifications',
-            name: 'notifications',
-            pageBuilder: (context, state) {
-              _setCurrentScreen(ref, '通知画面');
-              final immediate =
-                  (state.extra as Map<String, dynamic>?)?['immediate'] == true;
-              if (immediate) {
-                return const NoTransitionPage(child: NotificationsPage());
-              }
-              return const MaterialPage(child: NotificationsPage());
-            },
-          ),
+          // GoRoute(
+          //   path: '/notifications',
+          //   name: 'notifications',
+          //   pageBuilder: (context, state) {
+          //     _setCurrentScreen(ref, '通知画面');
+          //     final immediate =
+          //         (state.extra as Map<String, dynamic>?)?['immediate'] == true;
+          //     if (immediate) {
+          //       return const NoTransitionPage(child: NotificationsPage());
+          //     }
+          //     return const MaterialPage(child: NotificationsPage());
+          //   },
+          // ),
         ],
       ),
       GoRoute(
@@ -263,6 +263,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           _setCurrentScreen(ref, 'ログイン画面');
           return const LoginPage();
+        },
+      ),
+      GoRoute(
+        path: '/notifications',
+        name: 'notifications',
+        builder: (context, state) {
+          _setCurrentScreen(ref, '通知画面');
+          return const NotificationsPage();
         },
       ),
       GoRoute(
