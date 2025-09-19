@@ -413,6 +413,7 @@ class _TranslationsEventCalendarEn implements TranslationsEventCalendarJa {
 	@override String get reminderSet => 'Set Reminder';
 	@override String get reminderSetDone => 'Reminder Set';
 	@override String get reminderDeleted => 'Reminder deleted.';
+	@override String get eventName => 'Event Name';
 	@override String get organizer => 'Organizer';
 	@override String get description => 'Description';
 	@override String get genre => 'Genre';
@@ -1421,6 +1422,7 @@ extension on TranslationsEn {
 			case 'eventCalendar.reminderSet': return 'Set Reminder';
 			case 'eventCalendar.reminderSetDone': return 'Reminder Set';
 			case 'eventCalendar.reminderDeleted': return 'Reminder deleted.';
+			case 'eventCalendar.eventName': return 'Event Name';
 			case 'eventCalendar.organizer': return 'Organizer';
 			case 'eventCalendar.description': return 'Description';
 			case 'eventCalendar.genre': return 'Genre';

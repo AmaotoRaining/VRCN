@@ -390,7 +390,6 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
     );
   }
 
-  // 以下のメソッドは変更なし（_buildEventListから最後まで）
   Widget _buildEventList(
     BuildContext context,
     EventData eventData,
@@ -893,6 +892,15 @@ class _EventCalendarPageState extends ConsumerState<EventCalendarPage>
                           : Colors.grey.withValues(alpha: 0.1),
                   margin: const EdgeInsets.symmetric(vertical: 16),
                 ),
+
+                _buildInfoSection(
+                  t.eventCalendar.eventName,
+                  event.title,
+                  Icons.calendar_month,
+                  isDarkMode,
+                  eventColor,
+                ),
+                const SizedBox(height: 16),
 
                 _buildInfoSection(
                   t.eventCalendar.organizer,

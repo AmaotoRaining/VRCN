@@ -416,6 +416,7 @@ class TranslationsEventCalendarJa {
 	String get reminderSet => 'リマインダーを設定';
 	String get reminderSetDone => '設定済みリマインダー';
 	String get reminderDeleted => 'リマインダーを削除しました';
+	String get eventName => 'イベント名';
 	String get organizer => '主催者';
 	String get description => '説明';
 	String get genre => 'ジャンル';
@@ -1424,6 +1425,7 @@ extension on Translations {
 			case 'eventCalendar.reminderSet': return 'リマインダーを設定';
 			case 'eventCalendar.reminderSetDone': return '設定済みリマインダー';
 			case 'eventCalendar.reminderDeleted': return 'リマインダーを削除しました';
+			case 'eventCalendar.eventName': return 'イベント名';
 			case 'eventCalendar.organizer': return '主催者';
 			case 'eventCalendar.description': return '説明';
 			case 'eventCalendar.genre': return 'ジャンル';

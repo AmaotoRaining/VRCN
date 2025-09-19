@@ -610,7 +610,7 @@ class _OscPageState extends ConsumerState<OscPage> {
         return SwitchListTile(
           title: Text('${_currentValues[index] == true ? 'ON' : 'OFF'} に設定'),
           value: _currentValues[index] ?? false,
-          activeColor: AppTheme.primaryColor,
+          activeThumbColor: AppTheme.primaryColor,
           onChanged: (value) {
             setState(() {
               _currentValues[index] = value;

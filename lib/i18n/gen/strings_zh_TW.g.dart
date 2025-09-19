@@ -413,6 +413,7 @@ class _TranslationsEventCalendarZhTw implements TranslationsEventCalendarJa {
 	@override String get reminderSet => '設定提醒';
 	@override String get reminderSetDone => '已設定提醒';
 	@override String get reminderDeleted => '已刪除提醒';
+	@override String get eventName => '活動名稱';
 	@override String get organizer => '主辦方';
 	@override String get description => '說明';
 	@override String get genre => '類型';
@@ -1421,6 +1422,7 @@ extension on TranslationsZhTw {
 			case 'eventCalendar.reminderSet': return '設定提醒';
 			case 'eventCalendar.reminderSetDone': return '已設定提醒';
 			case 'eventCalendar.reminderDeleted': return '已刪除提醒';
+			case 'eventCalendar.eventName': return '活動名稱';
 			case 'eventCalendar.organizer': return '主辦方';
 			case 'eventCalendar.description': return '說明';
 			case 'eventCalendar.genre': return '類型';

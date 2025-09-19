@@ -413,6 +413,7 @@ class _TranslationsEventCalendarKo implements TranslationsEventCalendarJa {
 	@override String get reminderSet => '리마인더 설정';
 	@override String get reminderSetDone => '리마인더 설정됨';
 	@override String get reminderDeleted => '리마인더를 삭제했습니다';
+	@override String get eventName => '이벤트 이름';
 	@override String get organizer => '주최자';
 	@override String get description => '설명';
 	@override String get genre => '장르';
@@ -1421,6 +1422,7 @@ extension on TranslationsKo {
 			case 'eventCalendar.reminderSet': return '리마인더 설정';
 			case 'eventCalendar.reminderSetDone': return '리마인더 설정됨';
 			case 'eventCalendar.reminderDeleted': return '리마인더를 삭제했습니다';
+			case 'eventCalendar.eventName': return '이벤트 이름';
 			case 'eventCalendar.organizer': return '주최자';
 			case 'eventCalendar.description': return '설명';
 			case 'eventCalendar.genre': return '장르';

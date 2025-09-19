@@ -301,6 +301,7 @@
     "reminderSet": "设置提醒",
     "reminderSetDone": "已设置提醒",
     "reminderDeleted": "已删除提醒",
+    "eventName": "活动名称",
     "organizer": "主办方",
     "description": "说明",
     "genre": "类型",
