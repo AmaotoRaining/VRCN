@@ -179,11 +179,16 @@ dependencies:
   # 音楽再生
   audioplayers: ^6.5.0
 
-  # receive_sharing_intent: ^1.8.1
+  flutter_sharing_intent: ^1.1.1
+
+  # バージョン確認
   new_version_plus: ^0.1.1
 
   # AppsFlyer
   appsflyer_sdk: ^6.17.5
+
+  # アイコン
+  font_awesome_flutter: ^10.10.0
 
 dev_dependencies:
   flutter_test:

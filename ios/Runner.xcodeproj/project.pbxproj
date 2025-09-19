@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -951,13 +951,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -972,13 +968,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1290,6 +1282,7 @@
 		};
 		262FAFB22E65E1FD0039399D /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 42DC21B987968E6F81D415DB /* Pods-ShareExtension.debug.xcconfig */;
 			baseConfigurationReferenceAnchor = 262FAFA62E65E1FD0039399D /* ShareExtension */;
 			baseConfigurationReferenceRelativePath = ShareExtension.xcconfig;
 			buildSettings = {
@@ -1338,6 +1331,7 @@
 		};
 		262FAFB32E65E1FD0039399D /* Debug-dev */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 81AF42DEE0CBF72E0138466D /* Pods-ShareExtension.debug-dev.xcconfig */;
 			baseConfigurationReferenceAnchor = 262FAFA62E65E1FD0039399D /* ShareExtension */;
 			baseConfigurationReferenceRelativePath = ShareExtension.xcconfig;
 			buildSettings = {
@@ -1386,6 +1380,7 @@
 		};
 		262FAFB42E65E1FD0039399D /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7B4E9A58FBD34AAC478876E1 /* Pods-ShareExtension.release.xcconfig */;
 			baseConfigurationReferenceAnchor = 262FAFA62E65E1FD0039399D /* ShareExtension */;
 			baseConfigurationReferenceRelativePath = ShareExtension.xcconfig;
 			buildSettings = {
@@ -1431,6 +1426,7 @@
 		};
 		262FAFB52E65E1FD0039399D /* Release-production */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A0597E67C52C9CCE8260AADF /* Pods-ShareExtension.release-production.xcconfig */;
 			baseConfigurationReferenceAnchor = 262FAFA62E65E1FD0039399D /* ShareExtension */;
 			baseConfigurationReferenceRelativePath = ShareExtension.xcconfig;
 			buildSettings = {
@@ -1476,6 +1472,7 @@
 		};
 		262FAFB62E65E1FD0039399D /* Profile */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 65D66F4EC5BED8738D950C90 /* Pods-ShareExtension.profile.xcconfig */;
 			baseConfigurationReferenceAnchor = 262FAFA62E65E1FD0039399D /* ShareExtension */;
 			baseConfigurationReferenceRelativePath = ShareExtension.xcconfig;
 			buildSettings = {
@@ -1601,7 +1598,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.null-base.vrchat.debug";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.null-base.vrchat";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1641,6 +1638,7 @@
 		};
 		267364C92E65D4AC007FA977 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D6A021092C5307B6A1ABE89B /* Pods-ImageNotification.debug.xcconfig */;
 			baseConfigurationReferenceAnchor = 267364BF2E65D4AC007FA977 /* ImageNotification */;
 			baseConfigurationReferenceRelativePath = ImageNotification.xcconfig;
 			buildSettings = {
@@ -1688,6 +1686,7 @@
 		};
 		267364CA2E65D4AC007FA977 /* Debug-dev */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 92AB1580019B7BE4DB17EE96 /* Pods-ImageNotification.debug-dev.xcconfig */;
 			baseConfigurationReferenceAnchor = 267364BF2E65D4AC007FA977 /* ImageNotification */;
 			baseConfigurationReferenceRelativePath = ImageNotification.xcconfig;
 			buildSettings = {
@@ -1735,6 +1734,7 @@
 		};
 		267364CB2E65D4AC007FA977 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C2B809F32BCDB2A0CDECB535 /* Pods-ImageNotification.release.xcconfig */;
 			baseConfigurationReferenceAnchor = 267364BF2E65D4AC007FA977 /* ImageNotification */;
 			baseConfigurationReferenceRelativePath = ImageNotification.xcconfig;
 			buildSettings = {
@@ -1780,6 +1780,7 @@
 		};
 		267364CC2E65D4AC007FA977 /* Release-production */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 750AA8B4338E7161DA508CF4 /* Pods-ImageNotification.release-production.xcconfig */;
 			baseConfigurationReferenceAnchor = 267364BF2E65D4AC007FA977 /* ImageNotification */;
 			baseConfigurationReferenceRelativePath = ImageNotification.xcconfig;
 			buildSettings = {
@@ -1825,6 +1826,7 @@
 		};
 		267364CD2E65D4AC007FA977 /* Profile */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7205D3A10EA1EB1D8F26D7D8 /* Pods-ImageNotification.profile.xcconfig */;
 			baseConfigurationReferenceAnchor = 267364BF2E65D4AC007FA977 /* ImageNotification */;
 			baseConfigurationReferenceRelativePath = ImageNotification.xcconfig;
 			buildSettings = {
@@ -2074,7 +2076,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.null-base.vrchat.debug";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.null-base.vrchat";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

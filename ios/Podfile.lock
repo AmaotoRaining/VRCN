@@ -276,6 +276,8 @@ PODS:
     - Flutter
   - flutter_secure_storage (6.0.0):
     - Flutter
+  - flutter_sharing_intent (0.0.1):
+    - Flutter
   - flutter_wallet_card (1.0.0):
     - Flutter
     - OpenSSL-Universal
@@ -442,6 +444,7 @@ DEPENDENCIES:
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
+  - flutter_sharing_intent (from `.symlinks/plugins/flutter_sharing_intent/ios`)
   - flutter_wallet_card (from `.symlinks/plugins/flutter_wallet_card/ios`)
   - gal (from `.symlinks/plugins/gal/darwin`)
   - GoogleUtilities
@@ -559,6 +562,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_native_splash/ios"
   flutter_secure_storage:
     :path: ".symlinks/plugins/flutter_secure_storage/ios"
+  flutter_sharing_intent:
+    :path: ".symlinks/plugins/flutter_sharing_intent/ios"
   flutter_wallet_card:
     :path: ".symlinks/plugins/flutter_wallet_card/ios"
   gal:
@@ -647,13 +652,14 @@ SPEC CHECKSUMS:
   FirebaseSessions: f4692789e770bec66ce17d772c0e9561c4f11737
   FirebaseSharedSwift: 52d868d4c269fcb4e4e1310c548435a9c1f46e25
   FirebaseStorage: f1578d57e1fd3683fc05f5d4d7b24b7490b321ac
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_app_badge_control: 1f0ac37334d1a2da72bde7e4d3c6c8675517a471
   flutter_background_service_ios: 00d31bdff7b4bfe06d32375df358abe0329cf87e
   flutter_dynamic_icon_plus: 3ddd12bc2316b98ffdd4048e9cdd3cf51e02095d
   flutter_local_notifications: a5a732f069baa862e728d839dd2ebb904737effb
   flutter_native_splash: 6cad9122ea0fad137d23137dd14b937f3e90b145
   flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
+  flutter_sharing_intent: afdc98985814d2c01d8c0956a177d6b6dfbdc373
   flutter_wallet_card: fa464b6f36c9c7ffda50f48b659b2b056d2eeaa8
   gal: baecd024ebfd13c441269ca7404792a7152fde89
   GoogleAdsOnDeviceConversion: 9090c435cde08903e8dd1ba2c77fbec9e46d9afe
