@@ -844,54 +844,23 @@ class AppDrawer extends ConsumerWidget {
                 ),
               ),
 
-              // 中央寄せのセクション
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // アプリアイコン（中央寄せ）
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    child: Center(
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(
-                                alpha: isDarkMode ? 0.3 : 0.15,
-                              ),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            'assets/images/icon.png',
-                            width: 48,
-                            height: 48,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                width: 48,
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  color: AppTheme.primaryColor.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  Icons.apps,
-                                  size: 24,
-                                  color: AppTheme.primaryColor,
-                                ),
-                              );
-                            },
-                          ),
+                  Center(
+                    child: Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          'assets/images/icon.png',
+                          width: 64,
+                          height: 64,
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),
