@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:in_app_review/in_app_review.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:vrchat/i18n/gen/strings.g.dart'; // 多言語化パッケージ
 import 'package:vrchat/provider/user_provider.dart';
 import 'package:vrchat/provider/vrchat_api_provider.dart';
@@ -81,183 +82,190 @@ class AppDrawer extends ConsumerWidget {
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(32),
                   ),
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 6),
+                  child: Column(
+                    children: [
+                      // スクロール可能なメニュー部分
+                      Expanded(
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 6),
 
-                        // メインナビゲーション
-                        _buildNavigationSection(
-                          context: context,
-                          isDarkMode: isDarkMode,
-                          items: [
-                            _MenuItem(
-                              icon: Icons.home_rounded,
-                              title: t.drawer.home,
-                              isSelected:
-                                  GoRouterState.of(context).uri.path == '/',
-                              onTap: () {
-                                context.go('/');
-                                Navigator.pop(context);
-                              },
-                            ),
-                            _MenuItem(
-                              icon: Icons.person_rounded,
-                              title: t.drawer.profile,
-                              isSelected:
-                                  GoRouterState.of(context).uri.path ==
-                                  '/profile',
-                              onTap: () {
-                                context.push('/profile');
-                                Navigator.pop(context);
-                              },
-                            ),
-                            _MenuItem(
-                              icon: Icons.favorite_rounded,
-                              title: t.drawer.favorite,
-                              isSelected: GoRouterState.of(
-                                context,
-                              ).uri.path.startsWith('/favorites'),
-                              onTap: () {
-                                context.push('/favorites');
-                                Navigator.pop(context);
-                              },
-                            ),
-                            _MenuItem(
-                              icon: Icons.rss_feed,
-                              title: 'フレンドログ',
-                              isSelected: GoRouterState.of(
-                                context,
-                              ).uri.path.startsWith('/notifications'),
-                              onTap: () {
-                                context.push('/notifications');
-                                Navigator.pop(context);
-                              },
-                            ),
-                            _MenuItem(
-                              icon: Icons.calendar_month,
-                              title: t.drawer.eventCalendar,
-                              isSelected: GoRouterState.of(
-                                context,
-                              ).uri.path.startsWith('/event_calendar'),
-                              onTap: () {
-                                context.push('/event_calendar');
-                                Navigator.pop(context);
-                              },
-                            ),
-                            // _MenuItem(
-                            //   icon: Icons.control_camera,
-                            //   title: 'OSCコントローラー',
-                            //   isSelected: GoRouterState.of(
-                            //     context,
-                            //   ).uri.path.startsWith('/osc'),
-                            //   onTap: () {
-                            //     context.push('/osc');
-                            //     Navigator.pop(context);
-                            //   },
-                            // ),
-                          ],
-                        ),
+                              // メインナビゲーション
+                              _buildNavigationSection(
+                                context: context,
+                                isDarkMode: isDarkMode,
+                                items: [
+                                  _MenuItem(
+                                    icon: Icons.home_rounded,
+                                    title: t.drawer.home,
+                                    isSelected:
+                                        GoRouterState.of(context).uri.path ==
+                                        '/',
+                                    onTap: () {
+                                      context.go('/');
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                  _MenuItem(
+                                    icon: Icons.person_rounded,
+                                    title: t.drawer.profile,
+                                    isSelected:
+                                        GoRouterState.of(context).uri.path ==
+                                        '/profile',
+                                    onTap: () {
+                                      context.push('/profile');
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                  _MenuItem(
+                                    icon: Icons.favorite_rounded,
+                                    title: t.drawer.favorite,
+                                    isSelected: GoRouterState.of(
+                                      context,
+                                    ).uri.path.startsWith('/favorites'),
+                                    onTap: () {
+                                      context.push('/favorites');
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                  _MenuItem(
+                                    icon: Icons.rss_feed,
+                                    title: 'フレンドログ',
+                                    isSelected: GoRouterState.of(
+                                      context,
+                                    ).uri.path.startsWith('/notifications'),
+                                    onTap: () {
+                                      context.push('/notifications');
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                  _MenuItem(
+                                    icon: Icons.calendar_month,
+                                    title: t.drawer.eventCalendar,
+                                    isSelected: GoRouterState.of(
+                                      context,
+                                    ).uri.path.startsWith('/event_calendar'),
+                                    onTap: () {
+                                      context.push('/event_calendar');
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                ],
+                              ),
 
-                        // コンテンツセクション
-                        _buildSectionHeader(
-                          t.drawer.section.content,
-                          isDarkMode,
-                        ),
-                        _buildNavigationSection(
-                          context: context,
-                          isDarkMode: isDarkMode,
-                          items: [
-                            _MenuItem(
-                              icon: Icons.face_rounded,
-                              title: t.drawer.avatar,
-                              isSelected: GoRouterState.of(
-                                context,
-                              ).uri.path.startsWith('/avatars'),
-                              onTap: () {
-                                context.push('/avatars');
-                                Navigator.pop(context);
-                              },
-                            ),
-                            _MenuItem(
-                              icon: Icons.group_rounded,
-                              title: t.drawer.group,
-                              isSelected: GoRouterState.of(
-                                context,
-                              ).uri.path.startsWith('/groups'),
-                              onTap: () {
-                                context.push('/groups');
-                                Navigator.pop(context);
-                              },
-                            ),
-                            _MenuItem(
-                              icon: Icons.inventory,
-                              title: t.drawer.inventory,
-                              isSelected: GoRouterState.of(
-                                context,
-                              ).uri.path.startsWith('/inventory'),
-                              onTap: () {
-                                context.push('/inventory');
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ],
-                        ),
+                              // コンテンツセクション
+                              _buildSectionHeader(
+                                t.drawer.section.content,
+                                isDarkMode,
+                              ),
+                              _buildNavigationSection(
+                                context: context,
+                                isDarkMode: isDarkMode,
+                                items: [
+                                  _MenuItem(
+                                    icon: Icons.face_rounded,
+                                    title: t.drawer.avatar,
+                                    isSelected: GoRouterState.of(
+                                      context,
+                                    ).uri.path.startsWith('/avatars'),
+                                    onTap: () {
+                                      context.push('/avatars');
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                  _MenuItem(
+                                    icon: Icons.group_rounded,
+                                    title: t.drawer.group,
+                                    isSelected: GoRouterState.of(
+                                      context,
+                                    ).uri.path.startsWith('/groups'),
+                                    onTap: () {
+                                      context.push('/groups');
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                  _MenuItem(
+                                    icon: Icons.inventory,
+                                    title: t.drawer.inventory,
+                                    isSelected: GoRouterState.of(
+                                      context,
+                                    ).uri.path.startsWith('/inventory'),
+                                    onTap: () {
+                                      context.push('/inventory');
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                ],
+                              ),
 
-                        // 設定セクション
-                        _buildSectionHeader(t.drawer.section.other, isDarkMode),
-                        _buildNavigationSection(
-                          context: context,
-                          isDarkMode: isDarkMode,
-                          items: [
-                            _MenuItem(
-                              imagePath: 'assets/images/logo.png',
-                              title: t.drawer.vrcnsync,
-                              isSelected:
-                                  GoRouterState.of(context).uri.path ==
-                                  '/vrcnsync',
-                              onTap: () {
-                                context.push('/vrcnsync');
-                                Navigator.pop(context);
-                              },
-                            ),
-                            _MenuItem(
-                              icon: Icons.star_outlined,
-                              title: t.drawer.review,
-                              isSelected: false,
-                              onTap: () {
-                                Navigator.pop(context);
-                                inAppReview.requestReview();
-                              },
-                            ),
-                            _MenuItem(
-                              icon: Icons.feedback_outlined,
-                              title: t.drawer.feedback,
-                              isSelected: false,
-                              onTap: () {
-                                Navigator.pop(context);
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => const FeedbackDialog(),
-                                );
-                              },
-                            ),
-                            _MenuItem(
-                              icon: Icons.settings_rounded,
-                              title: t.drawer.settings,
-                              isSelected:
-                                  GoRouterState.of(context).uri.path ==
-                                  '/settings',
-                              onTap: () {
-                                context.push('/settings');
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ],
+                              // 設定セクション
+                              _buildSectionHeader(
+                                t.drawer.section.other,
+                                isDarkMode,
+                              ),
+                              _buildNavigationSection(
+                                context: context,
+                                isDarkMode: isDarkMode,
+                                items: [
+                                  _MenuItem(
+                                    imagePath: 'assets/images/logo.png',
+                                    title: t.drawer.vrcnsync,
+                                    isSelected:
+                                        GoRouterState.of(context).uri.path ==
+                                        '/vrcnsync',
+                                    onTap: () {
+                                      context.push('/vrcnsync');
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                  _MenuItem(
+                                    icon: Icons.star_outlined,
+                                    title: t.drawer.review,
+                                    isSelected: false,
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      inAppReview.requestReview();
+                                    },
+                                  ),
+                                  _MenuItem(
+                                    icon: Icons.feedback_outlined,
+                                    title: t.drawer.feedback,
+                                    isSelected: false,
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      showDialog(
+                                        context: context,
+                                        builder:
+                                            (context) => const FeedbackDialog(),
+                                      );
+                                    },
+                                  ),
+                                  _MenuItem(
+                                    icon: Icons.settings_rounded,
+                                    title: t.drawer.settings,
+                                    isSelected:
+                                        GoRouterState.of(context).uri.path ==
+                                        '/settings',
+                                    onTap: () {
+                                      context.push('/settings');
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                ],
+                              ),
+
+                              // 下部のスペース
+                              const SizedBox(height: 20),
+
+                              // フッターセクション（固定）
+                              _buildFooterSection(isDarkMode),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -781,6 +789,161 @@ class AppDrawer extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  // フッターセクションを修正
+  Widget _buildFooterSection(bool isDarkMode) {
+    return FutureBuilder<PackageInfo>(
+      future: PackageInfo.fromPlatform(),
+      builder: (context, snapshot) {
+        final version = snapshot.data?.version ?? '1.0.0';
+        final buildNumber = snapshot.data?.buildNumber ?? '1';
+
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(
+                color:
+                    isDarkMode
+                        ? Colors.grey[800]!.withValues(alpha: .5)
+                        : Colors.grey[300]!.withValues(alpha: 0.5),
+                width: 0.5,
+              ),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Image.asset(
+                  'assets/images/She_is_watching_you.png',
+                  width: 75,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: 80,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color:
+                            isDarkMode
+                                ? Colors.grey[800]!.withValues(alpha: 0.3)
+                                : Colors.grey[300]!.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.image_not_supported_outlined,
+                        size: 20,
+                        color: isDarkMode ? Colors.grey[600] : Colors.grey[500],
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              // 中央寄せのセクション
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // アプリアイコン（中央寄せ）
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    child: Center(
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(
+                                alpha: isDarkMode ? 0.3 : 0.15,
+                              ),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.asset(
+                            'assets/images/icon.png',
+                            width: 48,
+                            height: 48,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryColor.withValues(
+                                    alpha: 0.1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                  Icons.apps,
+                                  size: 24,
+                                  color: AppTheme.primaryColor,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: Center(
+                      child: Text(
+                        'Powered by null_base',
+                        style: GoogleFonts.jetBrainsMono(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color:
+                              isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                          letterSpacing: 0.5,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                  Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          size: 14,
+                          color:
+                              isDarkMode ? Colors.grey[500] : Colors.grey[500],
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'v$version ($buildNumber)',
+                          style: GoogleFonts.jetBrainsMono(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w400,
+                            color:
+                                isDarkMode
+                                    ? Colors.grey[500]
+                                    : Colors.grey[500],
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
