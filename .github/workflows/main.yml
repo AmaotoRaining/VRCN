@@ -1,7 +1,11 @@
 name: Build Debug APK
 
 on:
-  workflow_dispatch:  # Allows manual triggering from GitHub UI
+  push:  # Automatically triggers on code pushes to specified branches
+    branches: [ main, develop ]  # Customize branches if needed; triggers on push to these
+  pull_request:  # Also triggers on PRs for CI validation
+    branches: [ main ]
+  workflow_dispatch:  # Retains manual triggering from GitHub UI
 
 jobs:
   build:
@@ -30,7 +34,7 @@ jobs:
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.24.3'  # Stable version as of 2025; matches typical constraints for modern Flutter projects
+        flutter-version: '3.38.0'  # Latest stable (Nov 2025) with Dart 3.10, satisfying ^3.7.2
         channel: 'stable'
         cache: true  # Caches Flutter pub dependencies automatically
 
@@ -46,6 +50,6 @@ jobs:
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
-        name: vrcn-debug-apk
+        name: vrcn-debug-apk-${{ github.sha }}  # Includes commit SHA for versioning (manual runs use run_id)
         path: build/app/outputs/flutter-apk/app-debug.apk
         retention-days: 30  # Artifacts available for 30 days in GitHub CI
