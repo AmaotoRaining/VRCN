@@ -12,14 +12,13 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
-  workflow_dispatch: {}
+  workflow_dispatch:
 
 name: Android CI - Build APK
 
 permissions:
   contents: read
   actions: read
-  id-token: write
 
 jobs:
   build:
@@ -60,11 +59,10 @@ jobs:
           SDK_ROOT="${ANDROID_SDK_ROOT}"
           mkdir -p "${SDK_ROOT}"
           cd "${SDK_ROOT}"
-          # 下载最新 commandlinetools（版本号可能更新，若失效请替换为最新 URL）
+          # 下载 commandlinetools（如失效请替换为最新 URL）
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
           unzip -q cmdline-tools.zip -d cmdline-tools
           mkdir -p cmdline-tools/latest
-          # 有些 zip 解压结构不同，保证二级目录为 latest
           if [ -d cmdline-tools/cmdline-tools ]; then
             mv cmdline-tools/cmdline-tools/* cmdline-tools/latest/ || true
             rmdir --ignore-fail-on-non-empty cmdline-tools/cmdline-tools || true
@@ -87,7 +85,8 @@ jobs:
         run: ./gradlew assembleDebug --no-daemon
 
       - name: Optional: Build Release APK if keystore secrets provided
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        # 简化后的判断：当 secrets.KEYSTORE_BASE64 存在且非空时触发
+        if: ${{ secrets.KEYSTORE_BASE64 }}
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -97,7 +96,6 @@ jobs:
           set -e
           echo "Found KEYSTORE_BASE64 secret — building signed release APK"
           echo "$KEYSTORE_BASE64" | base64 --decode > release-keystore.jks
-          # 调用 Gradle 构建 signed release：以项目的 signing 配置为准（下面使用注入参数的方式）
           ./gradlew assembleRelease -Pandroid.injected.signing.storeFile=$(pwd)/release-keystore.jks \
             -Pandroid.injected.signing.storePassword="$KEYSTORE_PASSWORD" \
             -Pandroid.injected.signing.keyAlias="$KEY_ALIAS" \
