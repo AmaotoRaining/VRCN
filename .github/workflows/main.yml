@@ -38,6 +38,12 @@ jobs:
         channel: 'stable'
         cache: true  # Caches Flutter pub dependencies automatically
 
+    - name: Accept Android SDK licenses
+      run: flutter doctor --android-licenses
+      # Automatically accepts all Android SDK licenses (including NDK) using 'yes' under the hood.
+      # This resolves LicenceNotAcceptedException in CI environments where licenses aren't pre-accepted.
+      # Run after Flutter setup to ensure Android SDK tools (sdkmanager) are available.
+
     - name: Get Flutter dependencies
       run: flutter pub get
 
@@ -51,7 +57,6 @@ jobs:
         EOF
       # This provides the required properties file for the project's signing config.
       # In CI, key.properties may not exist, causing null cast errors when loading properties like keyAlias.
-      # Using default debug keystore values ensures the debug flavor build succeeds without custom release signing.
 
     - name: Build debug APK
       run: flutter build apk --debug --flavor debug
