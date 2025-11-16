@@ -46,6 +46,11 @@ jobs:
     - name: Get Flutter dependencies
       run: flutter pub get
 
+    - name: Update compileSdk to 36
+      run: sed -i 's/compileSdk = 35/compileSdk = 36/g' android/app/build.gradle.kts
+      # Temporarily updates compileSdk in build.gradle.kts to satisfy plugin requirements (e.g., image_picker_android).
+      # This resolves warnings and ensures compatibility with Android SDK 36+ plugins; backward compatible.
+
     - name: Create key.properties for debug signing
       run: |
         cat > android/key.properties << 'EOF'
@@ -58,14 +63,14 @@ jobs:
       # In CI, key.properties may not exist, causing null cast errors when loading properties like keyAlias.
 
     - name: Build debug APK
-      run: flutter build apk --debug --flavor debug
-      # Uses default debug keystore for signing in CI environment—no custom keystore needed.
-      # Flavor 'debug' as per README instructions ensures correct configuration.
-      # Output: build/app/outputs/flutter-apk/app-debug.apk (installable on Android devices with unknown sources enabled).
+      run: flutter build apk --debug --flavor dev
+      # Uses 'dev' flavor (as defined in build.gradle.kts: dev, production) instead of non-existent 'debug'.
+      # Builds a debug-signed APK for development/testing; output: build/app/outputs/flutter-apk/app-dev-debug.apk.
+      # Installable on Android devices with unknown sources enabled.
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
         name: vrcn-debug-apk-${{ github.sha }}  # Includes commit SHA for versioning (manual runs use run_id)
-        path: build/app/outputs/flutter-apk/app-debug.apk
+        path: build/app/outputs/flutter-apk/app-dev-debug.apk
         retention-days: 30  # Artifacts available for 30 days in GitHub CI
