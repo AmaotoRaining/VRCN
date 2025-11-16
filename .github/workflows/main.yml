@@ -84,23 +84,6 @@ jobs:
       - name: Build Debug APK (assembleDebug)
         run: ./gradlew assembleDebug --no-daemon
 
-      - name: Optional: Build Release APK if keystore secrets provided
-        # 简化后的判断：当 secrets.KEYSTORE_BASE64 存在且非空时触发
-        if: ${{ secrets.KEYSTORE_BASE64 }}
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: |
-          set -e
-          echo "Found KEYSTORE_BASE64 secret — building signed release APK"
-          echo "$KEYSTORE_BASE64" | base64 --decode > release-keystore.jks
-          ./gradlew assembleRelease -Pandroid.injected.signing.storeFile=$(pwd)/release-keystore.jks \
-            -Pandroid.injected.signing.storePassword="$KEYSTORE_PASSWORD" \
-            -Pandroid.injected.signing.keyAlias="$KEY_ALIAS" \
-            -Pandroid.injected.signing.keyPassword="$KEY_PASSWORD" --no-daemon
-
       - name: Collect APKs and upload artifact
         uses: actions/upload-artifact@v4
         with:
