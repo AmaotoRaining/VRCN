@@ -41,6 +41,18 @@ jobs:
     - name: Get Flutter dependencies
       run: flutter pub get
 
+    - name: Create key.properties for debug signing
+      run: |
+        cat > android/key.properties << 'EOF'
+        storePassword=android
+        keyPassword=android
+        keyAlias=androiddebugkey
+        storeFile=~/.android/debug.keystore
+        EOF
+      # This provides the required properties file for the project's signing config.
+      # In CI, key.properties may not exist, causing null cast errors when loading properties like keyAlias.
+      # Using default debug keystore values ensures the debug flavor build succeeds without custom release signing.
+
     - name: Build debug APK
       run: flutter build apk --debug --flavor debug
       # Uses default debug keystore for signing in CI environment—no custom keystore needed.
