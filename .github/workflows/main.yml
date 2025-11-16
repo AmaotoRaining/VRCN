@@ -21,6 +21,11 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      # Automatically accepts all Android SDK licenses (including NDK) via default 'accept-android-sdk-licenses: yes'.
+      # Installs cmdline-tools, ensuring sdkmanager is available; sets ANDROID_SDK_ROOT and PATH for Flutter/Gradle.
+
     - name: Cache Gradle
       uses: actions/cache@v4
       with:
@@ -37,12 +42,6 @@ jobs:
         flutter-version: '3.38.0'  # Latest stable (Nov 2025) with Dart 3.10, satisfying ^3.7.2
         channel: 'stable'
         cache: true  # Caches Flutter pub dependencies automatically
-
-    - name: Accept Android SDK licenses
-      run: yes | sdkmanager --licenses
-      # Non-interactively accepts all Android SDK licenses (including NDK) using 'yes' piped to sdkmanager.
-      # This resolves LicenceNotAcceptedException in CI; run after Flutter setup to ensure sdkmanager is in PATH.
-      # Flutter doctor --android-licenses may not fully accept in headless envs, so direct sdkmanager is more reliable.
 
     - name: Get Flutter dependencies
       run: flutter pub get
