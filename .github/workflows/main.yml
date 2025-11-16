@@ -39,10 +39,10 @@ jobs:
         cache: true  # Caches Flutter pub dependencies automatically
 
     - name: Accept Android SDK licenses
-      run: flutter doctor --android-licenses
-      # Automatically accepts all Android SDK licenses (including NDK) using 'yes' under the hood.
-      # This resolves LicenceNotAcceptedException in CI environments where licenses aren't pre-accepted.
-      # Run after Flutter setup to ensure Android SDK tools (sdkmanager) are available.
+      run: yes | sdkmanager --licenses
+      # Non-interactively accepts all Android SDK licenses (including NDK) using 'yes' piped to sdkmanager.
+      # This resolves LicenceNotAcceptedException in CI; run after Flutter setup to ensure sdkmanager is in PATH.
+      # Flutter doctor --android-licenses may not fully accept in headless envs, so direct sdkmanager is more reliable.
 
     - name: Get Flutter dependencies
       run: flutter pub get
